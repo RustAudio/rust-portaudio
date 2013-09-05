@@ -5,21 +5,6 @@ use std::io;
 use portaudio::*;
 
 
-pub struct TestAudio {
-	useless : ~str
-}
-
-impl user_traits::PortaudioCallback for TestAudio {
-	fn callback_function(&self, input_buffer : ~[f32], frames_per_buffer : u32) -> (types::PaStreamCallbackResult, ~[f32]) {
-		let mut ret : ~[f32] = ~[];
-		for i in input_buffer.iter() {
-			ret.push(*i);
-		}
-		// println(~"hello");
-		return (types::PaContinue, ret)
-	}
-}
-
 fn main() -> () {
 	io::println(fmt!("Portaudio version : %d", pa::get_version() as int));
 	io::println(fmt!("Portaudio version text : %s", pa::get_version_text()));
@@ -70,9 +55,8 @@ fn main() -> () {
 		suggested_latency : pa::get_device_info(def_output).unwrap().default_low_output_latency
 	};
 
-	let callback_obj = @TestAudio {useless : ~"Useless"};
 
-	let mut stream = pa::PaStream::new(types::PaFloat32, callback_obj);
+	let mut stream = pa::PaStream::new(types::PaFloat32);
 
 	let mut err= stream.open_stream(Some(&stream_params), Some(&stream_params_out), 44100., 1024, types::PaClipOff);
 
@@ -82,11 +66,8 @@ fn main() -> () {
 
 	err = stream.start();
 	io::println(fmt!("Portaudio Start error : %s", pa::get_error_text(err)));
-	// let stdin = io::stdin();
- //    stdin.read_line();
 
- 	io::println("Hello world");
- 	let mut test = stream.get_stream_write_available();
+ 	let mut test;
  	loop {
  		test = stream.get_stream_write_available();
  		while test == 0 {
@@ -94,12 +75,12 @@ fn main() -> () {
 		}
 			io::println(fmt!("Stream Write available : %d", test as int)); 
 
- 		match stream.read(1024) {
+ 		match stream.read::<f32>(1024) {
  			Ok(res)		=> {
  				for i in res.iter() {
  					io::println(fmt!("%f", *i as float));
  				}
- 				stream.write(res, 1024)
+ 				stream.write::<f32>(res, 1024)
  			},
  			Err(err) 	=> fail!(fmt!("Portaudio error read : %s", pa::get_error_text(err)))
  		};

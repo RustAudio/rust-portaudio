@@ -1,3 +1,6 @@
 /lib/
 /build/
 /bin/
+*.dylib
+*~
+*.dSYM

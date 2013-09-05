@@ -6,13 +6,8 @@
 use std::str;
 use std::libc::{c_double, c_void};
 use std::ptr;
-use std::io;
-use std::cast;
-use std::vec;
 use std::libc::{malloc};
-use std::sys;
-
-use extra::c_vec::*;
+use std::vec;
 
 use types::*;
 use ffi;
@@ -298,23 +293,6 @@ pub fn sleep(m_sec : int) -> () {
 	}
 }
 
-
-extern "C" fn stream_callback(input_buf : *c_void, output_buf : *c_void, frames_per_buffer : u32, t : *PaStreamCallbackTimeInfo, tu : PaStreamCallbackFlags, obj : *c_void) -> PaStreamCallbackResult {
-	// let wrapper = unsafe { cast::transmute::<*c_void, &WrapObj>(obj) };
- //    match wrapper.pa_callback.callback_function(unsafe { vec::from_buf::<f32>(input_buf as *f32, frames_per_buffer as uint) }, frames_per_buffer) {
- //    	(callback_result, output)	=> {
- //    		let output_c_vec : ~CVec<f32> = unsafe { ~CVec::<f32>(output_buf as *mut f32, frames_per_buffer as uint) };
- //    		let mut ofs = 0;
- //    		while ofs < 64 {
- //    			set::<f32>(*output_c_vec, ofs as uint, 0.5);
- //    			ofs += 1;
- //    		}
- //    		callback_result
- //    	},
- //    }
- 	PaContinue
-}
-
 pub struct WrapObj {
     pa_callback : @PortaudioCallback
 }
@@ -325,19 +303,16 @@ pub struct PaStream {
 	priv sample_format : PaSampleFormat,
 	priv c_input : Option<C_PaStreamParameters>,
 	priv c_output : Option<C_PaStreamParameters>,
-	priv wrap_obj : @WrapObj,
 	priv unsafe_buffer : *c_void
 }
 
 impl PaStream {
-	pub fn new<T : 'static + PortaudioCallback>(sample_format : PaSampleFormat, pa_callback : @T) -> PaStream {
-		let w_o = @WrapObj { pa_callback : pa_callback as @PortaudioCallback };
+	pub fn new(sample_format : PaSampleFormat) -> PaStream {
 		PaStream {
 			c_pa_stream : ptr::null(),
 			sample_format : sample_format,
 			c_input : None,
 			c_output : None,
-			wrap_obj : w_o,
 			unsafe_buffer : ptr::null()
 		}
 	}
@@ -345,15 +320,15 @@ impl PaStream {
 	#[fixed_stack_segment] #[inline(never)]
 	fn alloc_buffer(&mut self, sample_format : PaSampleFormat, frames_per_buffer : u32, channels : i32) -> () {
 		match sample_format {
-			PaFloat32 => self.unsafe_buffer = unsafe { malloc(4 as u64 * frames_per_buffer as u64 * channels as u64) },
-			PaInt32 => self.unsafe_buffer = unsafe { malloc(4  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
-			PaInt16 => self.unsafe_buffer = unsafe { malloc(2  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
-			PaInt8 => self.unsafe_buffer = unsafe { malloc(1  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
-			PaUint8 => self.unsafe_buffer = unsafe { malloc(1  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
+			PaFloat32 	=> self.unsafe_buffer = unsafe { malloc(4 as u64 * frames_per_buffer as u64 * channels as u64) },
+			PaInt32 	=> self.unsafe_buffer = unsafe { malloc(4  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
+			PaInt16 	=> self.unsafe_buffer = unsafe { malloc(2  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
+			PaInt8 		=> self.unsafe_buffer = unsafe { malloc(1  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
+			PaUInt8 	=> self.unsafe_buffer = unsafe { malloc(1  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
+			_			=> fail!("Format not supported for the moment.")
 		}
 	} 
 
-	//Pa_OpenStream (PaStream **stream, const PaStreamParameters *inputParameters, const PaStreamParameters *outputParameters, double sampleRate, unsigned long framesPerBuffer, PaStreamFlags streamFlags, PaStreamCallback *streamCallback, void *userData)
 	#[fixed_stack_segment] #[inline(never)]
 	pub fn open_stream(&mut self,
 					   input_parameters : Option<&PaStreamParameters>,
@@ -379,11 +354,11 @@ impl PaStream {
 			}
 			else if self.c_output.is_none() {
 
-				ffi::Pa_OpenStream(&self.c_pa_stream, &(self.c_input.unwrap()), ptr::null(), sample_rate as c_double, frames_per_buffer, stream_flags, Some(stream_callback), ptr::to_unsafe_ptr(&*(self.wrap_obj)) as *c_void)
+				ffi::Pa_OpenStream(&self.c_pa_stream, &(self.c_input.unwrap()), ptr::null(), sample_rate as c_double, frames_per_buffer, stream_flags, None, ptr::null())
 			}
 			else if self.c_input.is_none() {
 
-				ffi::Pa_OpenStream(&self.c_pa_stream, ptr::null(), &(self.c_input.unwrap()), sample_rate as c_double, frames_per_buffer, stream_flags, Some(stream_callback), ptr::to_unsafe_ptr(&*(self.wrap_obj)) as *c_void)
+				ffi::Pa_OpenStream(&self.c_pa_stream, ptr::null(), &(self.c_input.unwrap()), sample_rate as c_double, frames_per_buffer, stream_flags, None, ptr::null())
 			}
 			else {
 				PaBadStreamPtr
@@ -488,23 +463,23 @@ impl PaStream {
 	}
 
 	#[fixed_stack_segment] #[inline(never)]
-	pub fn read(&self, frames_per_buffer : u32) -> Result<~[f32], PaError> {
+	pub fn read<T>(&self, frames_per_buffer : u32) -> Result<~[T], PaError> {
 		let err = 
 		unsafe {
 			ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
 		};
-		Ok(unsafe { vec::raw::from_buf_raw::<f32>(self.unsafe_buffer as *f32, (frames_per_buffer * 2) as uint) })
+		// Temporary OSX Fixe : Return always PaInputOverflowed
+		Ok(unsafe { vec::raw::from_buf_raw::<T>(self.unsafe_buffer as *T, (frames_per_buffer * 2) as uint) })
 		// match err {
-		// 	PaNoError 	=> /*Ok(unsafe_buf)*/
-		// 	Ok(unsafe { vec::raw::from_buf_raw::<f32>(unsafe_ptr as *f32, frames_per_buffer as uint) }),
-		// 	_ 			=> Err(err)
+		// 	PaNoError 			=> Ok(unsafe { vec::raw::from_buf_raw::<T>(self.unsafe_buffer as *T, (frames_per_buffer * 2) as uint) }),
+		// 	_ 					=> Err(err)
 		// }
 	}
 
 	#[fixed_stack_segment] #[inline(never)]
-	pub fn write(&self, output_buffer : ~[f32], frames_per_buffer : u32) -> PaError {
+	pub fn write<T>(&self, output_buffer : ~[T], frames_per_buffer : u32) -> PaError {
 		unsafe {
-			ffi::Pa_WriteStream(self.c_pa_stream, vec::raw::to_ptr::<f32>(output_buffer) as *c_void, frames_per_buffer)
+			ffi::Pa_WriteStream(self.c_pa_stream, vec::raw::to_ptr::<T>(output_buffer) as *c_void, frames_per_buffer)
 		}
 	}
 }
