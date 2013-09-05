@@ -5,6 +5,11 @@ use std::io;
 use portaudio::*;
 
 
+fn function(i : f32) -> types::PaStreamCallbackResult {
+    io::println("ON THE CALLBACK");
+    types::PaContinue
+}
+
 fn main() -> () {
     io::println(fmt!("Portaudio version : %d", pa::get_version() as int));
     io::println(fmt!("Portaudio version text : %s", pa::get_version_text()));
@@ -56,9 +61,9 @@ fn main() -> () {
     };
 
 
-    let mut stream = pa::PaStream::new(types::PaFloat32);
+    let mut stream : pa::PaStream<f32, f32> = pa::PaStream::new(types::PaFloat32);
 
-    let mut err= stream.open_stream(Some(&stream_params), Some(&stream_params_out), 44100., 1024, types::PaClipOff);
+    let mut err= stream.open_stream(Some(&stream_params), Some(&stream_params_out), 44100., 1024, types::PaClipOff, Some(function));
 
     io::println(fmt!("Portaudio Open error : %s", pa::get_error_text(err)));
 
@@ -75,12 +80,12 @@ fn main() -> () {
         }
             io::println(fmt!("Stream Write available : %d", test as int)); 
 
-        match stream.read::<f32>(1024) {
+        match stream.read(1024) {
             Ok(res)     => {
-                for i in res.iter() {
-                    io::println(fmt!("%f", *i as float));
-                }
-                stream.write::<f32>(res, 1024)
+                // for i in res.iter() {
+                //     io::println(fmt!("%f", *i as float));
+                // }
+                stream.write(res, 1024)
             },
             Err(err)    => fail!(fmt!("Portaudio error read : %s", pa::get_error_text(err)))
         };

@@ -46,6 +46,8 @@ pub static PaPrimingOutput : PaStreamCallbackFlags = 0x00000010;
 pub static PaFormatIsSupported : i32 = 0;
 pub static PaFramesPerBufferUnspecified : i32 = 0;
 
+pub type PaCallbackFunction = extern fn(i : f32) -> PaStreamCallbackResult;
+
 pub enum PaStreamCallbackResult { 
     PaContinue = 0, 
     PaComplete = 1, 
