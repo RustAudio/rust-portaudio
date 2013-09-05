@@ -4,12 +4,6 @@ use std::io;
 
 use portaudio::*;
 
-
-fn function(i : f32) -> types::PaStreamCallbackResult {
-    io::println("ON THE CALLBACK");
-    types::PaContinue
-}
-
 fn main() -> () {
     io::println(fmt!("Portaudio version : %d", pa::get_version() as int));
     io::println(fmt!("Portaudio version text : %s", pa::get_version_text()));
@@ -63,7 +57,7 @@ fn main() -> () {
 
     let mut stream : pa::PaStream<f32, f32> = pa::PaStream::new(types::PaFloat32);
 
-    let mut err= stream.open_stream(Some(&stream_params), Some(&stream_params_out), 44100., 1024, types::PaClipOff, Some(function));
+    let mut err= stream.open(Some(&stream_params), Some(&stream_params_out), 44100., 1024, types::PaClipOff);
 
     io::println(fmt!("Portaudio Open error : %s", pa::get_error_text(err)));
 
@@ -93,7 +87,7 @@ fn main() -> () {
 
     err = types::PaNotInitialized;
 
-    err = stream.close_stream();
+    err = stream.close();
     io::println(fmt!("Portaudio Close stream error : %s", pa::get_error_text(err)));
 
     io::println("");

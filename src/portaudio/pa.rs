@@ -1,5 +1,5 @@
 /*!
-* The porspacespacespacele PortAudio API.
+* The portable PortAudio API.
 */
 
 
@@ -284,7 +284,7 @@ pub fn get_sample_size(format : PaSampleFormat) -> PaError {
 
 /**
 * Put the caller to sleep for at least 'msec' milliseconds. 
-* This function is provided only as a convenience for authors of porspacespacespacele code (such as the tests and examples in the PortAudio distribution.)
+* This function is provided only as a convenience for authors of portable code (such as the tests and examples in the PortAudio distribution.)
 *
 * The function may sleep longer than requested so don't rely on this for accurate musical timing.
 */
@@ -295,6 +295,7 @@ pub fn sleep(m_sec : int) -> () {
     }
 }
 
+#[doc(hidden)]
 pub struct WrapObj {
     pa_callback : @PortaudioCallback
 }
@@ -327,8 +328,7 @@ impl<I, O> PaStream<I, O> {
                 output_parameters : Option<&PaStreamParameters>, 
                 sample_rate : f64, 
                 frames_per_buffer : u32, 
-                stream_flags : PaStreamFlags,
-                callback_function : Option<PaCallbackFunction>)
+                stream_flags : PaStreamFlags)
                 -> PaError {
         if !input_parameters.is_none() {
             self.c_input = Some(input_parameters.unwrap().unwrap());
@@ -338,8 +338,6 @@ impl<I, O> PaStream<I, O> {
         if !output_parameters.is_none() {
             self.c_output = Some(output_parameters.unwrap().unwrap());
         }
-
-        callback_function.unwrap()(42.);
 
         unsafe {
             if !self.c_input.is_none() && 
@@ -458,7 +456,7 @@ impl<I, O> PaStream<I, O> {
 
     #[fixed_stack_segment] #[inline(never)]
     pub fn read(&self, frames_per_buffer : u32) -> Result<~[I], PaError> {
-        let err = 
+        // let err = 
         unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
         };
@@ -475,5 +473,10 @@ impl<I, O> PaStream<I, O> {
         unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream, vec::raw::to_ptr::<O>(output_buffer) as *c_void, frames_per_buffer)
         }
+    }
+
+    #[doc(hidden)]
+    pub fn get_c_pa_stream(&self) -> *C_PaStream {
+        self.c_pa_stream
     }
 }

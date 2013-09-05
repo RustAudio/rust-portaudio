@@ -1,11 +1,11 @@
 use std::libc::{c_char, c_double, c_void};
 
 use types::*;
-
+//use mac_core::*;
 
 extern "C" {
 
-    /// PortAudio porspacespacespacele API
+    /// PortAudio portable API
 
     pub fn Pa_GetVersion() -> i32;
     pub fn Pa_GetVersionText() -> *c_char;
@@ -49,9 +49,22 @@ extern "C" {
     pub fn Pa_GetStreamReadAvailable(stream : *C_PaStream) -> i64;
     pub fn Pa_GetStreamWriteAvailable(stream : *C_PaStream) -> i64;
 
-    /// PortAudio Specific ASIO
+    /*
+    * PortAudio Specific ASIO
+    */
     pub fn PaAsio_GetAvailableBufferSizes(device : PaDeviceIndex, minBufferSizeFrames : *i32, maxBufferSizeFrames : *i32, preferredBufferSizeFrames : *i32, granularity : *i32) -> PaError;
     pub fn PaAsio_GetInputChannelName(device : PaDeviceIndex, channelIndex : i32, channelName : **c_char) -> PaError;
     pub fn PaAsio_GetOutputChannelName(device : PaDeviceIndex, channelIndex : i32, channelName : **c_char) -> PaError;
     pub fn PaAsio_SetStreamSampleRate(stream : *C_PaStream, sampleRate : c_double) -> PaError;
+
+
+    /*
+    * PortAudio Specific MAC_CORE
+    */
+    pub fn PaMacCore_GetStreamInputDevice(s : *C_PaStream) -> PaDeviceIndex;
+    pub fn PaMacCore_GetStreamOutputDevice(s : *C_PaStream) -> PaDeviceIndex;
+    // pub fn PaMacCore_GetChannelName (int device, int channelIndex, bool intput) -> *c_char
+    pub fn PaMacCore_GetBufferSizeRange(device : PaDeviceIndex, minBufferSizeFrames : *u32, maxBufferSizeFrames : *u32) -> PaError;
+    //pub fn PaMacCore_SetupStreamInfo(PaMacCoreStreamInfo *data, unsigned long flags) -> ();
+    //pub fn PaMacCore_SetupChannelMap(PaMacCoreStreamInfo *data, const SInt32 *const channelMap, unsigned long channelMapSize) -> ();
 }

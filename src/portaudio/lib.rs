@@ -2,7 +2,7 @@
        vers = "0.0.1",
        author = "letang.jeremy@gmail.com",
        uuid = "57224177-873F-43C2-8F44-A41D501C1A63",
-       url = "http://https://github.com/JeremyLetang/rust-PortAudio")];
+       url = "http://https://github.com/JeremyLetang/rust-portaudio")];
 
 #[comment = "Portaudio binding for Rust"];
 // #[license = "Zlib/png"];
