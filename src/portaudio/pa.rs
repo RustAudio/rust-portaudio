@@ -158,8 +158,8 @@ pub fn host_api_type_id_to_host_api_index(type_id : PaHostApiTypeId) -> PaHostAp
 */
 #[fixed_stack_segment] #[inline(never)]
 pub fn host_api_devide_index_to_device_index(host_api : PaHostApiIndex,
-											 host_api_device_index : int)
-											 -> PaDeviceIndex {
+											                       host_api_device_index : int)
+											                       -> PaDeviceIndex {
 	unsafe {
 		ffi::Pa_HostApiDeviceIndexToDeviceIndex(host_api, host_api_device_index as i32)
 	}
@@ -257,9 +257,9 @@ pub fn get_device_info(device : PaDeviceIndex) -> Option<PaDeviceInfo> {
 */
 #[fixed_stack_segment] #[inline(never)]
 pub fn is_format_supported(input_parameters : &PaStreamParameters,
-						   output_parameters : &PaStreamParameters,
-						   sample_rate : f64)
-						   -> PaError {
+						               output_parameters : &PaStreamParameters,
+						               sample_rate : f64)
+						               -> PaError {
 	let c_input = input_parameters.unwrap();
 	let c_output = output_parameters.unwrap();
 	unsafe {
@@ -322,7 +322,7 @@ impl PaStream {
 		match sample_format {
 			PaFloat32 	=> self.unsafe_buffer = unsafe { malloc(4 as u64 * frames_per_buffer as u64 * channels as u64) },
 			PaInt32 	=> self.unsafe_buffer = unsafe { malloc(4  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
-			PaInt16 	=> self.unsafe_buffer = unsafe { malloc(2  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
+			PaInt16     => self.unsafe_buffer = unsafe { malloc(2  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
 			PaInt8 		=> self.unsafe_buffer = unsafe { malloc(1  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
 			PaUInt8 	=> self.unsafe_buffer = unsafe { malloc(1  as u64 * frames_per_buffer  as u64 * channels as u64 ) },
 			_			=> fail!("Format not supported for the moment.")
@@ -333,10 +333,10 @@ impl PaStream {
 	pub fn open_stream(&mut self,
 					   input_parameters : Option<&PaStreamParameters>,
 					   output_parameters : Option<&PaStreamParameters>, 
-					   sample_rate : f64, 
-					   frames_per_buffer : u32, 
-					   stream_flags : PaStreamFlags)
-					   -> PaError {
+				       sample_rate : f64, 
+			           frames_per_buffer : u32, 
+			           stream_flags : PaStreamFlags)
+			           -> PaError {
 		
 		if !input_parameters.is_none() {
 			self.c_input = Some(input_parameters.unwrap().unwrap());
