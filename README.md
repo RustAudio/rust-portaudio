@@ -10,6 +10,8 @@ Rust-PortAudio use the same license than PortAudio : the MIT license.
 
 Rust-PortAudio is heavily in development, so there is many bugs.
 
+Only the blocking API work for the moment.
+
 Compilation
 ===========
 
