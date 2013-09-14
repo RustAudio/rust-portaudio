@@ -3,21 +3,26 @@
 */
 
 use std::libc::{c_void, c_char, c_double};
-use std::str;
-use std::ptr;
+use std::{str, ptr};
 
 #[doc(hidden)]
 pub type C_PaStream = c_void;
 
+/// The type used to refer to audio devices. Values of this type usually range from 0 to (pa::get_device_count()-1)
 pub type PaDeviceIndex = i32;
+/// A special PaDeviceIndex value indicating that no device is available, or should be used.
 pub static PaNoDevice : PaDeviceIndex = -1;
+/// A special PaDeviceIndex value indicating that the device(s) to be used are specified in the host api specific stream info structure.
 pub static PaUseHostApiSpecificDeviceSpecification : PaDeviceIndex = -2;
 
-
+/// The type used to enumerate to host APIs at runtime. 
+/// Values of this type range from 0 to (pa::get_host_api_count()-1).
 pub type PaHostApiIndex = i32;
 
+/// The type used to represent monotonic time in seconds.
 pub type PaTime = f64;
 
+/// A type used to specify one or more sample formats.
 pub type PaSampleFormat = u64;
 pub static PaFloat32 : PaSampleFormat = 0x00000001;
 pub static PaInt32 : PaSampleFormat = 0x00000002;
@@ -32,31 +37,37 @@ pub static PaNonInterleaved : PaSampleFormat = 0x80000000;
 
 pub type PaStreamFlags = u64;
 pub static PaNoFlag : PaStreamFlags = 0;
+/// Disable default clipping of out of range samples.
 pub static PaClipOff : PaStreamFlags = 0x00000001;
+/// Disable default dithering.
 pub static PaDitherOff : PaStreamFlags = 0x00000002;
+/// Flag requests that where possible a full duplex stream will not discard overflowed input samples without calling the stream callback.
 pub static PaNeverDropInput : PaStreamFlags = 0x00000004;
+/// Call the stream callback to fill initial output buffers, rather than the default behavior of priming the buffers with zeros (silence)
 pub static PaPrimeOutputBuffersUsingStreamCallback : PaStreamFlags = 0x00000008;
+/// A mask specifying the platform specific bits.
 pub static PaPlatformSpecificFlags : PaStreamFlags = 0xFFFF0000;
 
+#[doc(hidden)]
 pub type PaStreamCallbackFlags = u64;
-pub static PaInputUnderflow : PaStreamCallbackFlags = 0x00000001;
-pub static PaInputOverflow : PaStreamCallbackFlags = 0x00000002;
-pub static PaOutputUnderflow : PaStreamCallbackFlags = 0x00000004;
-pub static PaOutputOverflow : PaStreamCallbackFlags = 0x00000008;
-pub static PaPrimingOutput : PaStreamCallbackFlags = 0x00000010;
+/*
+    pub static PaInputUnderflow : PaStreamCallbackFlags = 0x00000001;
+    pub static PaInputOverflow : PaStreamCallbackFlags = 0x00000002;
+    pub static PaOutputUnderflow : PaStreamCallbackFlags = 0x00000004;
+    pub static PaOutputOverflow : PaStreamCallbackFlags = 0x00000008;
+    pub static PaPrimingOutput : PaStreamCallbackFlags = 0x00000010;
+*/
 
-pub static PaFormatIsSupported : i32 = 0;
-pub static PaFramesPerBufferUnspecified : i32 = 0;
-
+#[doc(hidden)]
 pub type PaCallbackFunction = extern fn(i : f32) -> PaStreamCallbackResult;
-
+#[doc(hidden)]
 pub enum PaStreamCallbackResult { 
     PaContinue = 0, 
     PaComplete = 1, 
     PaAbort = 2 
 }
 
-
+/// Error codes returned by PortAudio functions.
 pub enum PaError { 
     PaNoError = 0,
     PaNotInitialized = -10000,
@@ -90,6 +101,7 @@ pub enum PaError {
     PaBadBufferPtr 
 }
 
+/// Unchanging unique identifiers for each supported host API
 pub type PaHostApiTypeId = i32;
 pub static PaInDevelopment : PaHostApiTypeId = 0;
 pub static PaDirectSound : PaHostApiTypeId = 1;
@@ -106,6 +118,7 @@ pub static PaJACK : PaHostApiTypeId = 12;
 pub static PaWASAPI : PaHostApiTypeId = 13;
 pub static PaAudioScienceHPI : PaHostApiTypeId = 14; 
 
+/// A structure containing information about a particular host API.
 pub struct PaHostApiInfo{
     struct_version : int,
     host_type : PaHostApiTypeId,
@@ -152,6 +165,7 @@ impl PaHostApiInfo {
     }
 }
 
+/// Structure used to return information about a host error condition.
 pub struct PaHostErrorInfo {
     error_code : u32,
     error_text : ~str
@@ -180,6 +194,7 @@ impl PaHostErrorInfo {
     }
 }
 
+/// A structure providing information and capabilities of PortAudio devices. Devices may support input, output or both input and output.
 pub struct PaDeviceInfo {
     struct_version : int,
     name : ~str,
@@ -242,6 +257,7 @@ impl PaDeviceInfo {
     }
 }
 
+/// Parameters for one direction (input or output) of a stream.
 pub struct PaStreamParameters {
     device : PaDeviceIndex,
     channel_count : i32,
@@ -283,12 +299,14 @@ impl PaStreamParameters {
 }
 
 
+#[doc(hidden)]
 pub struct PaStreamCallbackTimeInfo {
     input_buffer_adc_time : PaTime,
     current_time : PaTime,
     output_buffer_dac_time : PaTime
 }
 
+/// A structure containing unchanging information about an open stream.
 pub struct PaStreamInfo {
     struct_version : i32,
     input_latency : PaTime,

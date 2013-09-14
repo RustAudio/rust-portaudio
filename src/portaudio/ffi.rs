@@ -50,7 +50,7 @@ extern "C" {
     pub fn Pa_AbortStream(stream : *C_PaStream) -> PaError;
     pub fn Pa_IsStreamStopped(stream : *C_PaStream) -> PaError;
     pub fn Pa_IsStreamActive(stream : *C_PaStream) -> i32;
-    pub fn Pa_GetStreamInfo(stream : *C_PaStream) -> PaStreamInfo;
+    pub fn Pa_GetStreamInfo(stream : *C_PaStream) -> *PaStreamInfo;
     pub fn Pa_GetStreamTime(stream : *C_PaStream) -> PaTime;
     pub fn Pa_GetStreamCpuLoad(stream : *C_PaStream) -> c_double;
     pub fn Pa_ReadStream(stream : *C_PaStream, buffer : *c_void, frames : u32) -> PaError;

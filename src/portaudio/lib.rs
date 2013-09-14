@@ -21,13 +21,13 @@ mod c_library {
 }
 
 pub mod types;
-pub mod user_traits;
 pub mod pa;
 
+#[doc(hidden)]
+pub mod user_traits;
+#[doc(hidden)]
 #[cfg(target_os="macos")]
 pub mod mac_core;
-
 //pub mod asio;
-
 #[doc(hidden)]
 pub mod ffi;

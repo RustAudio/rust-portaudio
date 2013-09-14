@@ -10,7 +10,7 @@ use types::*;
 use ffi;
 use user_traits::*;
 
-/// Retrieve the release number of the currently running PortAudio build, eg 1900.
+/// Retrieve the release number of the currently running PortAudio build.
 #[fixed_stack_segment] #[inline(never)]
 pub fn get_version() -> i32 {
     unsafe {
@@ -18,7 +18,7 @@ pub fn get_version() -> i32 {
     }
 }
 
-/// Retrieve a textual description of the current PortAudio build, eg "PortAudio V19-devel 13 October 2002".
+/// Retrieve a textual description of the current PortAudio build.
 #[fixed_stack_segment] #[inline(never)]
 pub fn get_version_text() -> ~str {
     unsafe { 
@@ -295,7 +295,7 @@ pub struct WrapObj {
     pa_callback : @PortaudioCallback
 }
 
-
+/// Representation of an audio stream, where the format of the stream is defined by the S parameter.
 pub struct PaStream<S> {
     priv c_pa_stream : *C_PaStream,
     priv sample_format : PaSampleFormat,
@@ -307,6 +307,11 @@ pub struct PaStream<S> {
 }
 
 impl<S> PaStream<S> {
+    /**
+    * Constructor for PaStream.
+    *
+    * Return a new PaStream.
+    */
     pub fn new(sample_format : PaSampleFormat) -> PaStream<S> {
         PaStream {
             c_pa_stream : ptr::null(),
@@ -319,6 +324,19 @@ impl<S> PaStream<S> {
         }
     }
 
+    /**
+    * Opens a stream for either input, output or both.
+    *
+    * # Arguments
+    * * input_parameters - A structure that describes the input parameters used by the opened stream.
+    * * output_parameters - A structure that describes the output parameters used by the opened stream.
+    * * sample_rate - The desired sample_rate. For full-duplex streams it is the sample rate for both input and output
+    * * frames_per_buffer - The number of frames passed to the stream callback function.
+    * * stream_flags -Flags which modify the behavior of the streaming process. 
+    * This parameter may contain a combination of flags ORed together. Some flags may only be relevant to certain buffer formats.
+    *
+    * Upon success returns PaNoError and the stream is inactive (stopped). If fails, a non-zero error code is returned.
+    */
     #[fixed_stack_segment] #[inline(never)]
     pub fn open(&mut self,
                 input_parameters : Option<&PaStreamParameters>,
@@ -355,6 +373,22 @@ impl<S> PaStream<S> {
         }
     }
 
+    /**
+    * A simplified version of open() that opens the default input and/or output devices.
+    *
+    * # Arguments
+    * * sample_rate - The desired sample_rate. For full-duplex streams it is the sample rate for both input and output
+    * * frames_per_buffer - The number of frames passed to the stream callback function
+    * * num_input_channels - The number of channels of sound that will be supplied to the stream callback or returned by Pa_ReadStream. 
+    * It can range from 1 to the value of maxInputChannels in the PaDeviceInfo record for the default input device. 
+    * If 0 the stream is opened as an output-only stream.
+    * * num_output_channels - The number of channels of sound to be delivered to the stream callback or passed to Pa_WriteStream. 
+    * It can range from 1 to the value of maxOutputChannels in the PaDeviceInfo record for the default output device. 
+    * If 0 the stream is opened as an output-only stream.
+    * * sample_format - The sample_format for the input and output buffers.
+    *
+    * Upon success returns PaNoError and the stream is inactive (stopped). If fails, a non-zero error code is returned.
+    */
     #[fixed_stack_segment] #[inline(never)]
     pub fn open_default(&mut self,
                         sample_rate : f64, 
@@ -439,6 +473,17 @@ impl<S> PaStream<S> {
         }
     }
 
+    /**
+    * Returns the current time in seconds for a stream according to the same 
+    * clock used to generate callback PaStreamCallbackTimeInfo timestamps. 
+    * The time values are monotonically increasing and have unspecified origin.
+    *
+    * get_stream_time returns valid time values for the entire life of the stream, 
+    * from when the stream is opened until it is closed. 
+    * Starting and stopping the stream does not affect the passage of time returned by Pa_GetStreamTime.
+    *
+    * Return the stream's current time in seconds, or 0 if an error occurred.
+    */
     #[fixed_stack_segment] #[inline(never)]
     pub fn get_stream_time(&self) -> PaTime {
         unsafe {
@@ -446,6 +491,13 @@ impl<S> PaStream<S> {
         }
     }
 
+    /**
+    * Retrieve CPU usage information for the specified stream. 
+    *
+    * The "CPU Load" is a fraction of total CPU time consumed by a callback stream's audio 
+    * processing routines including, but not limited to the client supplied stream callback. 
+    * This function does not work with blocking read/write streams.
+    */
     #[fixed_stack_segment] #[inline(never)]
     pub fn get_stream_cpu_load(&self) -> f64 {
         unsafe {
@@ -453,6 +505,14 @@ impl<S> PaStream<S> {
         }
     }
 
+
+    /**
+    * Retrieve the number of frames that can be read from the stream without waiting.
+    *
+    * Returns a non-negative value representing the maximum number of frames that can be read 
+    * from the stream without blocking or busy waiting or, a PaErrorCode (which are always negative) 
+    * if PortAudio is not initialized or an error is encountered.
+    */
     #[fixed_stack_segment] #[inline(never)]
     pub fn get_stream_read_available(&self) -> i64 {
         unsafe {
@@ -484,6 +544,15 @@ impl<S> PaStream<S> {
         Ok(unsafe { vec::raw::from_buf_raw::<S>(self.unsafe_buffer as *S, (frames_per_buffer * self.num_input_channels as u32) as uint) })
     }
 
+    /**
+    * Read samples from an input stream. 
+    * The function doesn't return until the entire buffer has been filled - this may involve waiting for the operating system to supply the data.
+    *
+    * # Arguments
+    * * frames_per_buffer - The number of frames in the buffer.
+    *
+    * Return Ok(~[S]), a buffer containing the sample of the format S. If fail return a PaError code.
+    */
     #[cfg(target_os="win32")]
     #[cfg(target_os="linux")]
     #[fixed_stack_segment] #[inline(never)]
@@ -497,7 +566,16 @@ impl<S> PaStream<S> {
         }
     }
 
-
+    /**
+    * Write samples to an output stream. 
+    * This function doesn't return until the entire buffer has been consumed - this may involve waiting for the operating system to consume the data.
+    * 
+    * # Arguments 
+    * * output_buffer - The buffer contains samples in the format specified by S.
+    * * frames_per_buffer - The number of frames in the buffer.
+    *
+    * Return PaNoError on success, or a PaError code if fail.
+    */
     #[fixed_stack_segment] #[inline(never)]
     pub fn write(&self, output_buffer : ~[S], frames_per_buffer : u32) -> PaError {
         unsafe {
@@ -505,10 +583,11 @@ impl<S> PaStream<S> {
         }
     }
 
+    /// Retrieve a PaStreamInfo structure containing information about the specified stream.
     #[fixed_stack_segment] #[inline(never)]
     pub fn get_stream_info(&self) -> PaStreamInfo {
         unsafe {
-            ffi::Pa_GetStreamInfo(self.c_pa_stream)
+            *ffi::Pa_GetStreamInfo(self.c_pa_stream)
         }
     }
 
