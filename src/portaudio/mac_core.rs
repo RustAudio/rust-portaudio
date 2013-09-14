@@ -46,7 +46,7 @@ pub trait MacCore {
 // }
 
 
-impl<I, U> MacCore for PaStream<I, U> {
+impl<S> MacCore for PaStream<S> {
     #[fixed_stack_segment] #[inline(never)]
     fn get_stream_input_device(&self) -> PaDeviceIndex {
         unsafe {

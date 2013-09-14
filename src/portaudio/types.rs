@@ -6,11 +6,13 @@ use std::libc::{c_void, c_char, c_double};
 use std::str;
 use std::ptr;
 
+#[doc(hidden)]
 pub type C_PaStream = c_void;
 
 pub type PaDeviceIndex = i32;
 pub static PaNoDevice : PaDeviceIndex = -1;
 pub static PaUseHostApiSpecificDeviceSpecification : PaDeviceIndex = -2;
+
 
 pub type PaHostApiIndex = i32;
 
@@ -242,7 +244,7 @@ impl PaDeviceInfo {
 
 pub struct PaStreamParameters {
     device : PaDeviceIndex,
-    channel_count : int,
+    channel_count : i32,
     sample_format : PaSampleFormat,
     suggested_latency : PaTime, 
 }
@@ -262,7 +264,7 @@ impl PaStreamParameters {
         unsafe {
             PaStreamParameters {
                 device : (*c_parameters).device,
-                channel_count : (*c_parameters).channel_count as int,
+                channel_count : (*c_parameters).channel_count,
                 sample_format : (*c_parameters).sample_format,
                 suggested_latency : (*c_parameters).suggested_latency
             }
@@ -280,9 +282,17 @@ impl PaStreamParameters {
     }
 }
 
+
 pub struct PaStreamCallbackTimeInfo {
     input_buffer_adc_time : PaTime,
     current_time : PaTime,
     output_buffer_dac_time : PaTime
+}
+
+pub struct PaStreamInfo {
+    struct_version : i32,
+    input_latency : PaTime,
+    output_latency : PaTime,
+    sample_rate : f64
 }
 

@@ -3,13 +3,8 @@
 */
 
 
-use std::str;
-use std::libc::{c_double, c_void};
-use std::ptr;
-use std::libc::{malloc};
-use std::vec;
-use std::sys;
-use std::io;
+use std::{str, ptr, vec, sys, cast};
+use std::libc::{c_double, c_void, malloc};
 
 use types::*;
 use ffi;
@@ -301,24 +296,26 @@ pub struct WrapObj {
 }
 
 
-pub struct PaStream<I, O> {
+pub struct PaStream<S> {
     priv c_pa_stream : *C_PaStream,
     priv sample_format : PaSampleFormat,
     priv c_input : Option<C_PaStreamParameters>,
     priv c_output : Option<C_PaStreamParameters>,
     priv unsafe_buffer : *c_void,
-    priv callback_function : Option<PaCallbackFunction>
+    priv callback_function : Option<PaCallbackFunction>,
+    priv num_input_channels : i32
 }
 
-impl<I, O> PaStream<I, O> {
-    pub fn new(sample_format : PaSampleFormat) -> PaStream<I, O> {
+impl<S> PaStream<S> {
+    pub fn new(sample_format : PaSampleFormat) -> PaStream<S> {
         PaStream {
             c_pa_stream : ptr::null(),
             sample_format : sample_format,
             c_input : None,
             c_output : None,
             unsafe_buffer : ptr::null(),
-            callback_function : None
+            callback_function : None,
+            num_input_channels : 0
         }
     }
 
@@ -332,8 +329,8 @@ impl<I, O> PaStream<I, O> {
                 -> PaError {
         if !input_parameters.is_none() {
             self.c_input = Some(input_parameters.unwrap().unwrap());
-            io::println(fmt!("sizeof I : %d", sys::size_of::<I>() as int));
-            self.unsafe_buffer = unsafe { malloc(sys::size_of::<I>() as u64 * frames_per_buffer as u64 * input_parameters.unwrap().channel_count as u64) };
+            self.num_input_channels = input_parameters.unwrap().channel_count;
+            self.unsafe_buffer = unsafe { malloc(sys::size_of::<S>() as u64 * frames_per_buffer as u64 * input_parameters.unwrap().channel_count as u64) };
         }
         if !output_parameters.is_none() {
             self.c_output = Some(output_parameters.unwrap().unwrap());
@@ -355,6 +352,25 @@ impl<I, O> PaStream<I, O> {
             else {
                 PaBadStreamPtr
             }
+        }
+    }
+
+    #[fixed_stack_segment] #[inline(never)]
+    pub fn open_default(&mut self,
+                        sample_rate : f64, 
+                        frames_per_buffer : u32,
+                        num_input_channels : i32,
+                        num_output_channels : i32,
+                        sample_format : PaSampleFormat)
+                        -> PaError {
+
+        if num_input_channels > 0 {
+            self.c_input = None;
+            self.num_input_channels = num_input_channels;
+            self.unsafe_buffer = unsafe { malloc(sys::size_of::<S>() as u64 * frames_per_buffer as u64 * num_input_channels as u64) };
+        }
+        unsafe {
+           ffi::Pa_OpenDefaultStream(&self.c_pa_stream, num_input_channels, num_output_channels, sample_format, sample_rate as c_double, frames_per_buffer, None, ptr::null())
         }
     }
 
@@ -410,13 +426,16 @@ impl<I, O> PaStream<I, O> {
     * or as a result of a return value other than paContinue from the stream callback. 
     * In the latter case, the stream is considered inactive after the last buffer has finished playing.
     *
-    * Return one (1) when the stream is active (ie playing or recording audio), zero (0) when not playing or, 
-    * a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.
+    * Return Ok(true) when the stream is active (ie playing or recording audio), Ok(false) when not playing or, 
+    * a Err(PaError) if PortAudio is not initialized or an error is encountered.
     */
     #[fixed_stack_segment] #[inline(never)]
-    pub fn is_active(&self) -> PaError {
-        unsafe {
-            ffi::Pa_IsStreamActive(self.c_pa_stream)
+    pub fn is_active(&self) -> Result<bool, PaError> {
+        let err = unsafe { ffi::Pa_IsStreamActive(self.c_pa_stream) };
+        match err {
+            0 => Ok(false),
+            1 => Ok(true),
+            _ => Err(unsafe { cast::transmute::<i32, PaError>(err) })
         }
     }
 
@@ -454,24 +473,42 @@ impl<I, O> PaStream<I, O> {
         }
     }
 
+    #[doc(hidden)]
+    // Temporary OSX Fixe : Return always PaInputOverflowed
+    #[cfg(target_os="macos")]
     #[fixed_stack_segment] #[inline(never)]
-    pub fn read(&self, frames_per_buffer : u32) -> Result<~[I], PaError> {
-        // let err = 
+    pub fn read(&self, frames_per_buffer : u32) -> Result<~[S], PaError> {
         unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
         };
-        // Temporary OSX Fixe : Return always PaInputOverflowed
-        Ok(unsafe { vec::raw::from_buf_raw::<I>(self.unsafe_buffer as *I, (frames_per_buffer * 2) as uint) })
-        // match err {
-        //  PaNoError           => Ok(unsafe { vec::raw::from_buf_raw::<T>(self.unsafe_buffer as *T, (frames_per_buffer * 2) as uint) }),
-        //  _                   => Err(err)
-        // }
+        Ok(unsafe { vec::raw::from_buf_raw::<S>(self.unsafe_buffer as *S, (frames_per_buffer * self.num_input_channels as u32) as uint) })
+    }
+
+    #[cfg(target_os="win32")]
+    #[cfg(target_os="linux")]
+    #[fixed_stack_segment] #[inline(never)]
+    pub fn read(&self, frames_per_buffer : u32) -> Result<~[S], PaError> {
+        let err = unsafe {
+            ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
+        };
+        match err {
+         PaNoError           => Ok(unsafe { vec::raw::from_buf_raw::<S>(self.unsafe_buffer as *S, (frames_per_buffer * self.num_input_channels as u32) as uint) }),
+         _                   => Err(err)
+        }
+    }
+
+
+    #[fixed_stack_segment] #[inline(never)]
+    pub fn write(&self, output_buffer : ~[S], frames_per_buffer : u32) -> PaError {
+        unsafe {
+            ffi::Pa_WriteStream(self.c_pa_stream, vec::raw::to_ptr::<S>(output_buffer) as *c_void, frames_per_buffer)
+        }
     }
 
     #[fixed_stack_segment] #[inline(never)]
-    pub fn write(&self, output_buffer : ~[O], frames_per_buffer : u32) -> PaError {
+    pub fn get_stream_info(&self) -> PaStreamInfo {
         unsafe {
-            ffi::Pa_WriteStream(self.c_pa_stream, vec::raw::to_ptr::<O>(output_buffer) as *c_void, frames_per_buffer)
+            ffi::Pa_GetStreamInfo(self.c_pa_stream)
         }
     }
 

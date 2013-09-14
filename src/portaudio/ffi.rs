@@ -34,14 +34,23 @@ extern "C" {
                          streamCallback : Option<extern "C" fn(*c_void, *c_void, u32, *PaStreamCallbackTimeInfo, PaStreamCallbackFlags, *c_void) -> PaStreamCallbackResult>, 
                          userData : *c_void) 
                          -> PaError;
+    pub fn Pa_OpenDefaultStream(stream : **C_PaStream, 
+                                numInputChannels : i32, 
+                                numOutputChannels : i32, 
+                                sampleFormat : PaSampleFormat, 
+                                sampleRate : c_double, 
+                                framesPerBuffer : u32, 
+                                streamCallback : Option<extern "C" fn(*c_void, *c_void, u32, *PaStreamCallbackTimeInfo, PaStreamCallbackFlags, *c_void) -> PaStreamCallbackResult>, 
+                                userData : *c_void)
+                                -> PaError;
     pub fn Pa_CloseStream(stream : *C_PaStream) -> PaError;
     //pub fn Pa_SetStreamFinishedCallback (stream : *PaStream, PaStreamFinishedCallback *streamFinishedCallback) -> PaError;
     pub fn Pa_StartStream(stream : *C_PaStream) -> PaError;
     pub fn Pa_StopStream(stream : *C_PaStream) -> PaError;
     pub fn Pa_AbortStream(stream : *C_PaStream) -> PaError;
     pub fn Pa_IsStreamStopped(stream : *C_PaStream) -> PaError;
-    pub fn Pa_IsStreamActive(stream : *C_PaStream) -> PaError;
-    //pub fn Pa_GetStreamInfo(stream : *PaStream) -> PaStreamInfo;
+    pub fn Pa_IsStreamActive(stream : *C_PaStream) -> i32;
+    pub fn Pa_GetStreamInfo(stream : *C_PaStream) -> PaStreamInfo;
     pub fn Pa_GetStreamTime(stream : *C_PaStream) -> PaTime;
     pub fn Pa_GetStreamCpuLoad(stream : *C_PaStream) -> c_double;
     pub fn Pa_ReadStream(stream : *C_PaStream, buffer : *c_void, frames : u32) -> PaError;
