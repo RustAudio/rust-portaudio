@@ -1,0 +1,356 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>Module pa</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+  </style>
+  <link rel="stylesheet" href="rust.css" type="text/css" />
+</head>
+<body>
+<div id="header">
+<h1 class="title">Module pa</h1>
+</div>
+<p>The portable PortAudio API.</p>
+<div class='index'>
+
+<ul>
+<li><a href="#struct-pastream">Struct <code>PaStream</code></a> - Representation of an audio stream, where the format of the stream is defined by the S parameter.</li>
+<li><a href="#implementation-for-pastreams-where-s">Implementation <code>for PaStream&lt;S&gt; where &lt;S&gt;</code></a></li>
+<li><a href="#function-get_default_host_api">Function <code>get_default_host_api</code></a> - Retrieve the index of the default host API</li>
+<li><a href="#function-get_default_input_device">Function <code>get_default_input_device</code></a> - Retrieve the index of the default input device</li>
+<li><a href="#function-get_default_output_device">Function <code>get_default_output_device</code></a> - Retrieve the index of the default output device</li>
+<li><a href="#function-get_device_count">Function <code>get_device_count</code></a> - Retrieve the number of available devices</li>
+<li><a href="#function-get_device_info">Function <code>get_device_info</code></a> - Retrieve a pointer to a PaDeviceInfo structure containing information about the specified device.</li>
+<li><a href="#function-get_error_text">Function <code>get_error_text</code></a> - Translate the supplied PortAudio error code into a human readable message.</li>
+<li><a href="#function-get_host_api_count">Function <code>get_host_api_count</code></a> - Retrieve the number of available host APIs</li>
+<li><a href="#function-get_host_api_info">Function <code>get_host_api_info</code></a> - Retrieve a pointer to a structure containing information about a specific host Api.</li>
+<li><a href="#function-get_last_host_error_info">Function <code>get_last_host_error_info</code></a> - Return information about the last host error encountered</li>
+<li><a href="#function-get_sample_size">Function <code>get_sample_size</code></a> - Retrieve the size of a given sample format in bytes.</li>
+<li><a href="#function-get_version">Function <code>get_version</code></a> - Retrieve the release number of the currently running PortAudio build.</li>
+<li><a href="#function-get_version_text">Function <code>get_version_text</code></a> - Retrieve a textual description of the current PortAudio build.</li>
+<li><a href="#function-host_api_devide_index_to_device_index">Function <code>host_api_devide_index_to_device_index</code></a> - Convert a host-API-specific device index to standard PortAudio device index</li>
+<li><a href="#function-host_api_type_id_to_host_api_index">Function <code>host_api_type_id_to_host_api_index</code></a> - Convert a static host API unique identifier, into a runtime host API index.</li>
+<li><a href="#function-initialize">Function <code>initialize</code></a> - Library initialization function - call this before using PortAudio</li>
+<li><a href="#function-is_format_supported">Function <code>is_format_supported</code></a> - Determine whether it would be possible to open a stream with the specified parameters.</li>
+<li><a href="#function-sleep">Function <code>sleep</code></a> - Put the caller to sleep for at least 'msec' milliseconds</li>
+<li><a href="#function-terminate">Function <code>terminate</code></a> - Library termination function - call this when finished using PortAudio</li>
+</ul>
+</div>
+
+<div id="struct-pastream" class="section level2">
+<h2>Struct <code>PaStream</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">pub</span> <span class="kw">struct</span> PaStream&lt;S&gt; {
+    <span class="kw">priv</span> c_pa_stream: *C_PaStream,
+    <span class="kw">priv</span> sample_format: PaSampleFormat,
+    <span class="kw">priv</span> c_input: <span class="kw">Option</span>&lt;C_PaStreamParameters&gt;,
+    <span class="kw">priv</span> c_output: <span class="kw">Option</span>&lt;C_PaStreamParameters&gt;,
+    <span class="kw">priv</span> unsafe_buffer: *c_void,
+    <span class="kw">priv</span> callback_function: <span class="kw">Option</span>&lt;PaCallbackFunction&gt;,
+    <span class="kw">priv</span> num_input_channels: <span class="kw">i32</span>,
+}</code></pre>
+<p>Representation of an audio stream, where the format of the stream is defined by the S parameter.</p>
+</div>
+<div id="implementation-for-pastreams-where-s" class="section level2">
+<h2>Implementation for <code>PaStream&lt;S&gt;</code> where <code>&lt;S&gt;</code></h2>
+<div id="method-new" class="section level3">
+<h3>Method <code>new</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> new(sample_format: PaSampleFormat) -&gt; PaStream&lt;S&gt;</code></pre>
+<p>Constructor for PaStream.</p>
+<p>Return a new PaStream.</p>
+</div>
+<div id="method-open" class="section level3">
+<h3>Method <code>open</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> open(&amp;<span class="kw">mut</span> <span class="kw">self</span>, input_parameters: <span class="kw">Option</span>&lt;&amp;PaStreamParameters&gt;,
+        output_parameters: <span class="kw">Option</span>&lt;&amp;PaStreamParameters&gt;, sample_rate: <span class="kw">f64</span>,
+        frames_per_buffer: <span class="kw">u32</span>, stream_flags: PaStreamFlags) -&gt; PaError</code></pre>
+<p>Opens a stream for either input, output or both.</p>
+<div id="arguments" class="section level4">
+<h4>Arguments</h4>
+<ul>
+<li>input_parameters - A structure that describes the input parameters used by the opened stream.</li>
+<li>output_parameters - A structure that describes the output parameters used by the opened stream.</li>
+<li>sample_rate - The desired sample_rate. For full-duplex streams it is the sample rate for both input and output</li>
+<li>frames_per_buffer - The number of frames passed to the stream callback function.</li>
+<li>stream_flags -Flags which modify the behavior of the streaming process. This parameter may contain a combination of flags ORed together. Some flags may only be relevant to certain buffer formats.</li>
+</ul>
+<p>Upon success returns PaNoError and the stream is inactive (stopped). If fails, a non-zero error code is returned.</p>
+</div>
+</div>
+<div id="method-open_default" class="section level3">
+<h3>Method <code>open_default</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> open_default(&amp;<span class="kw">mut</span> <span class="kw">self</span>, sample_rate: <span class="kw">f64</span>, frames_per_buffer: <span class="kw">u32</span>,
+                num_input_channels: <span class="kw">i32</span>, num_output_channels: <span class="kw">i32</span>,
+                sample_format: PaSampleFormat) -&gt; PaError</code></pre>
+<p>A simplified version of open() that opens the default input and/or output devices.</p>
+<div id="arguments-1" class="section level4">
+<h4>Arguments</h4>
+<ul>
+<li>sample_rate - The desired sample_rate. For full-duplex streams it is the sample rate for both input and output</li>
+<li>frames_per_buffer - The number of frames passed to the stream callback function</li>
+<li>num_input_channels - The number of channels of sound that will be supplied to the stream callback or returned by Pa_ReadStream. It can range from 1 to the value of maxInputChannels in the PaDeviceInfo record for the default input device. If 0 the stream is opened as an output-only stream.</li>
+<li>num_output_channels - The number of channels of sound to be delivered to the stream callback or passed to Pa_WriteStream. It can range from 1 to the value of maxOutputChannels in the PaDeviceInfo record for the default output device. If 0 the stream is opened as an output-only stream.</li>
+<li>sample_format - The sample_format for the input and output buffers.</li>
+</ul>
+<p>Upon success returns PaNoError and the stream is inactive (stopped). If fails, a non-zero error code is returned.</p>
+</div>
+</div>
+<div id="method-close" class="section level3">
+<h3>Method <code>close</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> close(&amp;<span class="kw">mut</span> <span class="kw">self</span>) -&gt; PaError</code></pre>
+<p>Closes an audio stream. If the audio stream is active it discards any pending buffers as if abort_tream() had been called.</p>
+</div>
+<div id="method-start" class="section level3">
+<h3>Method <code>start</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> start(&amp;<span class="kw">mut</span> <span class="kw">self</span>) -&gt; PaError</code></pre>
+<p>Commences audio processing.</p>
+</div>
+<div id="method-stop" class="section level3">
+<h3>Method <code>stop</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> stop(&amp;<span class="kw">mut</span> <span class="kw">self</span>) -&gt; PaError</code></pre>
+<p>Terminates audio processing. It waits until all pending audio buffers have been played before it returns.</p>
+</div>
+<div id="method-abort" class="section level3">
+<h3>Method <code>abort</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> abort(&amp;<span class="kw">mut</span> <span class="kw">self</span>) -&gt; PaError</code></pre>
+<p>Terminates audio processing immediately without waiting for pending buffers to complete.</p>
+</div>
+<div id="method-is_stopped" class="section level3">
+<h3>Method <code>is_stopped</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> is_stopped(&amp;<span class="kw">self</span>) -&gt; PaError</code></pre>
+<p>Determine whether the stream is stopped. A stream is considered to be stopped prior to a successful call to start_stream and after a successful call to stop_stream or abort_stream. If a stream callback returns a value other than PaContinue the stream is NOT considered to be stopped.</p>
+<p>Return one (1) when the stream is stopped, zero (0) when the stream is running or, a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.</p>
+</div>
+<div id="method-is_active" class="section level3">
+<h3>Method <code>is_active</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> is_active(&amp;<span class="kw">self</span>) -&gt; <span class="kw">Result</span>&lt;<span class="kw">bool</span>, PaError&gt;</code></pre>
+<p>Determine whether the stream is active. A stream is active after a successful call to start_stream(), until it becomes inactive either as a result of a call to stop_stream() or abort_stream(), or as a result of a return value other than paContinue from the stream callback. In the latter case, the stream is considered inactive after the last buffer has finished playing.</p>
+<p>Return Ok(true) when the stream is active (ie playing or recording audio), Ok(false) when not playing or, a Err(PaError) if PortAudio is not initialized or an error is encountered.</p>
+</div>
+<div id="method-get_stream_time" class="section level3">
+<h3>Method <code>get_stream_time</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_stream_time(&amp;<span class="kw">self</span>) -&gt; PaTime</code></pre>
+<p>Returns the current time in seconds for a stream according to the same clock used to generate callback PaStreamCallbackTimeInfo timestamps. The time values are monotonically increasing and have unspecified origin.</p>
+<p>get_stream_time returns valid time values for the entire life of the stream, from when the stream is opened until it is closed. Starting and stopping the stream does not affect the passage of time returned by Pa_GetStreamTime.</p>
+<p>Return the stream's current time in seconds, or 0 if an error occurred.</p>
+</div>
+<div id="method-get_stream_cpu_load" class="section level3">
+<h3>Method <code>get_stream_cpu_load</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_stream_cpu_load(&amp;<span class="kw">self</span>) -&gt; <span class="kw">f64</span></code></pre>
+<p>Retrieve CPU usage information for the specified stream.</p>
+<p>The &quot;CPU Load&quot; is a fraction of total CPU time consumed by a callback stream's audio processing routines including, but not limited to the client supplied stream callback. This function does not work with blocking read/write streams.</p>
+</div>
+<div id="method-get_stream_read_available" class="section level3">
+<h3>Method <code>get_stream_read_available</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_stream_read_available(&amp;<span class="kw">self</span>) -&gt; <span class="kw">i64</span></code></pre>
+<p>Retrieve the number of frames that can be read from the stream without waiting.</p>
+<p>Returns a non-negative value representing the maximum number of frames that can be read from the stream without blocking or busy waiting or, a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.</p>
+</div>
+<div id="method-get_stream_write_available" class="section level3">
+<h3>Method <code>get_stream_write_available</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_stream_write_available(&amp;<span class="kw">self</span>) -&gt; <span class="kw">i64</span></code></pre>
+<p>Retrieve the number of frames that can be written to the stream without waiting.</p>
+<p>Return a non-negative value representing the maximum number of frames that can be written to the stream without blocking or busy waiting or, a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.</p>
+</div>
+<div id="method-read" class="section level3">
+<h3>Method <code>read</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> read(&amp;<span class="kw">self</span>, frames_per_buffer: <span class="kw">u32</span>) -&gt; <span class="kw">Result</span>&lt;~[S], PaError&gt;</code></pre>
+</div>
+<div id="method-write" class="section level3">
+<h3>Method <code>write</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> write(&amp;<span class="kw">self</span>, output_buffer: ~[S], frames_per_buffer: <span class="kw">u32</span>) -&gt; PaError</code></pre>
+<p>Write samples to an output stream. This function doesn't return until the entire buffer has been consumed - this may involve waiting for the operating system to consume the data.</p>
+<div id="arguments-2" class="section level4">
+<h4>Arguments</h4>
+<ul>
+<li>output_buffer - The buffer contains samples in the format specified by S.</li>
+<li>frames_per_buffer - The number of frames in the buffer.</li>
+</ul>
+<p>Return PaNoError on success, or a PaError code if fail.</p>
+</div>
+</div>
+<div id="method-get_stream_info" class="section level3">
+<h3>Method <code>get_stream_info</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_stream_info(&amp;<span class="kw">self</span>) -&gt; PaStreamInfo</code></pre>
+<p>Retrieve a PaStreamInfo structure containing information about the specified stream.</p>
+</div>
+<div id="method-get_c_pa_stream" class="section level3">
+<h3>Method <code>get_c_pa_stream</code></h3>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_c_pa_stream(&amp;<span class="kw">self</span>) -&gt; *C_PaStream</code></pre>
+</div>
+</div>
+<div id="function-get_default_host_api" class="section level2">
+<h2>Function <code>get_default_host_api</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_default_host_api() -&gt; PaHostApiIndex</code></pre>
+<p>Retrieve the index of the default host API. The default host API will be the lowest common denominator host API on the current platform and is unlikely to provide the best performance.</p>
+<p>Return a non-negative value ranging from 0 to (get_host_api_count()-1) indicating the default host API index or, a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.</p>
+</div>
+<div id="function-get_default_input_device" class="section level2">
+<h2>Function <code>get_default_input_device</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_default_input_device() -&gt; PaDeviceIndex</code></pre>
+<p>Retrieve the index of the default input device. The result can be used in the inputDevice parameter to open_stream().</p>
+<p>Return the default input device index for the default host API, or PaNoDevice if no default input device is available or an error was encountered</p>
+</div>
+<div id="function-get_default_output_device" class="section level2">
+<h2>Function <code>get_default_output_device</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_default_output_device() -&gt; PaDeviceIndex</code></pre>
+<p>Retrieve the index of the default output device. The result can be used in the outputDevice parameter to open_stream().</p>
+<p>Return the default output device index for the default host API, or PaNoDevice if no default output device is available or an error was encountered.</p>
+</div>
+<div id="function-get_device_count" class="section level2">
+<h2>Function <code>get_device_count</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_device_count() -&gt; PaDeviceIndex</code></pre>
+<p>Retrieve the number of available devices. The number of available devices may be zero.</p>
+<p>Return A non-negative value indicating the number of available devices or, a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.</p>
+</div>
+<div id="function-get_device_info" class="section level2">
+<h2>Function <code>get_device_info</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_device_info(device: PaDeviceIndex) -&gt; <span class="kw">Option</span>&lt;PaDeviceInfo&gt;</code></pre>
+<p>Retrieve a pointer to a PaDeviceInfo structure containing information about the specified device.</p>
+<div id="arguments-3" class="section level4">
+<h4>Arguments</h4>
+<ul>
+<li>device - A valid device index in the range 0 to (Pa_GetDeviceCount()-1)</li>
+</ul>
+<p>Return Some(PaDeviceInfo) or, If the device parameter is out of range the function returns None.</p>
+</div>
+</div>
+<div id="function-get_error_text" class="section level2">
+<h2>Function <code>get_error_text</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_error_text(error_code: PaError) -&gt; ~<span class="kw">str</span></code></pre>
+<p>Translate the supplied PortAudio error code into a human readable message.</p>
+<div id="arguments-4" class="section level4">
+<h4>Arguments</h4>
+<ul>
+<li>error_code - The error code</li>
+</ul>
+<p>Return the error as a string.</p>
+</div>
+</div>
+<div id="function-get_host_api_count" class="section level2">
+<h2>Function <code>get_host_api_count</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_host_api_count() -&gt; PaHostApiIndex</code></pre>
+<p>Retrieve the number of available host APIs. Even if a host API is available it may have no devices available.</p>
+<p>Return a non-negative value indicating the number of available host APIs or, a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.</p>
+</div>
+<div id="function-get_host_api_info" class="section level2">
+<h2>Function <code>get_host_api_info</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_host_api_info(host_api: PaHostApiIndex) -&gt; <span class="kw">Option</span>&lt;PaHostApiInfo&gt;</code></pre>
+<p>Retrieve a pointer to a structure containing information about a specific host Api.</p>
+<div id="arguments-5" class="section level4">
+<h4>Arguments</h4>
+<ul>
+<li>host_api - A valid host API index ranging from 0 to (Pa_GetHostApiCount()-1)</li>
+</ul>
+<p>Return Some(PaHostApiInfo) describing a specific host API. If the hostApi parameter is out of range or an error is encountered, the function returns None.</p>
+</div>
+</div>
+<div id="function-get_last_host_error_info" class="section level2">
+<h2>Function <code>get_last_host_error_info</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_last_host_error_info() -&gt; PaHostErrorInfo</code></pre>
+<p>Return information about the last host error encountered. The error information returned by get_last_host_error_info() will never be modified asynchronously by errors occurring in other PortAudio owned threads (such as the thread that manages the stream callback.)</p>
+<p>This function is provided as a last resort, primarily to enhance debugging by providing clients with access to all available error information.</p>
+<p>Return a pointer to an immuspacespacespacele structure constraining information about the host error. The values in this structure will only be valid if a PortAudio function has previously returned the PaUnanticipatedHostError error code.</p>
+</div>
+<div id="function-get_sample_size" class="section level2">
+<h2>Function <code>get_sample_size</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_sample_size(format: PaSampleFormat) -&gt; PaError</code></pre>
+<p>Retrieve the size of a given sample format in bytes.</p>
+<p>Return the size in bytes of a single sample in the specified format, or PaSampleFormatNotSupported if the format is not supported.</p>
+</div>
+<div id="function-get_version" class="section level2">
+<h2>Function <code>get_version</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_version() -&gt; <span class="kw">i32</span></code></pre>
+<p>Retrieve the release number of the currently running PortAudio build.</p>
+</div>
+<div id="function-get_version_text" class="section level2">
+<h2>Function <code>get_version_text</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> get_version_text() -&gt; ~<span class="kw">str</span></code></pre>
+<p>Retrieve a textual description of the current PortAudio build.</p>
+</div>
+<div id="function-host_api_devide_index_to_device_index" class="section level2">
+<h2>Function <code>host_api_devide_index_to_device_index</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> host_api_devide_index_to_device_index(host_api: PaHostApiIndex,
+                                         host_api_device_index: <span class="kw">int</span>) -&gt;
+ PaDeviceIndex</code></pre>
+<p>Convert a host-API-specific device index to standard PortAudio device index. This function may be used in conjunction with the deviceCount field of PaHostApiInfo to enumerate all devices for the specified host API.</p>
+<div id="arguments-6" class="section level4">
+<h4>Arguments</h4>
+<ul>
+<li>host_api - A valid host API index ranging from 0 to (get_host_api_count()-1)</li>
+<li>host_api_device_index - A valid per-host device index in the range 0 to (get_host_api_info(host_api).device_count-1)</li>
+</ul>
+<p>Return a non-negative PaDeviceIndex ranging from 0 to (get_device_count()-1) or, a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.</p>
+</div>
+</div>
+<div id="function-host_api_type_id_to_host_api_index" class="section level2">
+<h2>Function <code>host_api_type_id_to_host_api_index</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> host_api_type_id_to_host_api_index(type_id: PaHostApiTypeId) -&gt;
+ PaHostApiIndex</code></pre>
+<p>Convert a static host API unique identifier, into a runtime host API index.</p>
+<div id="arguments-7" class="section level4">
+<h4>Arguments</h4>
+<ul>
+<li>typde_id - A unique host API identifier belonging to the PaHostApiTypeId enumeration.</li>
+</ul>
+<p>Return a valid PaHostApiIndex ranging from 0 to (get_host_api_count()-1) or, a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.</p>
+</div>
+</div>
+<div id="function-initialize" class="section level2">
+<h2>Function <code>initialize</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> initialize() -&gt; PaError</code></pre>
+<p>Library initialization function - call this before using PortAudio. This function initializes internal data structures and prepares underlying host APIs for use. With the exception of get_version(), get_version_text(), and get_error_text(), this function MUST be called before using any other PortAudio API functions.</p>
+<p>Note that if initialize() returns an error code, Pa_Terminate() should NOT be called.</p>
+<p>Return PaNoError if successful, otherwise an error code indicating the cause of failure.</p>
+</div>
+<div id="function-is_format_supported" class="section level2">
+<h2>Function <code>is_format_supported</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> is_format_supported(input_parameters: &amp;PaStreamParameters,
+                       output_parameters: &amp;PaStreamParameters,
+                       sample_rate: <span class="kw">f64</span>) -&gt; PaError</code></pre>
+<p>Determine whether it would be possible to open a stream with the specified parameters.</p>
+<div id="arguments-8" class="section level4">
+<h4>Arguments</h4>
+<ul>
+<li>input_parameters - A structure that describes the input parameters used to open a stream. The suggestedLatency field is ignored. See PaStreamParameters for a description of these parameters. inputParameters must be None for output-only streams.</li>
+<li>output_parameters - A structure that describes the output parameters used to open a stream. The suggestedLatency field is ignored. See PaStreamParameters for a description of these parameters. outputParameters must be None for input-only streams.</li>
+<li>sample_rate - The required sampleRate. For full-duplex streams it is the sample rate for both input and output.</li>
+</ul>
+<p>Return 0 if the format is supported, and an error code indicating why the format is not supported otherwise. The constant PaFormatIsSupported is provided to compare with the return value for success.</p>
+</div>
+</div>
+<div id="function-sleep" class="section level2">
+<h2>Function <code>sleep</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> sleep(m_sec: <span class="kw">int</span>)</code></pre>
+<p>Put the caller to sleep for at least 'msec' milliseconds. This function is provided only as a convenience for authors of portable code (such as the tests and examples in the PortAudio distribution.)</p>
+<p>The function may sleep longer than requested so don't rely on this for accurate musical timing.</p>
+</div>
+<div id="function-terminate" class="section level2">
+<h2>Function <code>terminate</code></h2>
+<pre class="sourceCode rust"><code class="sourceCode rust"><span class="kw">fn</span> terminate() -&gt; PaError</code></pre>
+<p>Library termination function - call this when finished using PortAudio. This function deallocates all resources allocated by PortAudio since it was initialized by a call to initialize(). In cases where initialise() has been called multiple times, each call must be matched with a corresponding call to terminate(). The final matching call to terminate() will automatically close any PortAudio streams that are still open.</p>
+<p>terminate() MUST be called before exiting a program which uses PortAudio. Failure to do so may result in serious resource leaks, such as audio devices not being available until the next reboot.</p>
+<p>Return PaNoError if successful, otherwise an error code indicating the cause of failure.</p>
+</div>
+</body>
+</html>
