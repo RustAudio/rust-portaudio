@@ -34,8 +34,7 @@ pub trait MacCore {
     fn get_stream_output_device(&self) -> PaDeviceIndex; 
 }
 
-// #[fixed_stack_segment] #[inline(never)]
-// fn get_buffer_size_range(device : PaDeviceIndex) -> Result<(u32, u32), PaError> {
+// // fn get_buffer_size_range(device : PaDeviceIndex) -> Result<(u32, u32), PaError> {
 //     let mut min_buffer_size_frames : u32 = 0;
 //     let mut max_buffer_size_frames : u32 = 0;
 //     let err = unsafe { ffi::PaMacCore_GetBufferSizeRange(device, &min_buffer_size_frames, &max_buffer_size_frames) };
@@ -47,14 +46,12 @@ pub trait MacCore {
 
 
 impl<S> MacCore for PaStream<S> {
-    #[fixed_stack_segment] #[inline(never)]
-    fn get_stream_input_device(&self) -> PaDeviceIndex {
+        fn get_stream_input_device(&self) -> PaDeviceIndex {
         unsafe {
             ffi::PaMacCore_GetStreamInputDevice(self.get_c_pa_stream())
         }
     }
-    #[fixed_stack_segment] #[inline(never)]
-    fn get_stream_output_device(&self) -> PaDeviceIndex {
+        fn get_stream_output_device(&self) -> PaDeviceIndex {
         unsafe {
             ffi::PaMacCore_GetStreamOutputDevice(self.get_c_pa_stream())
         }

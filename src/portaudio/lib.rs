@@ -1,5 +1,6 @@
 #[link(name = "portaudio",
        vers = "0.0.1",
+       package_id = "portaudio",
        author = "letang.jeremy@gmail.com",
        uuid = "57224177-873F-43C2-8F44-A41D501C1A63",
        url = "http://https://github.com/JeremyLetang/rust-portaudio")];
@@ -8,6 +9,7 @@
 // #[license = "Zlib/png"];
 #[crate_type = "lib"];
 
+#[feature(globs, managed_boxes)];
 
 extern mod extra;
 

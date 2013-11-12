@@ -26,8 +26,7 @@ impl<I, O> Asio for PaStream<I, O> {
     *
     * Returns PaIncompatibleStreamHostApi if stream is not a PaASIO stream.
     */
-    #[fixed_stack_segment] #[inline(never)]
-    fn set_stream_sample_rate(&self, sample_rate : f64) -> PaError {
+        fn set_stream_sample_rate(&self, sample_rate : f64) -> PaError {
         unsafe {
             ffi::PaAsio_SetStreamSampleRate(self.get_c_pa_stream(), sample_rate as c_double)
         }
@@ -40,7 +39,6 @@ impl<I, O> Asio for PaStream<I, O> {
 * # Arguments
 * * device - The global index of the device about which the query is being made.
 */
-#[fixed_stack_segment] #[inline(never)]
 pub fn get_available_buffer_sizes(device : PaDeviceIndex) -> Result<(i32, i32, i32, i32), PaError> {
     let min_buffer_size_frames : i32 = 0;
     let max_buffer_size_frames : i32 = 0;
@@ -62,7 +60,6 @@ pub fn get_available_buffer_sizes(device : PaDeviceIndex) -> Result<(i32, i32, i
 *
 * The string will be no longer than 32 characters including the null terminator.
 */
-#[fixed_stack_segment] #[inline(never)]
 pub fn get_input_channel_name(device : PaDeviceIndex, channel_index : i32) -> Result<~str, PaError> {
     let c_string : *c_char = ptr::null();
     let err = unsafe {
@@ -79,7 +76,6 @@ pub fn get_input_channel_name(device : PaDeviceIndex, channel_index : i32) -> Re
 *
 * The string will be no longer than 32 characters including the null terminator.
 */
-#[fixed_stack_segment] #[inline(never)]
 pub fn get_output_channel_name(device : PaDeviceIndex, channel_index : i32) -> Result<~str, PaError> {
     let c_string : *c_char = ptr::null();
     let err = unsafe {
