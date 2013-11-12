@@ -3,7 +3,7 @@
 */
 
 use std::libc::{c_void, c_char, c_double};
-use std::{str, ptr};
+use std::{str, ptr, cast};
 
 #[doc(hidden)]
 pub type C_PaStream = c_void;
@@ -22,31 +22,86 @@ pub type PaHostApiIndex = i32;
 /// The type used to represent monotonic time in seconds.
 pub type PaTime = f64;
 
+
+#[doc(hidden)]
+mod ffi {
+    
+    // Sample format
+    pub type PaSampleFormat = u64;
+    pub static PaFloat32 :          PaSampleFormat = 0x00000001;
+    pub static PaInt32 :            PaSampleFormat = 0x00000002;
+    // pub static PaInt24 :          PaSampleFormat = 0x00000004;
+    pub static PaInt16 :            PaSampleFormat = 0x00000008;
+    pub static PaInt8 :             PaSampleFormat = 0x00000010;
+    pub static PaUInt8 :            PaSampleFormat = 0x00000020; 
+    pub static PaCustomFormat :     PaSampleFormat = 0x00010000;
+    pub static PaNonInterleaved :   PaSampleFormat = 0x80000000;
+
+    // Stream flags
+    pub type PaStreamFlags = u64;
+    pub static PaNoFlag :                                   PaStreamFlags = 0;
+    pub static PaClipOff :                                  PaStreamFlags = 0x00000001;
+    pub static PaDitherOff :                                PaStreamFlags = 0x00000002;
+    pub static PaNeverDropInput :                           PaStreamFlags = 0x00000004;
+    pub static PaPrimeOutputBuffersUsingStreamCallback :    PaStreamFlags = 0x00000008;
+    pub static PaPlatformSpecificFlags :                    PaStreamFlags = 0xFFFF0000;
+
+    /// Unchanging unique identifiers for each supported host API
+    pub type PaHostApiTypeId = i32;
+    pub static PaInDevelopment : PaHostApiTypeId = 0;
+    pub static PaDirectSound : PaHostApiTypeId = 1;
+    pub static PaMME : PaHostApiTypeId = 2;
+    pub static PaASIO : PaHostApiTypeId = 3; 
+    pub static PaSoundManager : PaHostApiTypeId = 4;
+    pub static PaCoreAudio : PaHostApiTypeId = 5;
+    pub static PaOSS : PaHostApiTypeId = 7;
+    pub static PaALSA : PaHostApiTypeId = 8; 
+    pub static PaAL : PaHostApiTypeId = 9;
+    pub static PaBeOS : PaHostApiTypeId = 10;
+    pub static PaWDMKS : PaHostApiTypeId = 11;
+    pub static PaJACK : PaHostApiTypeId = 12;
+    pub static PaWASAPI : PaHostApiTypeId = 13;
+    pub static PaAudioScienceHPI : PaHostApiTypeId = 14;
+}
+
 /// A type used to specify one or more sample formats.
-pub type PaSampleFormat = u64;
-pub static PaFloat32 : PaSampleFormat = 0x00000001;
-pub static PaInt32 : PaSampleFormat = 0x00000002;
-//pub static PaInt24 : PaSampleFormat = 0x00000004;
-pub static PaInt16 : PaSampleFormat = 0x00000008;
-pub static PaInt8 : PaSampleFormat = 0x00000010;
-pub static PaUInt8 : PaSampleFormat = 0x00000020; 
-pub static PaCustomFormat : PaSampleFormat = 0x00010000;
-pub static PaNonInterleaved : PaSampleFormat = 0x80000000;
+#[repr(u64)]
+#[deriving(Clone, Eq, Ord, ToStr)]
+pub enum PaSampleFormat {
+    /// 32 bits float sample format
+    PaFloat32 =         ffi::PaFloat32,
+    /// 32 bits int sample format
+    PaInt32 =           ffi::PaInt32,
+    /// 16 bits int sample format
+    PaInt16 =           ffi::PaInt16,
+    /// 8 bits int sample format
+    PaInt8 =            ffi::PaInt8,
+    /// 8 bits unsigned int sample format
+    PaUInt8 =           ffi::PaUInt8,
+    /// Custom sample format
+    PaCustomFormat =    ffi::PaCustomFormat,
+    /// Non interleaved sample format
+    PaNonInterleaved =  ffi::PaNonInterleaved
+}
 
-// pub type PaStream = c_void; 
+/// The flags to pass to a stream
+#[repr(u64)]
+#[deriving(Clone, Eq, Ord, ToStr)]
+pub enum PaStreamFlags {
+    /// No flags
+    PaNoFlag =                                  ffi::PaNoFlag,
+    /// Disable default clipping of out of range samples.
+    PaClipOff =                                 ffi::PaClipOff,
+    /// Disable default dithering.
+    PaDitherOff =                               ffi::PaDitherOff,    
+    /// Flag requests that where possible a full duplex stream will not discard overflowed input samples without calling the stream callback.
+    PaNeverDropInput =                          ffi::PaNeverDropInput,
+    /// Call the stream callback to fill initial output buffers, rather than the default behavior of priming the buffers with zeros (silence)
+    PaPrimeOutputBuffersUsingStreamCallback =   ffi::PaPrimeOutputBuffersUsingStreamCallback,
+    /// A mask specifying the platform specific bits.
+    PaPlatformSpecificFlags =                   ffi::PaPlatformSpecificFlags
+}
 
-pub type PaStreamFlags = u64;
-pub static PaNoFlag : PaStreamFlags = 0;
-/// Disable default clipping of out of range samples.
-pub static PaClipOff : PaStreamFlags = 0x00000001;
-/// Disable default dithering.
-pub static PaDitherOff : PaStreamFlags = 0x00000002;
-/// Flag requests that where possible a full duplex stream will not discard overflowed input samples without calling the stream callback.
-pub static PaNeverDropInput : PaStreamFlags = 0x00000004;
-/// Call the stream callback to fill initial output buffers, rather than the default behavior of priming the buffers with zeros (silence)
-pub static PaPrimeOutputBuffersUsingStreamCallback : PaStreamFlags = 0x00000008;
-/// A mask specifying the platform specific bits.
-pub static PaPlatformSpecificFlags : PaStreamFlags = 0xFFFF0000;
 
 #[doc(hidden)]
 pub type PaStreamCallbackFlags = u64;
@@ -69,6 +124,7 @@ pub enum PaStreamCallbackResult {
 
 /// Error codes returned by PortAudio functions.
 #[repr(C)]
+#[deriving(Clone, Eq, Ord, ToStr)]
 pub enum PaError { 
     /// No Error
     PaNoError = 0,
@@ -133,21 +189,38 @@ pub enum PaError {
 }
 
 /// Unchanging unique identifiers for each supported host API
-pub type PaHostApiTypeId = i32;
-pub static PaInDevelopment : PaHostApiTypeId = 0;
-pub static PaDirectSound : PaHostApiTypeId = 1;
-pub static PaMME : PaHostApiTypeId = 2;
-pub static PaASIO : PaHostApiTypeId = 3; 
-pub static PaSoundManager : PaHostApiTypeId = 4;
-pub static PaCoreAudio : PaHostApiTypeId = 5;
-pub static PaOSS : PaHostApiTypeId = 7;
-pub static PaALSA : PaHostApiTypeId = 8; 
-pub static PaAL : PaHostApiTypeId = 9;
-pub static PaBeOS : PaHostApiTypeId = 10;
-pub static PaWDMKS : PaHostApiTypeId = 11;
-pub static PaJACK : PaHostApiTypeId = 12;
-pub static PaWASAPI : PaHostApiTypeId = 13;
-pub static PaAudioScienceHPI : PaHostApiTypeId = 14; 
+#[repr(i32)]
+#[deriving(Clone, Eq, Ord, ToStr)]
+pub enum PaHostApiTypeId {
+    /// In development host
+    PaInDevelopment =   ffi::PaInDevelopment,
+    /// Direct sound
+    PaDirectSound =     ffi::PaDirectSound,
+    /// MMe API
+    PaMME =             ffi::PaMME,
+    /// ASIO API
+    PaASIO =            ffi::PaASIO,
+    /// Sound manager API
+    PaSoundManager =    ffi::PaSoundManager,
+    /// Core Audio API
+    PaCoreAudio =       ffi::PaCoreAudio,
+    /// OSS API
+    PaOSS =             ffi::PaOSS,
+    /// Alsa API
+    PaALSA =            ffi::PaALSA,
+    /// AL API
+    PaAL =              ffi::PaAL,
+    /// BeOS API
+    PaBeOS =            ffi::PaBeOS,
+    /// WDMKS
+    PaWDMKS =           ffi::PaWDMKS,
+    /// Jack API
+    PaJACK =            ffi::PaJACK,
+    /// WASAPI
+    PaWASAPI =          ffi::PaWASAPI,
+    /// Audio Science HPI
+    PaAudioScienceHPI = ffi::PaAudioScienceHPI
+}
 
 /// A structure containing information about a particular host API.
 pub struct PaHostApiInfo{
@@ -181,7 +254,7 @@ impl PaHostApiInfo {
         unsafe {
             PaHostApiInfo {
                 struct_version : (*c_info).struct_version as int,
-                host_type : ((*c_info).host_type),
+                host_type : cast::transmute(((*c_info).host_type)),
                 name : str::raw::from_c_str((*c_info).name),
                 device_count : (*c_info).device_count as int,
                 default_input_device : (*c_info).default_input_device,
@@ -203,6 +276,7 @@ impl PaHostApiInfo {
 }
 
 /// Structure used to return information about a host error condition.
+#[deriving(Clone, Eq, Ord, ToStr)]
 pub struct PaHostErrorInfo {
     /// The code of the error
     error_code : u32,
@@ -234,6 +308,7 @@ impl PaHostErrorInfo {
 }
 
 /// A structure providing information and capabilities of PortAudio devices. Devices may support input, output or both input and output.
+#[deriving(Clone, Eq, Ord, ToStr)]
 pub struct PaDeviceInfo {
     /// The version of the struct
     struct_version : int,
@@ -307,6 +382,7 @@ impl PaDeviceInfo {
 }
 
 /// Parameters for one direction (input or output) of a stream.
+#[deriving(Clone, Eq, Ord, ToStr)]
 pub struct PaStreamParameters {
     /// Index of the device
     device : PaDeviceIndex,
@@ -360,6 +436,7 @@ pub struct PaStreamCallbackTimeInfo {
 }
 
 /// A structure containing unchanging information about an open stream.
+#[deriving(Clone, Eq, Ord, ToStr)]
 pub struct PaStreamInfo {
     /// Struct version
     struct_version : i32,
