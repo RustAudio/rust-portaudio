@@ -319,7 +319,7 @@ impl<S> PaStream<S> {
     *
     * Upon success returns PaNoError and the stream is inactive (stopped). If fails, a non-zero error code is returned.
     */
-        pub fn open(&mut self,
+    pub fn open(&mut self,
                 input_parameters : Option<&PaStreamParameters>,
                 output_parameters : Option<&PaStreamParameters>, 
                 sample_rate : f64, 
@@ -370,7 +370,7 @@ impl<S> PaStream<S> {
     *
     * Upon success returns PaNoError and the stream is inactive (stopped). If fails, a non-zero error code is returned.
     */
-        pub fn open_default(&mut self,
+    pub fn open_default(&mut self,
                         sample_rate : f64, 
                         frames_per_buffer : u32,
                         num_input_channels : i32,
@@ -389,28 +389,28 @@ impl<S> PaStream<S> {
     }
 
     /// Closes an audio stream. If the audio stream is active it discards any pending buffers as if abort_tream() had been called.
-        pub fn close(&mut self) -> PaError {
+    pub fn close(&mut self) -> PaError {
         unsafe {
             ffi::Pa_CloseStream(self.c_pa_stream)
         }
     }
 
     /// Commences audio processing.
-        pub fn start(&mut self) -> PaError {
+    pub fn start(&mut self) -> PaError {
         unsafe {
             ffi::Pa_StartStream(self.c_pa_stream)
         }
     }
 
     /// Terminates audio processing. It waits until all pending audio buffers have been played before it returns.
-        pub fn stop(&mut self) -> PaError {
+    pub fn stop(&mut self) -> PaError {
         unsafe {
             ffi::Pa_StopStream(self.c_pa_stream)
         }
     }
 
     /// Terminates audio processing immediately without waiting for pending buffers to complete.
-        pub fn abort(&mut self) -> PaError {
+    pub fn abort(&mut self) -> PaError {
         unsafe {
             ffi::Pa_AbortStream(self.c_pa_stream)
         }
@@ -423,7 +423,7 @@ impl<S> PaStream<S> {
     *
     * Return one (1) when the stream is stopped, zero (0) when the stream is running or, a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.
     */
-        pub fn is_stopped(&self) -> PaError {
+    pub fn is_stopped(&self) -> PaError {
         unsafe {
             ffi::Pa_IsStreamStopped(self.c_pa_stream)
         }
@@ -438,7 +438,7 @@ impl<S> PaStream<S> {
     * Return Ok(true) when the stream is active (ie playing or recording audio), Ok(false) when not playing or, 
     * a Err(PaError) if PortAudio is not initialized or an error is encountered.
     */
-        pub fn is_active(&self) -> Result<bool, PaError> {
+    pub fn is_active(&self) -> Result<bool, PaError> {
         let err = unsafe { ffi::Pa_IsStreamActive(self.c_pa_stream) };
         match err {
             0 => Ok(false),
@@ -458,7 +458,7 @@ impl<S> PaStream<S> {
     *
     * Return the stream's current time in seconds, or 0 if an error occurred.
     */
-        pub fn get_stream_time(&self) -> PaTime {
+    pub fn get_stream_time(&self) -> PaTime {
         unsafe {
             ffi::Pa_GetStreamTime(self.c_pa_stream)
         }
@@ -471,7 +471,7 @@ impl<S> PaStream<S> {
     * processing routines including, but not limited to the client supplied stream callback. 
     * This function does not work with blocking read/write streams.
     */
-        pub fn get_stream_cpu_load(&self) -> f64 {
+    pub fn get_stream_cpu_load(&self) -> f64 {
         unsafe {
             ffi::Pa_GetStreamCpuLoad(self.c_pa_stream)
         }
@@ -485,7 +485,7 @@ impl<S> PaStream<S> {
     * from the stream without blocking or busy waiting or, a PaErrorCode (which are always negative) 
     * if PortAudio is not initialized or an error is encountered.
     */
-        pub fn get_stream_read_available(&self) -> i64 {
+    pub fn get_stream_read_available(&self) -> i64 {
         unsafe {
             ffi::Pa_GetStreamReadAvailable(self.c_pa_stream)
         }
@@ -497,7 +497,7 @@ impl<S> PaStream<S> {
     * Return a non-negative value representing the maximum number of frames that can be written to the stream without blocking or busy waiting or, 
     * a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.
     */
-        pub fn get_stream_write_available(&self) -> i64 {
+    pub fn get_stream_write_available(&self) -> i64 {
         unsafe {
             ffi::Pa_GetStreamWriteAvailable(self.c_pa_stream)
         }
@@ -506,7 +506,7 @@ impl<S> PaStream<S> {
     #[doc(hidden)]
     // Temporary OSX Fixe : Return always PaInputOverflowed
     #[cfg(target_os="macos")]
-        pub fn read(&self, frames_per_buffer : u32) -> Result<~[S], PaError> {
+    pub fn read(&self, frames_per_buffer : u32) -> Result<~[S], PaError> {
         unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
         };
@@ -524,13 +524,13 @@ impl<S> PaStream<S> {
     */
     #[cfg(target_os="win32")]
     #[cfg(target_os="linux")]
-        pub fn read(&self, frames_per_buffer : u32) -> Result<~[S], PaError> {
+    pub fn read(&self, frames_per_buffer : u32) -> Result<~[S], PaError> {
         let err = unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
         };
         match err {
-         PaNoError           => Ok(unsafe { vec::raw::from_buf_raw::<S>(self.unsafe_buffer as *S, (frames_per_buffer * self.num_input_channels as u32) as uint) }),
-         _                   => Err(err)
+         PaNoError  => Ok(unsafe { vec::raw::from_buf_raw::<S>(self.unsafe_buffer as *S, (frames_per_buffer * self.num_input_channels as u32) as uint) }),
+         _          => Err(err)
         }
     }
 
@@ -544,14 +544,14 @@ impl<S> PaStream<S> {
     *
     * Return PaNoError on success, or a PaError code if fail.
     */
-        pub fn write(&self, output_buffer : ~[S], frames_per_buffer : u32) -> PaError {
+    pub fn write(&self, output_buffer : ~[S], frames_per_buffer : u32) -> PaError {
         unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream, vec::raw::to_ptr::<S>(output_buffer) as *c_void, frames_per_buffer)
         }
     }
 
     /// Retrieve a PaStreamInfo structure containing information about the specified stream.
-        pub fn get_stream_info(&self) -> PaStreamInfo {
+    pub fn get_stream_info(&self) -> PaStreamInfo {
         unsafe {
             *ffi::Pa_GetStreamInfo(self.c_pa_stream)
         }
