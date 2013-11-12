@@ -68,36 +68,67 @@ pub enum PaStreamCallbackResult {
 }
 
 /// Error codes returned by PortAudio functions.
+#[repr(C)]
 pub enum PaError { 
+    /// No Error
     PaNoError = 0,
+    /// Portaudio not initialized
     PaNotInitialized = -10000,
+    /// Unanticipated error from the host
     PaUnanticipatedHostError,
+    /// Invalid channel count
     PaInvalidChannelCount, 
+    /// Invalid sample rate
     PaInvalidSampleRate,
+    /// Invalid Device
     PaInvalidDevice,
+    /// Invalid Flag
     PaInvalidFlag,
-    PaSampleFormatNotSupported, 
+    /// The Sample format is not supported
+    PaSampleFormatNotSupported,
+    /// Input device not compatible with output device
     PaBadIODeviceCombination,
+    /// Memory insufficient
     PaInsufficientMemory,
+    /// The buffer is too big
     PaBufferTooBig,
-    PaBufferTooSmall, 
+    /// The buffer is too small
+    PaBufferTooSmall,
+    /// Invalid callback
     PaNullCallback,
+    /// Invalid Stream
     PaBadStreamPtr,
+    /// Time out
     PaTimedOut,
-    PaInternalError, 
+    /// Portaudio internal error
+    PaInternalError,
+    /// Device unavailable
     PaDeviceUnavailable,
+    /// Stream info not compatible with the host
     PaIncompatibleHostApiSpecificStreamInfo,
+    /// The stream is stopped
     PaStreamIsStopped,
-    PaStreamIsNotStopped, 
+    /// The stream is not stopped
+    PaStreamIsNotStopped,
+    /// The input stream has overflowed
     PaInputOverflowed,
+    /// The output has overflowed
     PaOutputUnderflowed,
+    /// The host API is not found by Portaudio
     PaHostApiNotFound,
-    PaInvalidHostApi, 
+    /// The host API is invalid
+    PaInvalidHostApi,
+    /// Portaudio cannot read from the callback stream
     PaCanNotReadFromACallbackStream,
+    /// Portaudio cannot wrtie to the callback stream
     PaCanNotWriteToACallbackStream,
+    /// Portaudio cannot read from an output only stream
     PaCanNotReadFromAnOutputOnlyStream,
-    PaCanNotWriteToAnInputOnlyStream, 
+    /// Portaudio cannot write to an input only stream
+    PaCanNotWriteToAnInputOnlyStream,
+    /// The stream is not compatible with the host API
     PaIncompatibleStreamHostApi,
+    /// Invalid buffer
     PaBadBufferPtr 
 }
 
@@ -120,11 +151,17 @@ pub static PaAudioScienceHPI : PaHostApiTypeId = 14;
 
 /// A structure containing information about a particular host API.
 pub struct PaHostApiInfo{
+    /// The version of the struct
     struct_version : int,
+    /// The type of the current host
     host_type : PaHostApiTypeId,
+    /// The name of the host
     name : ~str,
+    /// The total count of device in the host
     device_count : int,
+    /// The index to the default input device
     default_input_device : PaDeviceIndex,
+    /// The index to the default output device
     default_output_device : PaDeviceIndex
 }
 
@@ -167,7 +204,9 @@ impl PaHostApiInfo {
 
 /// Structure used to return information about a host error condition.
 pub struct PaHostErrorInfo {
+    /// The code of the error
     error_code : u32,
+    /// The string which explain the error
     error_text : ~str
 }
 
@@ -196,15 +235,25 @@ impl PaHostErrorInfo {
 
 /// A structure providing information and capabilities of PortAudio devices. Devices may support input, output or both input and output.
 pub struct PaDeviceInfo {
+    /// The version of the struct
     struct_version : int,
+    /// The name of the devie
     name : ~str,
+    /// Host API identifier
     host_api : PaHostApiIndex,
+    /// Maximal number of input channels for this device
     max_input_channels : int,
-    max_output_channels : int, 
+    /// maximal number of output channel for this device
+    max_output_channels : int,
+    /// The default low latency for input with this device
     default_low_input_latency : PaTime,
+    /// The default low latency for output with this device
     default_low_output_latency : PaTime,
+    /// The default high latency for input with this device
     default_high_input_latency : PaTime,
+    /// The default high latency for output with this device
     default_high_output_latency : PaTime,
+    /// The default sample rate for this device
     default_sample_rate : f64
 }
 
@@ -259,9 +308,13 @@ impl PaDeviceInfo {
 
 /// Parameters for one direction (input or output) of a stream.
 pub struct PaStreamParameters {
+    /// Index of the device
     device : PaDeviceIndex,
+    /// The number of channels for this device
     channel_count : i32,
+    /// Sample format of the device
     sample_format : PaSampleFormat,
+    /// The suggested latency for this device
     suggested_latency : PaTime, 
 }
 
@@ -308,9 +361,13 @@ pub struct PaStreamCallbackTimeInfo {
 
 /// A structure containing unchanging information about an open stream.
 pub struct PaStreamInfo {
+    /// Struct version
     struct_version : i32,
+    /// The input latency for this open stream
     input_latency : PaTime,
+    /// The output latency for this open stream
     output_latency : PaTime,
+    /// The sample rate for this open stream
     sample_rate : f64
 }
 

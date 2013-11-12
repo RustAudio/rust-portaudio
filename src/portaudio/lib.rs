@@ -10,6 +10,7 @@
 #[crate_type = "lib"];
 
 #[feature(globs, managed_boxes)];
+#[warn(missing_doc)];
 
 extern mod extra;
 
