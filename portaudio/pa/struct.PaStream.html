@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>portaudio::pa::PaStream - Rust</title>
+
+    <link href='http://fonts.googleapis.com/css?family=Oswald:700|Inconsolata:400'
+          rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="../../portaudio/main.css">
+
+    
+</head>
+<body>
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    <section class="sidebar">
+        
+
+        <p class='location'><a href='../index.html'>portaudio</a>&#8203;::<a href='index.html'>pa</a></p><div class='block struct'><h2>Structs</h2><a class='struct current' href='struct.PaStream.html'>PaStream</a><br/></div><div class='block fn'><h2>Functions</h2><a class='fn ' href='fn.get_default_host_api.html'>get_default_host_api</a><br/><a class='fn ' href='fn.get_default_input_device.html'>get_default_input_device</a><br/><a class='fn ' href='fn.get_default_output_device.html'>get_default_output_device</a><br/><a class='fn ' href='fn.get_device_count.html'>get_device_count</a><br/><a class='fn ' href='fn.get_device_info.html'>get_device_info</a><br/><a class='fn ' href='fn.get_error_text.html'>get_error_text</a><br/><a class='fn ' href='fn.get_host_api_count.html'>get_host_api_count</a><br/><a class='fn ' href='fn.get_host_api_info.html'>get_host_api_info</a><br/><a class='fn ' href='fn.get_last_host_error_info.html'>get_last_host_error_info</a><br/><a class='fn ' href='fn.get_sample_size.html'>get_sample_size</a><br/><a class='fn ' href='fn.get_version.html'>get_version</a><br/><a class='fn ' href='fn.get_version_text.html'>get_version_text</a><br/><a class='fn ' href='fn.host_api_devide_index_to_device_index.html'>host_api_devide_index_to_device_index</a><br/><a class='fn ' href='fn.host_api_type_id_to_host_api_index.html'>host_api_type_id_to_host_api_index</a><br/><a class='fn ' href='fn.initialize.html'>initialize</a><br/><a class='fn ' href='fn.is_format_supported.html'>is_format_supported</a><br/><a class='fn ' href='fn.sleep.html'>sleep</a><br/><a class='fn ' href='fn.terminate.html'>terminate</a><br/></div>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <input class="search-input" name="search"
+                   autocomplete="off" />
+            <button class="do-search">Search</button>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct"><a class='source'
+                       href='../../src/portaudio/src/portaudio/pa.rs.html#281-289'>[src]</a><h1 class='fqn'>Struct <a href='../index.html'>portaudio</a>::<a href='index.html'>pa</a>::<a class='struct' href=''>PaStream</a></h1><pre class='struct'>pub struct PaStream&lt;S&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>Representation of an audio stream, where the format of the stream is defined by the S parameter.</p>
+</div><h2 class='fields'>Fields</h2>
+<table></table><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;S&gt; <a class='struct' href='../../portaudio/pa/struct.PaStream.html' title='portaudio::pa::PaStream'>PaStream</a>&lt;S&gt;</code></h3><div class='methods'><h4 id='method.new' class='method'><code>fn <span class='fnname'>new</span>(sample_format: <a class='enum' href='../../portaudio/types/enum.PaSampleFormat.html' title='portaudio::types::PaSampleFormat'>PaSampleFormat</a>) -&gt; <a class='struct' href='../../portaudio/pa/struct.PaStream.html' title='portaudio::pa::PaStream'>PaStream</a>&lt;S&gt;</code></h4>
+<div class='docblock'><p>Constructor for PaStream.</p>
+
+<p>Return a new PaStream.</p>
+</div><h4 id='method.open' class='method'><code>fn <span class='fnname'>open</span>(&amp;mut self, input_parameters: <a class='enum' href='http://static.rust-lang.org/doc/master/std/option/enum.Option.html' title='std::option::Option'>Option</a>&lt;&amp;<a class='struct' href='../../portaudio/types/struct.PaStreamParameters.html' title='portaudio::types::PaStreamParameters'>PaStreamParameters</a>&gt;, output_parameters: <a class='enum' href='http://static.rust-lang.org/doc/master/std/option/enum.Option.html' title='std::option::Option'>Option</a>&lt;&amp;<a class='struct' href='../../portaudio/types/struct.PaStreamParameters.html' title='portaudio::types::PaStreamParameters'>PaStreamParameters</a>&gt;, sample_rate: f64, frames_per_buffer: u32, stream_flags: <a class='enum' href='../../portaudio/types/enum.PaStreamFlags.html' title='portaudio::types::PaStreamFlags'>PaStreamFlags</a>) -&gt; <a class='enum' href='../../portaudio/types/enum.PaError.html' title='portaudio::types::PaError'>PaError</a></code></h4>
+<div class='docblock'><p>Opens a stream for either input, output or both.</p>
+
+<h1>Arguments</h1>
+
+<ul>
+<li>input_parameters - A structure that describes the input parameters used by the opened stream.</li>
+<li>output_parameters - A structure that describes the output parameters used by the opened stream.</li>
+<li>sample_rate - The desired sample_rate. For full-duplex streams it is the sample rate for both input and output</li>
+<li>frames_per_buffer - The number of frames passed to the stream callback function.</li>
+<li>stream_flags -Flags which modify the behavior of the streaming process. 
+This parameter may contain a combination of flags ORed together. Some flags may only be relevant to certain buffer formats.</li>
+</ul>
+
+<p>Upon success returns PaNoError and the stream is inactive (stopped). If fails, a non-zero error code is returned.</p>
+</div><h4 id='method.open_default' class='method'><code>fn <span class='fnname'>open_default</span>(&amp;mut self, sample_rate: f64, frames_per_buffer: u32, num_input_channels: i32, num_output_channels: i32, sample_format: <a class='enum' href='../../portaudio/types/enum.PaSampleFormat.html' title='portaudio::types::PaSampleFormat'>PaSampleFormat</a>) -&gt; <a class='enum' href='../../portaudio/types/enum.PaError.html' title='portaudio::types::PaError'>PaError</a></code></h4>
+<div class='docblock'><p>A simplified version of open() that opens the default input and/or output devices.</p>
+
+<h1>Arguments</h1>
+
+<ul>
+<li>sample_rate - The desired sample_rate. For full-duplex streams it is the sample rate for both input and output</li>
+<li>frames_per_buffer - The number of frames passed to the stream callback function</li>
+<li>num_input_channels - The number of channels of sound that will be supplied to the stream callback or returned by Pa_ReadStream. 
+It can range from 1 to the value of maxInputChannels in the PaDeviceInfo record for the default input device. 
+If 0 the stream is opened as an output-only stream.</li>
+<li>num_output_channels - The number of channels of sound to be delivered to the stream callback or passed to Pa_WriteStream. 
+It can range from 1 to the value of maxOutputChannels in the PaDeviceInfo record for the default output device. 
+If 0 the stream is opened as an output-only stream.</li>
+<li>sample_format - The sample_format for the input and output buffers.</li>
+</ul>
+
+<p>Upon success returns PaNoError and the stream is inactive (stopped). If fails, a non-zero error code is returned.</p>
+</div><h4 id='method.close' class='method'><code>fn <span class='fnname'>close</span>(&amp;mut self) -&gt; <a class='enum' href='../../portaudio/types/enum.PaError.html' title='portaudio::types::PaError'>PaError</a></code></h4>
+<div class='docblock'><p>Closes an audio stream. If the audio stream is active it discards any pending buffers as if abort_tream() had been called.</p>
+</div><h4 id='method.start' class='method'><code>fn <span class='fnname'>start</span>(&amp;mut self) -&gt; <a class='enum' href='../../portaudio/types/enum.PaError.html' title='portaudio::types::PaError'>PaError</a></code></h4>
+<div class='docblock'><p>Commences audio processing.</p>
+</div><h4 id='method.stop' class='method'><code>fn <span class='fnname'>stop</span>(&amp;mut self) -&gt; <a class='enum' href='../../portaudio/types/enum.PaError.html' title='portaudio::types::PaError'>PaError</a></code></h4>
+<div class='docblock'><p>Terminates audio processing. It waits until all pending audio buffers have been played before it returns.</p>
+</div><h4 id='method.abort' class='method'><code>fn <span class='fnname'>abort</span>(&amp;mut self) -&gt; <a class='enum' href='../../portaudio/types/enum.PaError.html' title='portaudio::types::PaError'>PaError</a></code></h4>
+<div class='docblock'><p>Terminates audio processing immediately without waiting for pending buffers to complete.</p>
+</div><h4 id='method.is_stopped' class='method'><code>fn <span class='fnname'>is_stopped</span>(&amp;self) -&gt; <a class='enum' href='../../portaudio/types/enum.PaError.html' title='portaudio::types::PaError'>PaError</a></code></h4>
+<div class='docblock'><p>Determine whether the stream is stopped.
+A stream is considered to be stopped prior to a successful call to start_stream and after a successful call to stop_stream or abort_stream. 
+If a stream callback returns a value other than PaContinue the stream is NOT considered to be stopped.</p>
+
+<p>Return one (1) when the stream is stopped, zero (0) when the stream is running or, a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.</p>
+</div><h4 id='method.is_active' class='method'><code>fn <span class='fnname'>is_active</span>(&amp;self) -&gt; <a class='enum' href='http://static.rust-lang.org/doc/master/std/result/enum.Result.html' title='std::result::Result'>Result</a>&lt;bool, <a class='enum' href='../../portaudio/types/enum.PaError.html' title='portaudio::types::PaError'>PaError</a>&gt;</code></h4>
+<div class='docblock'><p>Determine whether the stream is active. A stream is active after a successful call to start_stream(),
+until it becomes inactive either as a result of a call to stop_stream() or abort_stream(),
+or as a result of a return value other than paContinue from the stream callback. 
+In the latter case, the stream is considered inactive after the last buffer has finished playing.</p>
+
+<p>Return Ok(true) when the stream is active (ie playing or recording audio), Ok(false) when not playing or, 
+a Err(PaError) if PortAudio is not initialized or an error is encountered.</p>
+</div><h4 id='method.get_stream_time' class='method'><code>fn <span class='fnname'>get_stream_time</span>(&amp;self) -&gt; <a class='typedef' href='../../portaudio/types/typedef.PaTime.html' title='portaudio::types::PaTime'>PaTime</a></code></h4>
+<div class='docblock'><p>Returns the current time in seconds for a stream according to the same
+clock used to generate callback PaStreamCallbackTimeInfo timestamps. 
+The time values are monotonically increasing and have unspecified origin.</p>
+
+<p>get_stream_time returns valid time values for the entire life of the stream, 
+from when the stream is opened until it is closed. 
+Starting and stopping the stream does not affect the passage of time returned by Pa_GetStreamTime.</p>
+
+<p>Return the stream&#39;s current time in seconds, or 0 if an error occurred.</p>
+</div><h4 id='method.get_stream_cpu_load' class='method'><code>fn <span class='fnname'>get_stream_cpu_load</span>(&amp;self) -&gt; f64</code></h4>
+<div class='docblock'><p>Retrieve CPU usage information for the specified stream.</p>
+
+<p>The &quot;CPU Load&quot; is a fraction of total CPU time consumed by a callback stream&#39;s audio 
+processing routines including, but not limited to the client supplied stream callback. 
+This function does not work with blocking read/write streams.</p>
+</div><h4 id='method.get_stream_read_available' class='method'><code>fn <span class='fnname'>get_stream_read_available</span>(&amp;self) -&gt; i64</code></h4>
+<div class='docblock'><p>Retrieve the number of frames that can be read from the stream without waiting.</p>
+
+<p>Returns a non-negative value representing the maximum number of frames that can be read 
+from the stream without blocking or busy waiting or, a PaErrorCode (which are always negative) 
+if PortAudio is not initialized or an error is encountered.</p>
+</div><h4 id='method.get_stream_write_available' class='method'><code>fn <span class='fnname'>get_stream_write_available</span>(&amp;self) -&gt; i64</code></h4>
+<div class='docblock'><p>Retrieve the number of frames that can be written to the stream without waiting.</p>
+
+<p>Return a non-negative value representing the maximum number of frames that can be written to the stream without blocking or busy waiting or, 
+a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.</p>
+</div><h4 id='method.write' class='method'><code>fn <span class='fnname'>write</span>(&amp;self, output_buffer: ~[S], frames_per_buffer: u32) -&gt; <a class='enum' href='../../portaudio/types/enum.PaError.html' title='portaudio::types::PaError'>PaError</a></code></h4>
+<div class='docblock'><p>Write samples to an output stream.
+This function doesn&#39;t return until the entire buffer has been consumed - this may involve waiting for the operating system to consume the data.</p>
+
+<h1>Arguments</h1>
+
+<ul>
+<li>output_buffer - The buffer contains samples in the format specified by S.</li>
+<li>frames_per_buffer - The number of frames in the buffer.</li>
+</ul>
+
+<p>Return PaNoError on success, or a PaError code if fail.</p>
+</div><h4 id='method.get_stream_info' class='method'><code>fn <span class='fnname'>get_stream_info</span>(&amp;self) -&gt; <a class='struct' href='../../portaudio/types/struct.PaStreamInfo.html' title='portaudio::types::PaStreamInfo'>PaStreamInfo</a></code></h4>
+<div class='docblock'><p>Retrieve a PaStreamInfo structure containing information about the specified stream.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <script>
+        var rootPath = "../../";
+    </script>
+    <script src="../../portaudio/jquery.js"></script>
+    <script src="../../portaudio/search-index.js"></script>
+    <script src="../../portaudio/main.js"></script>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&uarr;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&darr;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code> (or <code>str</code>), <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+</body>
+</html>
