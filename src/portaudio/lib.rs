@@ -68,7 +68,7 @@ extern mod extra;
 #[cfg(target_os="linux")]
 #[cfg(target_os="win32")]
 mod c_library {
-    #[link_args="-lportaudio"]
+    #[link(name = "portaudio")]
     extern {}
 }
 
