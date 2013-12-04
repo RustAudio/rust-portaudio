@@ -144,7 +144,7 @@ pub fn host_api_type_id_to_host_api_index(type_id : PaHostApiTypeId) -> PaHostAp
 * Return a non-negative PaDeviceIndex ranging from 0 to (get_device_count()-1) or, 
 * a PaErrorCode (which are always negative) if PortAudio is not initialized or an error is encountered.
 */
-pub fn host_api_devide_index_to_device_index(host_api : PaHostApiIndex,
+pub fn host_api_device_index_to_device_index(host_api : PaHostApiIndex,
                                                                    host_api_device_index : int)
                                                                    -> PaDeviceIndex {
     unsafe {
@@ -340,13 +340,13 @@ impl<S> PaStream<S> {
                !self.c_output.is_none() {
                 ffi::Pa_OpenStream(&self.c_pa_stream, &(self.c_input.unwrap()), &(self.c_output.unwrap()), sample_rate as c_double, frames_per_buffer, stream_flags, None, ptr::null())
             }
-            else if self.c_output.is_none() {
+            else if !self.c_input.is_none() {
 
                 ffi::Pa_OpenStream(&self.c_pa_stream, &(self.c_input.unwrap()), ptr::null(), sample_rate as c_double, frames_per_buffer, stream_flags, None, ptr::null())
             }
-            else if self.c_input.is_none() {
+            else if !self.c_output.is_none() {
 
-                ffi::Pa_OpenStream(&self.c_pa_stream, ptr::null(), &(self.c_input.unwrap()), sample_rate as c_double, frames_per_buffer, stream_flags, None, ptr::null())
+                ffi::Pa_OpenStream(&self.c_pa_stream, ptr::null(), &(self.c_output.unwrap()), sample_rate as c_double, frames_per_buffer, stream_flags, None, ptr::null())
             }
             else {
                 PaBadStreamPtr
