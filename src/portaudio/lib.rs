@@ -60,6 +60,7 @@ __rust-portaudio__ is build with the rustpkg tool :
 
 #[feature(globs, managed_boxes)];
 #[warn(missing_doc)];
+#[allow(dead_code)];
 
 extern mod extra;
 

@@ -23,6 +23,8 @@
 * Types used in the PortAudio API
 */
 
+#[allow(dead_code)];
+
 use std::libc::{c_void, c_char, c_double};
 use std::{str, ptr, cast};
 
