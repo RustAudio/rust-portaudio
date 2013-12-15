@@ -547,7 +547,7 @@ impl<S> PaStream<S> {
     */
     pub fn write(&self, output_buffer : ~[S], frames_per_buffer : u32) -> PaError {
         unsafe {
-            ffi::Pa_WriteStream(self.c_pa_stream, vec::raw::to_ptr::<S>(output_buffer) as *c_void, frames_per_buffer)
+            ffi::Pa_WriteStream(self.c_pa_stream, output_buffer.as_ptr() as *c_void, frames_per_buffer)
         }
     }
 
