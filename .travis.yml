@@ -1,6 +1,6 @@
 notifications:
   email:
-	- letang.jeremy@gmail.com
+    - letang.jeremy@gmail.com
 before_install:
   - yes | sudo add-apt-repository ppa:hansjorg/rust
   - sudo apt-get update
