@@ -47,12 +47,7 @@ __rust-portaudio__ is build with the rustpkg tool :
 
 */
 
-#[link(name = "portaudio",
-       vers = "0.0.1",
-       package_id = "portaudio",
-       author = "letang.jeremy@gmail.com",
-       uuid = "57224177-873F-43C2-8F44-A41D501C1A63",
-       url = "http://https://github.com/JeremyLetang/rust-portaudio")];
+#[crate_id = "portaudio#0.1"];
 
 #[comment = "Portaudio binding for Rust"];
 // #[license = "Zlib/png"];
