@@ -330,7 +330,7 @@ impl<S> PaStream<S> {
         if !input_parameters.is_none() {
             self.c_input = Some(input_parameters.unwrap().unwrap());
             self.num_input_channels = input_parameters.unwrap().channel_count;
-            self.unsafe_buffer = unsafe { malloc(mem::size_of::<S>() as size_t * frames_per_buffer as size_t * input_parameters.unwrap().channel_count as size_t) };
+            self.unsafe_buffer = unsafe { malloc(mem::size_of::<S>() as size_t * frames_per_buffer as size_t * input_parameters.unwrap().channel_count as size_t) as *c_void};
         }
         if !output_parameters.is_none() {
             self.c_output = Some(output_parameters.unwrap().unwrap());
@@ -382,7 +382,7 @@ impl<S> PaStream<S> {
         if num_input_channels > 0 {
             self.c_input = None;
             self.num_input_channels = num_input_channels;
-            self.unsafe_buffer = unsafe { malloc(mem::size_of::<S>() as size_t * frames_per_buffer as size_t * num_input_channels as size_t) };
+            self.unsafe_buffer = unsafe { malloc(mem::size_of::<S>() as size_t * frames_per_buffer as size_t * num_input_channels as size_t) as *c_void };
         }
         unsafe {
            ffi::Pa_OpenDefaultStream(&self.c_pa_stream, num_input_channels, num_output_channels, sample_format, sample_rate as c_double, frames_per_buffer, None, ptr::null())
