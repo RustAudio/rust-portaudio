@@ -25,11 +25,9 @@
 
 #[allow(dead_code)];
 
-use std::libc::{c_void, c_char, c_double};
 use std::{str, ptr, cast};
 
-#[doc(hidden)]
-pub type C_PaStream = c_void;
+use ffi;
 
 /// The type used to refer to audio devices. Values of this type usually range from 0 to (pa::get_device_count()-1)
 pub type PaDeviceIndex = i32;
@@ -44,48 +42,6 @@ pub type PaHostApiIndex = i32;
 
 /// The type used to represent monotonic time in seconds.
 pub type PaTime = f64;
-
-
-#[doc(hidden)]
-mod ffi {
-    
-    // Sample format
-    pub type PaSampleFormat = u64;
-    pub static PaFloat32 :          PaSampleFormat = 0x00000001;
-    pub static PaInt32 :            PaSampleFormat = 0x00000002;
-    // pub static PaInt24 :          PaSampleFormat = 0x00000004;
-    pub static PaInt16 :            PaSampleFormat = 0x00000008;
-    pub static PaInt8 :             PaSampleFormat = 0x00000010;
-    pub static PaUInt8 :            PaSampleFormat = 0x00000020; 
-    pub static PaCustomFormat :     PaSampleFormat = 0x00010000;
-    pub static PaNonInterleaved :   PaSampleFormat = 0x80000000;
-
-    // Stream flags
-    pub type PaStreamFlags = u64;
-    pub static PaNoFlag :                                   PaStreamFlags = 0;
-    pub static PaClipOff :                                  PaStreamFlags = 0x00000001;
-    pub static PaDitherOff :                                PaStreamFlags = 0x00000002;
-    pub static PaNeverDropInput :                           PaStreamFlags = 0x00000004;
-    pub static PaPrimeOutputBuffersUsingStreamCallback :    PaStreamFlags = 0x00000008;
-    pub static PaPlatformSpecificFlags :                    PaStreamFlags = 0xFFFF0000;
-
-    /// Unchanging unique identifiers for each supported host API
-    pub type PaHostApiTypeId = i32;
-    pub static PaInDevelopment : PaHostApiTypeId = 0;
-    pub static PaDirectSound : PaHostApiTypeId = 1;
-    pub static PaMME : PaHostApiTypeId = 2;
-    pub static PaASIO : PaHostApiTypeId = 3; 
-    pub static PaSoundManager : PaHostApiTypeId = 4;
-    pub static PaCoreAudio : PaHostApiTypeId = 5;
-    pub static PaOSS : PaHostApiTypeId = 7;
-    pub static PaALSA : PaHostApiTypeId = 8; 
-    pub static PaAL : PaHostApiTypeId = 9;
-    pub static PaBeOS : PaHostApiTypeId = 10;
-    pub static PaWDMKS : PaHostApiTypeId = 11;
-    pub static PaJACK : PaHostApiTypeId = 12;
-    pub static PaWASAPI : PaHostApiTypeId = 13;
-    pub static PaAudioScienceHPI : PaHostApiTypeId = 14;
-}
 
 /// A type used to specify one or more sample formats.
 #[repr(u64)]
@@ -262,18 +218,8 @@ pub struct PaHostApiInfo{
 }
 
 #[doc(hidden)]
-pub struct C_PaHostApiInfo {
-    struct_version : i32,
-    host_type : i32,
-    name : *c_char,
-    device_count : i32,
-    default_input_device : i32,
-    default_output_device : i32
-}
-
-#[doc(hidden)]
 impl PaHostApiInfo {
-    pub fn wrap(c_info : *C_PaHostApiInfo) -> PaHostApiInfo {
+    pub fn wrap(c_info : *ffi::C_PaHostApiInfo) -> PaHostApiInfo {
         unsafe {
             PaHostApiInfo {
                 struct_version : (*c_info).struct_version as int,
@@ -286,8 +232,8 @@ impl PaHostApiInfo {
         }
     }
 
-    pub fn unwrap(&self) -> C_PaHostApiInfo {
-        C_PaHostApiInfo {
+    pub fn unwrap(&self) -> ffi::C_PaHostApiInfo {
+        ffi::C_PaHostApiInfo {
             struct_version : self.struct_version as i32,
             host_type : self.host_type as i32,
             name : unsafe { self.name.to_c_str().unwrap() },
@@ -308,22 +254,16 @@ pub struct PaHostErrorInfo {
 }
 
 #[doc(hidden)]
-pub struct C_PaHostErrorInfo {
-    error_code : u32,
-    error_text : *c_char
-}
-
-#[doc(hidden)]
 impl PaHostErrorInfo {
-    pub fn wrap(c_error : *C_PaHostErrorInfo) -> PaHostErrorInfo {
+    pub fn wrap(c_error : *ffi::C_PaHostErrorInfo) -> PaHostErrorInfo {
         PaHostErrorInfo {
             error_code : unsafe { (*c_error).error_code },
             error_text : unsafe { str::raw::from_c_str((*c_error).error_text) }
         }
     }
 
-    pub fn unwrap(&self) -> C_PaHostErrorInfo {
-        C_PaHostErrorInfo {
+    pub fn unwrap(&self) -> ffi::C_PaHostErrorInfo {
+        ffi::C_PaHostErrorInfo {
             error_code : self.error_code,
             error_text : unsafe { self.error_text.to_c_str().unwrap() }
         }
@@ -356,22 +296,8 @@ pub struct PaDeviceInfo {
 }
 
 #[doc(hidden)]
-pub struct C_PaDeviceInfo {
-    struct_version : i32,
-    name : *c_char,
-    host_api : PaHostApiIndex,
-    max_input_channels : i32,
-    max_output_channels : i32, 
-    default_low_input_latency : PaTime,
-    default_low_output_latency : PaTime,
-    default_high_input_latency : PaTime,
-    default_high_output_latency : PaTime,
-    default_sample_rate : c_double
-}
-
-#[doc(hidden)]
 impl PaDeviceInfo {
-    pub fn wrap(c_info : *C_PaDeviceInfo) -> PaDeviceInfo {
+    pub fn wrap(c_info : *ffi::C_PaDeviceInfo) -> PaDeviceInfo {
         unsafe {
             PaDeviceInfo {
                 struct_version : (*c_info).struct_version as int,
@@ -388,8 +314,8 @@ impl PaDeviceInfo {
         }
     }
 
-    pub fn unwrap(&self) -> C_PaDeviceInfo {
-        C_PaDeviceInfo {
+    pub fn unwrap(&self) -> ffi::C_PaDeviceInfo {
+        ffi::C_PaDeviceInfo {
             struct_version : self.struct_version as i32,
             name : unsafe { self.name.to_c_str().unwrap() },
             host_api : self.host_api,
@@ -418,32 +344,23 @@ pub struct PaStreamParameters {
 }
 
 #[doc(hidden)]
-pub struct C_PaStreamParameters {
-    device : PaDeviceIndex,
-    channel_count : i32,
-    sample_format : PaSampleFormat,
-    suggested_latency : PaTime, 
-    host_api_specific_stream_info : *c_void
-}
-
-#[doc(hidden)]
 impl PaStreamParameters {
-    pub fn wrap(c_parameters : *C_PaStreamParameters) -> PaStreamParameters {
+    pub fn wrap(c_parameters : *ffi::C_PaStreamParameters) -> PaStreamParameters {
         unsafe {
             PaStreamParameters {
                 device : (*c_parameters).device,
                 channel_count : (*c_parameters).channel_count,
-                sample_format : (*c_parameters).sample_format,
+                sample_format : cast::transmute((*c_parameters).sample_format),
                 suggested_latency : (*c_parameters).suggested_latency
             }
         }
     }
 
-    pub fn unwrap(&self) -> C_PaStreamParameters {
-        C_PaStreamParameters {
+    pub fn unwrap(&self) -> ffi::C_PaStreamParameters {
+        ffi::C_PaStreamParameters {
             device : self.device,
             channel_count : self.channel_count as i32,
-            sample_format : self.sample_format,
+            sample_format : self.sample_format as ffi::PaSampleFormat,
             suggested_latency : self.suggested_latency,
             host_api_specific_stream_info : ptr::null()
         }

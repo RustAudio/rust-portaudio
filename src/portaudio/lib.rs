@@ -53,7 +53,7 @@ __rust-portaudio__ is build with the rustpkg tool :
 // #[license = "Zlib/png"];
 #[crate_type = "lib"];
 
-#[feature(globs, managed_boxes)];
+#[feature(globs)];
 #[warn(missing_doc)];
 #[allow(dead_code)];
 
@@ -71,11 +71,11 @@ mod c_library {
 pub mod types;
 pub mod pa;
 
-#[doc(hidden)]
-pub mod user_traits;
-#[doc(hidden)]
-#[cfg(target_os="macos")]
-pub mod mac_core;
+//#[doc(hidden)]
+//pub mod user_traits;
+//#[doc(hidden)]
+//#[cfg(target_os="macos")]
+//pub mod mac_core;
 //pub mod asio;
 #[doc(hidden)]
-pub mod ffi;
+mod ffi;
