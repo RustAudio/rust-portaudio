@@ -10,4 +10,4 @@ install:
 env:
   - RUST_TEST_TASKS=1
 script:
-  - rustpkg build portaudio
+  - rustc src/portaudio/lib.rs
