@@ -25,8 +25,13 @@ You can download it directly from the website : [portaudio](http://www.portaudio
 
 Then clone the repo and build the library with the following command at the root of the __rust-portaudio__ repository.
 
-__rust-portaudio__ is build with the rustpkg tool :
+__rust-portaudio__ is build using make, so just type `make` at the root of the __rust-portaudio__ repository, this command
+build __rust-portaudio__, the examples, and the documentation.
+
+You can build them separatly to with the dedicated commands:
 
 ```Shell
-> rustpkg build portaudio
+> make portaudio
+> make test
+> make doc
 ```
