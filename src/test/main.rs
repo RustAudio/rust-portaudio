@@ -1,7 +1,7 @@
 #[feature(globs)];
 #[allow(unreachable_code, dead_assignment)];
 
-extern mod portaudio;
+extern crate portaudio;
 
 use portaudio::*;
 

@@ -58,8 +58,7 @@ __rust-portaudio__ is build with the rustpkg tool :
 #[warn(missing_doc)];
 #[allow(dead_code)];
 
-extern mod extra;
-
+extern crate extra;
 
 #[cfg(target_os="macos")]
 #[cfg(target_os="linux")]
