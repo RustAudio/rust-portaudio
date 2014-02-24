@@ -29,14 +29,17 @@ use std::{str, ptr, cast};
 
 use ffi;
 
-/// The type used to refer to audio devices. Values of this type usually range from 0 to (pa::get_device_count()-1)
+/// The type used to refer to audio devices. Values of this type usually range
+/// from 0 to (pa::get_device_count()-1)
 pub type PaDeviceIndex = i32;
-/// A special PaDeviceIndex value indicating that no device is available, or should be used.
+/// A special PaDeviceIndex value indicating that no device is available,
+/// or should be used.
 pub static PaNoDevice : PaDeviceIndex = -1;
-/// A special PaDeviceIndex value indicating that the device(s) to be used are specified in the host api specific stream info structure.
+/// A special PaDeviceIndex value indicating that the device(s) to be used are
+/// specified in the host api specific stream info structure.
 pub static PaUseHostApiSpecificDeviceSpecification : PaDeviceIndex = -2;
 
-/// The type used to enumerate to host APIs at runtime. 
+/// The type used to enumerate to host APIs at runtime.
 /// Values of this type range from 0 to (pa::get_host_api_count()-1).
 pub type PaHostApiIndex = i32;
 
@@ -45,7 +48,7 @@ pub type PaTime = f64;
 
 /// A type used to specify one or more sample formats.
 #[repr(u64)]
-#[deriving(Clone, Eq, Ord, ToStr)]
+#[deriving(Clone, Eq, Ord, Show)]
 pub enum PaSampleFormat {
     /// 32 bits float sample format
     PaFloat32 =         ffi::PaFloat32,
@@ -65,14 +68,14 @@ pub enum PaSampleFormat {
 
 /// The flags to pass to a stream
 #[repr(u64)]
-#[deriving(Clone, Eq, Ord, ToStr)]
+#[deriving(Clone, Eq, Ord, Show)]
 pub enum PaStreamFlags {
     /// No flags
     PaNoFlag =                                  ffi::PaNoFlag,
     /// Disable default clipping of out of range samples.
     PaClipOff =                                 ffi::PaClipOff,
     /// Disable default dithering.
-    PaDitherOff =                               ffi::PaDitherOff,    
+    PaDitherOff =                               ffi::PaDitherOff,
     /// Flag requests that where possible a full duplex stream will not discard overflowed input samples without calling the stream callback.
     PaNeverDropInput =                          ffi::PaNeverDropInput,
     /// Call the stream callback to fill initial output buffers, rather than the default behavior of priming the buffers with zeros (silence)
@@ -95,16 +98,16 @@ pub type PaStreamCallbackFlags = u64;
 #[doc(hidden)]
 pub type PaCallbackFunction = extern fn(i : f32) -> PaStreamCallbackResult;
 #[doc(hidden)]
-pub enum PaStreamCallbackResult { 
-    PaContinue = 0, 
-    PaComplete = 1, 
-    PaAbort = 2 
+pub enum PaStreamCallbackResult {
+    PaContinue = 0,
+    PaComplete = 1,
+    PaAbort = 2
 }
 
 /// Error codes returned by PortAudio functions.
 #[repr(C)]
-#[deriving(Clone, Eq, Ord, ToStr)]
-pub enum PaError { 
+#[deriving(Clone, Eq, Ord, Show)]
+pub enum PaError {
     /// No Error
     PaNoError = 0,
     /// Portaudio not initialized
@@ -112,7 +115,7 @@ pub enum PaError {
     /// Unanticipated error from the host
     PaUnanticipatedHostError,
     /// Invalid channel count
-    PaInvalidChannelCount, 
+    PaInvalidChannelCount,
     /// Invalid sample rate
     PaInvalidSampleRate,
     /// Invalid Device
@@ -164,12 +167,12 @@ pub enum PaError {
     /// The stream is not compatible with the host API
     PaIncompatibleStreamHostApi,
     /// Invalid buffer
-    PaBadBufferPtr 
+    PaBadBufferPtr
 }
 
 /// Unchanging unique identifiers for each supported host API
 #[repr(i32)]
-#[deriving(Clone, Eq, Ord, ToStr)]
+#[deriving(Clone, Eq, Ord, Show)]
 pub enum PaHostApiTypeId {
     /// In development host
     PaInDevelopment =   ffi::PaInDevelopment,
@@ -245,7 +248,7 @@ impl PaHostApiInfo {
 }
 
 /// Structure used to return information about a host error condition.
-#[deriving(Clone, Eq, Ord, ToStr)]
+#[deriving(Clone, Eq, Ord, Show)]
 pub struct PaHostErrorInfo {
     /// The code of the error
     error_code : u32,
@@ -270,8 +273,9 @@ impl PaHostErrorInfo {
     }
 }
 
-/// A structure providing information and capabilities of PortAudio devices. Devices may support input, output or both input and output.
-#[deriving(Clone, Eq, Ord, ToStr)]
+/// A structure providing information and capabilities of PortAudio devices.
+/// Devices may support input, output or both input and output.
+#[deriving(Clone, Eq, Ord, Show)]
 pub struct PaDeviceInfo {
     /// The version of the struct
     struct_version : int,
@@ -304,7 +308,7 @@ impl PaDeviceInfo {
                 name : str::raw::from_c_str((*c_info).name),
                 host_api : (*c_info).host_api,
                 max_input_channels : (*c_info).max_input_channels as int,
-                max_output_channels : (*c_info).max_output_channels as int, 
+                max_output_channels : (*c_info).max_output_channels as int,
                 default_low_input_latency : (*c_info).default_low_input_latency,
                 default_low_output_latency : (*c_info).default_low_output_latency,
                 default_high_input_latency : (*c_info).default_high_input_latency,
@@ -320,7 +324,7 @@ impl PaDeviceInfo {
             name : unsafe { self.name.to_c_str().unwrap() },
             host_api : self.host_api,
             max_input_channels : self.max_input_channels as i32,
-            max_output_channels : self.max_output_channels as i32, 
+            max_output_channels : self.max_output_channels as i32,
             default_low_input_latency : self.default_low_input_latency,
             default_low_output_latency : self.default_low_output_latency,
             default_high_input_latency : self.default_high_input_latency,
@@ -331,7 +335,7 @@ impl PaDeviceInfo {
 }
 
 /// Parameters for one direction (input or output) of a stream.
-#[deriving(Clone, Eq, Ord, ToStr)]
+#[deriving(Clone, Eq, Ord, Show)]
 pub struct PaStreamParameters {
     /// Index of the device
     device : PaDeviceIndex,
@@ -340,7 +344,7 @@ pub struct PaStreamParameters {
     /// Sample format of the device
     sample_format : PaSampleFormat,
     /// The suggested latency for this device
-    suggested_latency : PaTime, 
+    suggested_latency : PaTime,
 }
 
 #[doc(hidden)]
@@ -376,7 +380,7 @@ pub struct PaStreamCallbackTimeInfo {
 }
 
 /// A structure containing unchanging information about an open stream.
-#[deriving(Clone, Eq, Ord, ToStr)]
+#[deriving(Clone, Eq, Ord, Show)]
 pub struct PaStreamInfo {
     /// Struct version
     struct_version : i32,
