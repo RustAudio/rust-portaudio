@@ -24,20 +24,25 @@
 
 __Portaudio__ bindings for Rust
 
-PortAudio provides a uniform application programming interface (API) across all supported platforms. 
-You can think of the PortAudio library as a wrapper that converts calls to the PortAudio API into calls to platform-specific native audio APIs. 
-Operating systems often offer more than one native audio API and some APIs (such as JACK) may be available on multiple target operating systems. 
+PortAudio provides a uniform application programming interface (API) across all
+supported platforms.  You can think of the PortAudio library as a wrapper that
+converts calls to the PortAudio API into calls to platform-specific native audio
+APIs. Operating systems often offer more than one native audio API and some APIs
+(such as JACK) may be available on multiple target operating systems.
 PortAudio supports all the major native audio APIs on each supported platform.
 
 # Installation
 
-You must install on your computer the Portaudio libraries who is used for the binding.
+You must install on your computer the Portaudio libraries who is used for
+the binding.
 
-Portaudio is available with package management tools on Linux, or brew on Mac OS. 
+Portaudio is available with package management tools on Linux, or brew on Mac OS.
 
-You can download it directly from the website : [portaudio](http://www.portaudio.com/download.html)
+You can download it directly from the website :
+[portaudio](http://www.portaudio.com/download.html)
 
-Then clone the repo and build the library with the following command at the root of the __rust-portaudio__ repository.
+Then clone the repo and build the library with the following command at the root
+of the __rust-portaudio__ repository.
 
 __rust-portaudio__ is build with the rustpkg tool :
 
@@ -57,6 +62,7 @@ __rust-portaudio__ is build with the rustpkg tool :
 #[feature(globs)];
 #[warn(missing_doc)];
 #[allow(dead_code)];
+#[allow(visible_private_types)];
 
 extern crate extra;
 
