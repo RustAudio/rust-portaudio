@@ -1,5 +1,5 @@
-#[feature(globs)];
-#[allow(unreachable_code, dead_assignment)];
+#![feature(globs)]
+#![allow(unreachable_code, dead_assignment)]
 
 extern crate portaudio;
 
@@ -11,7 +11,7 @@ fn main() -> () {
     println!("Portaudio error text : {}", pa::get_error_text(types::PaNotInitialized));
 
     println!("Portaudio init error : {}", pa::get_error_text(pa::initialize()));
-    
+
     let host_count = pa::get_host_api_count();
     println!("Portaudio host count : {}", host_count as int);
 
@@ -73,7 +73,7 @@ fn main() -> () {
         while test == 0 {
             test = stream.get_stream_write_available();
         }
-            println!("Stream Write available : {}", test as int); 
+            println!("Stream Write available : {}", test as int);
 
         match stream.read(1024) {
             Ok(res)     => {

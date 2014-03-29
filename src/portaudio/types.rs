@@ -19,11 +19,9 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-/*!
-* Types used in the PortAudio API
-*/
+//! Types used in the PortAudio API
 
-#[allow(dead_code)];
+#![allow(dead_code)]
 
 use std::{str, ptr, cast};
 

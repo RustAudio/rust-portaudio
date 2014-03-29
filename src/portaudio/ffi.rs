@@ -19,7 +19,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#[allow(dead_code, non_camel_case_types)];
+#![allow(dead_code, non_camel_case_types)]
 
 use std::libc::{c_char, c_double, c_void};
 
@@ -33,7 +33,7 @@ pub static PaInt32 :            PaSampleFormat = 0x00000002;
 // pub static PaInt24 :          PaSampleFormat = 0x00000004;
 pub static PaInt16 :            PaSampleFormat = 0x00000008;
 pub static PaInt8 :             PaSampleFormat = 0x00000010;
-pub static PaUInt8 :            PaSampleFormat = 0x00000020; 
+pub static PaUInt8 :            PaSampleFormat = 0x00000020;
 pub static PaCustomFormat :     PaSampleFormat = 0x00010000;
 pub static PaNonInterleaved :   PaSampleFormat = 0x80000000;
 
@@ -51,11 +51,11 @@ pub type PaHostApiTypeId = i32;
 pub static PaInDevelopment : PaHostApiTypeId = 0;
 pub static PaDirectSound : PaHostApiTypeId = 1;
 pub static PaMME : PaHostApiTypeId = 2;
-pub static PaASIO : PaHostApiTypeId = 3; 
+pub static PaASIO : PaHostApiTypeId = 3;
 pub static PaSoundManager : PaHostApiTypeId = 4;
 pub static PaCoreAudio : PaHostApiTypeId = 5;
 pub static PaOSS : PaHostApiTypeId = 7;
-pub static PaALSA : PaHostApiTypeId = 8; 
+pub static PaALSA : PaHostApiTypeId = 8;
 pub static PaAL : PaHostApiTypeId = 9;
 pub static PaBeOS : PaHostApiTypeId = 10;
 pub static PaWDMKS : PaHostApiTypeId = 11;
@@ -69,7 +69,7 @@ pub struct C_PaStreamParameters {
     device : PaDeviceIndex,
     channel_count : i32,
     sample_format : PaSampleFormat,
-    suggested_latency : PaTime, 
+    suggested_latency : PaTime,
     host_api_specific_stream_info : *c_void
 }
 
@@ -78,7 +78,7 @@ pub struct C_PaDeviceInfo {
     name : *c_char,
     host_api : PaHostApiIndex,
     max_input_channels : i32,
-    max_output_channels : i32, 
+    max_output_channels : i32,
     default_low_input_latency : PaTime,
     default_low_output_latency : PaTime,
     default_high_input_latency : PaTime,
@@ -122,22 +122,22 @@ extern "C" {
     pub fn Pa_IsFormatSupported(input_parameters : *C_PaStreamParameters, outputParameters : *C_PaStreamParameters, sampleRate : c_double) -> PaError;
     pub fn Pa_GetSampleSize(format : PaSampleFormat) -> PaError;
     pub fn Pa_Sleep(msec : i32) -> ();
-    pub fn Pa_OpenStream(stream : **C_PaStream, 
-                         inputParameters : *C_PaStreamParameters, 
-                         outputParameters : *C_PaStreamParameters, 
-                         sampleRate : c_double, 
-                         framesPerBuffer : u32, 
-                         streamFlags : PaStreamFlags, 
-                         streamCallback : Option<extern "C" fn(*c_void, *c_void, u32, *PaStreamCallbackTimeInfo, PaStreamCallbackFlags, *c_void) -> PaStreamCallbackResult>, 
-                         userData : *c_void) 
+    pub fn Pa_OpenStream(stream : **C_PaStream,
+                         inputParameters : *C_PaStreamParameters,
+                         outputParameters : *C_PaStreamParameters,
+                         sampleRate : c_double,
+                         framesPerBuffer : u32,
+                         streamFlags : PaStreamFlags,
+                         streamCallback : Option<extern "C" fn(*c_void, *c_void, u32, *PaStreamCallbackTimeInfo, PaStreamCallbackFlags, *c_void) -> PaStreamCallbackResult>,
+                         userData : *c_void)
                          -> PaError;
-    pub fn Pa_OpenDefaultStream(stream : **C_PaStream, 
-                                numInputChannels : i32, 
-                                numOutputChannels : i32, 
-                                sampleFormat : PaSampleFormat, 
-                                sampleRate : c_double, 
-                                framesPerBuffer : u32, 
-                                streamCallback : Option<extern "C" fn(*c_void, *c_void, u32, *PaStreamCallbackTimeInfo, PaStreamCallbackFlags, *c_void) -> PaStreamCallbackResult>, 
+    pub fn Pa_OpenDefaultStream(stream : **C_PaStream,
+                                numInputChannels : i32,
+                                numOutputChannels : i32,
+                                sampleFormat : PaSampleFormat,
+                                sampleRate : c_double,
+                                framesPerBuffer : u32,
+                                streamCallback : Option<extern "C" fn(*c_void, *c_void, u32, *PaStreamCallbackTimeInfo, PaStreamCallbackFlags, *c_void) -> PaStreamCallbackResult>,
                                 userData : *c_void)
                                 -> PaError;
     pub fn Pa_CloseStream(stream : *C_PaStream) -> PaError;

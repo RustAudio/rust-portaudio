@@ -52,18 +52,18 @@ __rust-portaudio__ is build with the rustpkg tool :
 
 */
 
-#[crate_id = "portaudio#0.1"];
+#![crate_id = "portaudio#0.1"]
 
-#[comment = "Portaudio binding for Rust"];
-// #[license = "Zlib/png"];
-#[crate_type = "dylib"];
-#[crate_type = "rlib"];
+#![comment = "Portaudio binding for Rust"]
+#![license = "MIT"]
+#![crate_type = "dylib"]
+#![crate_type = "rlib"]
 
-#[feature(globs)];
-#[warn(missing_doc)];
-#[allow(dead_code)];
-#[allow(visible_private_types)];
-#[allow(deprecated_owned_vector)];
+#![feature(globs)]
+#![warn(missing_doc)]
+#![allow(dead_code)]
+#![allow(visible_private_types)]
+#![allow(deprecated_owned_vector)]
 
 #[cfg(target_os="macos")]
 #[cfg(target_os="linux")]
