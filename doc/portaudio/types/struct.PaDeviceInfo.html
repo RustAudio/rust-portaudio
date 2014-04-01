@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>portaudio::types::PaDeviceInfo - Rust</title>
+
+    <link href='http://fonts.googleapis.com/css?family=Oswald:700|Inconsolata:400,700'
+          rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+</head>
+<body>
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    <section class="sidebar">
+        
+
+        <p class='location'><a href='../index.html'>portaudio</a>&#8203;::<a href='index.html'>types</a></p><div class='block struct'><h2>Structs</h2><a class='struct current' href='struct.PaDeviceInfo.html'>PaDeviceInfo</a><br/><a class='struct ' href='struct.PaHostApiInfo.html'>PaHostApiInfo</a><br/><a class='struct ' href='struct.PaHostErrorInfo.html'>PaHostErrorInfo</a><br/><a class='struct ' href='struct.PaStreamInfo.html'>PaStreamInfo</a><br/><a class='struct ' href='struct.PaStreamParameters.html'>PaStreamParameters</a><br/></div><div class='block enum'><h2>Enums</h2><a class='enum ' href='enum.PaError.html'>PaError</a><br/><a class='enum ' href='enum.PaHostApiTypeId.html'>PaHostApiTypeId</a><br/><a class='enum ' href='enum.PaSampleFormat.html'>PaSampleFormat</a><br/><a class='enum ' href='enum.PaStreamFlags.html'>PaStreamFlags</a><br/></div>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <button class="do-search">Search</button>
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Search documentation..."
+                       type="search" />
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct"><a class='source'
+                              href='../../src/portaudio/src/portaudio/types.rs.html#277-298'>[src]</a><h1 class='fqn'>Struct <a href='../index.html'>portaudio</a>::<a href='index.html'>types</a>::<a class='struct' href=''>PaDeviceInfo</a></h1><pre class='rust struct'>pub struct PaDeviceInfo {
+    pub struct_version: int,
+    pub name: ~str,
+    pub host_api: <a class='typedef' href='../../portaudio/types/typedef.PaHostApiIndex.html' title='portaudio::types::PaHostApiIndex'>PaHostApiIndex</a>,
+    pub max_input_channels: int,
+    pub max_output_channels: int,
+    pub default_low_input_latency: <a class='typedef' href='../../portaudio/types/typedef.PaTime.html' title='portaudio::types::PaTime'>PaTime</a>,
+    pub default_low_output_latency: <a class='typedef' href='../../portaudio/types/typedef.PaTime.html' title='portaudio::types::PaTime'>PaTime</a>,
+    pub default_high_input_latency: <a class='typedef' href='../../portaudio/types/typedef.PaTime.html' title='portaudio::types::PaTime'>PaTime</a>,
+    pub default_high_output_latency: <a class='typedef' href='../../portaudio/types/typedef.PaTime.html' title='portaudio::types::PaTime'>PaTime</a>,
+    pub default_sample_rate: f64,
+}</pre><div class='docblock'><p>A structure providing information and capabilities of PortAudio devices.
+Devices may support input, output or both input and output.</p>
+</div><h2 class='fields'>Fields</h2>
+<table><tr><td id='structfield.struct_version'><code>struct_version</code></td><td><div class='docblock'><p>The version of the struct</p>
+</div></td></tr><tr><td id='structfield.name'><code>name</code></td><td><div class='docblock'><p>The name of the devie</p>
+</div></td></tr><tr><td id='structfield.host_api'><code>host_api</code></td><td><div class='docblock'><p>Host API identifier</p>
+</div></td></tr><tr><td id='structfield.max_input_channels'><code>max_input_channels</code></td><td><div class='docblock'><p>Maximal number of input channels for this device</p>
+</div></td></tr><tr><td id='structfield.max_output_channels'><code>max_output_channels</code></td><td><div class='docblock'><p>maximal number of output channel for this device</p>
+</div></td></tr><tr><td id='structfield.default_low_input_latency'><code>default_low_input_latency</code></td><td><div class='docblock'><p>The default low latency for input with this device</p>
+</div></td></tr><tr><td id='structfield.default_low_output_latency'><code>default_low_output_latency</code></td><td><div class='docblock'><p>The default low latency for output with this device</p>
+</div></td></tr><tr><td id='structfield.default_high_input_latency'><code>default_high_input_latency</code></td><td><div class='docblock'><p>The default high latency for input with this device</p>
+</div></td></tr><tr><td id='structfield.default_high_output_latency'><code>default_high_output_latency</code></td><td><div class='docblock'><p>The default high latency for output with this device</p>
+</div></td></tr><tr><td id='structfield.default_sample_rate'><code>default_sample_rate</code></td><td><div class='docblock'><p>The default sample rate for this device</p>
+</div></td></tr></table><h2 id='implementations'>Trait Implementations</h2><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl <a class='trait' href='http://static.rust-lang.org/doc/master/std/fmt/trait.Show.html' title='std::fmt::Show'>Show</a> for <a class='struct' href='../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a></code></h3><div class='methods'><h4 id='method.fmt' class='method'><code>fn <a href='#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='http://static.rust-lang.org/doc/master/std/fmt/struct.Formatter.html' title='std::fmt::Formatter'>Formatter</a>) -&gt; <a class='enum' href='http://static.rust-lang.org/doc/master/std/fmt/enum.Result.html' title='std::fmt::Result'>Result</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://static.rust-lang.org/doc/master/std/cmp/trait.Ord.html' title='std::cmp::Ord'>Ord</a> for <a class='struct' href='../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a></code></h3><div class='methods'><h4 id='method.lt' class='method'><code>fn <a href='#method.lt' class='fnname'>lt</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a>) -&gt; bool</code></h4>
+<h4 id='method.le' class='method'><code>fn <a href='#method.le' class='fnname'>le</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a>) -&gt; bool</code></h4>
+<h4 id='method.gt' class='method'><code>fn <a href='#method.gt' class='fnname'>gt</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a>) -&gt; bool</code></h4>
+<h4 id='method.ge' class='method'><code>fn <a href='#method.ge' class='fnname'>ge</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a>) -&gt; bool</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://static.rust-lang.org/doc/master/std/cmp/trait.Eq.html' title='std::cmp::Eq'>Eq</a> for <a class='struct' href='../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a></code></h3><div class='methods'><h4 id='method.eq' class='method'><code>fn <a href='#method.eq' class='fnname'>eq</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a>) -&gt; bool</code></h4>
+<h4 id='method.ne' class='method'><code>fn <a href='#method.ne' class='fnname'>ne</a>(&amp;self, __arg_0: &amp;<a class='struct' href='../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a>) -&gt; bool</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://static.rust-lang.org/doc/master/std/clone/trait.Clone.html' title='std::clone::Clone'>Clone</a> for <a class='struct' href='../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a></code></h3><div class='methods'><h4 id='method.clone' class='method'><code>fn <a href='#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&uarr;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&darr;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code> (or <code>str</code>), <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    <script>
+        var rootPath = "../../";
+        var currentCrate = "portaudio";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

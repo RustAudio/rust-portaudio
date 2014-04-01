@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>portaudio::pa::initialize - Rust</title>
+
+    <link href='http://fonts.googleapis.com/css?family=Oswald:700|Inconsolata:400,700'
+          rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+</head>
+<body>
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    <section class="sidebar">
+        
+
+        <p class='location'><a href='../index.html'>portaudio</a>&#8203;::<a href='index.html'>pa</a></p><div class='block struct'><h2>Structs</h2><a class='struct ' href='struct.PaStream.html'>PaStream</a><br/></div><div class='block fn'><h2>Functions</h2><a class='fn ' href='fn.get_default_host_api.html'>get_default_host_api</a><br/><a class='fn ' href='fn.get_default_input_device.html'>get_default_input_device</a><br/><a class='fn ' href='fn.get_default_output_device.html'>get_default_output_device</a><br/><a class='fn ' href='fn.get_device_count.html'>get_device_count</a><br/><a class='fn ' href='fn.get_device_info.html'>get_device_info</a><br/><a class='fn ' href='fn.get_error_text.html'>get_error_text</a><br/><a class='fn ' href='fn.get_host_api_count.html'>get_host_api_count</a><br/><a class='fn ' href='fn.get_host_api_info.html'>get_host_api_info</a><br/><a class='fn ' href='fn.get_last_host_error_info.html'>get_last_host_error_info</a><br/><a class='fn ' href='fn.get_sample_size.html'>get_sample_size</a><br/><a class='fn ' href='fn.get_version.html'>get_version</a><br/><a class='fn ' href='fn.get_version_text.html'>get_version_text</a><br/><a class='fn ' href='fn.host_api_device_index_to_device_index.html'>host_api_device_index_to_device_index</a><br/><a class='fn ' href='fn.host_api_type_id_to_host_api_index.html'>host_api_type_id_to_host_api_index</a><br/><a class='fn current' href='fn.initialize.html'>initialize</a><br/><a class='fn ' href='fn.is_format_supported.html'>is_format_supported</a><br/><a class='fn ' href='fn.sleep.html'>sleep</a><br/><a class='fn ' href='fn.terminate.html'>terminate</a><br/></div>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <button class="do-search">Search</button>
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Search documentation..."
+                       type="search" />
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content fn"><a class='source'
+                              href='../../src/portaudio/src/portaudio/pa.rs.html#73-77'>[src]</a><h1 class='fqn'>Function <a href='../index.html'>portaudio</a>::<a href='index.html'>pa</a>::<a class='fn' href=''>initialize</a></h1><pre class='rust fn'>pub fn initialize() -&gt; <a class='enum' href='../../portaudio/types/enum.PaError.html' title='portaudio::types::PaError'>PaError</a></pre><div class='docblock'><p>Library initialization function - call this before using PortAudio.
+This function initializes internal data structures and prepares underlying
+host APIs for use. With the exception of get_version(), get_version_text(),
+and get_error_text(), this function MUST be called before using any other
+PortAudio API functions.</p>
+
+<p>Note that if initialize() returns an error code, Pa_Terminate() should NOT be
+called.</p>
+
+<p>Return PaNoError if successful, otherwise an error code indicating the cause
+of failure.</p>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&uarr;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&darr;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code> (or <code>str</code>), <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    <script>
+        var rootPath = "../../";
+        var currentCrate = "portaudio";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>
