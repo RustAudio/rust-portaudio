@@ -32,10 +32,10 @@ use ffi;
 pub type PaDeviceIndex = i32;
 /// A special PaDeviceIndex value indicating that no device is available,
 /// or should be used.
-pub static PaNoDevice : PaDeviceIndex = -1;
+pub static PaNoDevice: PaDeviceIndex = -1;
 /// A special PaDeviceIndex value indicating that the device(s) to be used are
 /// specified in the host api specific stream info structure.
-pub static PaUseHostApiSpecificDeviceSpecification : PaDeviceIndex = -2;
+pub static PaUseHostApiSpecificDeviceSpecification: PaDeviceIndex = -2;
 
 /// The type used to enumerate to host APIs at runtime.
 /// Values of this type range from 0 to (pa::get_host_api_count()-1).
@@ -205,17 +205,17 @@ pub enum PaHostApiTypeId {
 /// A structure containing information about a particular host API.
 pub struct PaHostApiInfo{
     /// The version of the struct
-    struct_version : int,
+    pub struct_version : int,
     /// The type of the current host
-    host_type : PaHostApiTypeId,
+    pub host_type : PaHostApiTypeId,
     /// The name of the host
-    name : ~str,
+    pub name : ~str,
     /// The total count of device in the host
-    device_count : int,
+    pub device_count : int,
     /// The index to the default input device
-    default_input_device : PaDeviceIndex,
+    pub default_input_device : PaDeviceIndex,
     /// The index to the default output device
-    default_output_device : PaDeviceIndex
+    pub default_output_device : PaDeviceIndex
 }
 
 #[doc(hidden)]
@@ -249,9 +249,9 @@ impl PaHostApiInfo {
 #[deriving(Clone, Eq, Ord, Show)]
 pub struct PaHostErrorInfo {
     /// The code of the error
-    error_code : u32,
+    pub error_code : u32,
     /// The string which explain the error
-    error_text : ~str
+    pub error_text : ~str
 }
 
 #[doc(hidden)]
@@ -276,25 +276,25 @@ impl PaHostErrorInfo {
 #[deriving(Clone, Eq, Ord, Show)]
 pub struct PaDeviceInfo {
     /// The version of the struct
-    struct_version : int,
+    pub struct_version : int,
     /// The name of the devie
-    name : ~str,
+    pub name : ~str,
     /// Host API identifier
-    host_api : PaHostApiIndex,
+    pub host_api : PaHostApiIndex,
     /// Maximal number of input channels for this device
-    max_input_channels : int,
+    pub max_input_channels : int,
     /// maximal number of output channel for this device
-    max_output_channels : int,
+    pub max_output_channels : int,
     /// The default low latency for input with this device
-    default_low_input_latency : PaTime,
+    pub default_low_input_latency : PaTime,
     /// The default low latency for output with this device
-    default_low_output_latency : PaTime,
+    pub default_low_output_latency : PaTime,
     /// The default high latency for input with this device
-    default_high_input_latency : PaTime,
+    pub default_high_input_latency : PaTime,
     /// The default high latency for output with this device
-    default_high_output_latency : PaTime,
+    pub default_high_output_latency : PaTime,
     /// The default sample rate for this device
-    default_sample_rate : f64
+    pub default_sample_rate : f64
 }
 
 #[doc(hidden)]
@@ -336,13 +336,13 @@ impl PaDeviceInfo {
 #[deriving(Clone, Eq, Ord, Show)]
 pub struct PaStreamParameters {
     /// Index of the device
-    device : PaDeviceIndex,
+    pub device : PaDeviceIndex,
     /// The number of channels for this device
-    channel_count : i32,
+    pub channel_count : i32,
     /// Sample format of the device
-    sample_format : PaSampleFormat,
+    pub sample_format : PaSampleFormat,
     /// The suggested latency for this device
-    suggested_latency : PaTime,
+    pub suggested_latency : PaTime,
 }
 
 #[doc(hidden)]
@@ -372,21 +372,21 @@ impl PaStreamParameters {
 
 #[doc(hidden)]
 pub struct PaStreamCallbackTimeInfo {
-    input_buffer_adc_time : PaTime,
-    current_time : PaTime,
-    output_buffer_dac_time : PaTime
+    pub input_buffer_adc_time : PaTime,
+    pub current_time : PaTime,
+    pub output_buffer_dac_time : PaTime
 }
 
 /// A structure containing unchanging information about an open stream.
 #[deriving(Clone, Eq, Ord, Show)]
 pub struct PaStreamInfo {
     /// Struct version
-    struct_version : i32,
+    pub struct_version : i32,
     /// The input latency for this open stream
-    input_latency : PaTime,
+    pub input_latency : PaTime,
     /// The output latency for this open stream
-    output_latency : PaTime,
+    pub output_latency : PaTime,
     /// The sample rate for this open stream
-    sample_rate : f64
+    pub sample_rate : f64
 }
 

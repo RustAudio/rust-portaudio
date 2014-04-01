@@ -51,7 +51,7 @@ pub fn get_version_text() -> ~str {
  *
  * Return the error as a string.
  */
-pub fn get_error_text(error_code : PaError) -> ~str {
+pub fn get_error_text(error_code: PaError) -> ~str {
     unsafe {
         str::raw::from_c_str(ffi::Pa_GetErrorText(error_code))
     }
@@ -136,7 +136,7 @@ pub fn get_default_host_api() -> PaHostApiIndex {
  * Return Some(PaHostApiInfo) describing a specific host API. If the hostApi
  * parameter is out of range or an error is encountered, the function returns None.
  */
-pub fn get_host_api_info(host_api : PaHostApiIndex) -> Option<PaHostApiInfo> {
+pub fn get_host_api_info(host_api: PaHostApiIndex) -> Option<PaHostApiInfo> {
     let c_host_info = unsafe { ffi::Pa_GetHostApiInfo(host_api) };
     if c_host_info.is_null() {
         None
@@ -157,7 +157,7 @@ pub fn get_host_api_info(host_api : PaHostApiIndex) -> Option<PaHostApiInfo> {
  * a PaErrorCode (which are always negative) if PortAudio is not initialized or
  * an error is encountered.
  */
-pub fn host_api_type_id_to_host_api_index(type_id : PaHostApiTypeId)
+pub fn host_api_type_id_to_host_api_index(type_id: PaHostApiTypeId)
                                           -> PaHostApiIndex {
     unsafe {
         ffi::Pa_HostApiTypeIdToHostApiIndex(type_id as i32)
@@ -178,8 +178,8 @@ pub fn host_api_type_id_to_host_api_index(type_id : PaHostApiTypeId)
  * or, a PaErrorCode (which are always negative) if PortAudio is not initialized
  * or an error is encountered.
  */
-pub fn host_api_device_index_to_device_index(host_api : PaHostApiIndex,
-                                             host_api_device_index : int)
+pub fn host_api_device_index_to_device_index(host_api: PaHostApiIndex,
+                                             host_api_device_index: int)
                                              -> PaDeviceIndex {
     unsafe {
         ffi::Pa_HostApiDeviceIndexToDeviceIndex(host_api,
@@ -256,7 +256,7 @@ pub fn get_default_output_device() -> PaDeviceIndex {
  * Return Some(PaDeviceInfo) or, If the device parameter is out of range the
  * function returns None.
  */
-pub fn get_device_info(device : PaDeviceIndex) -> Option<PaDeviceInfo> {
+pub fn get_device_info(device: PaDeviceIndex) -> Option<PaDeviceInfo> {
     let c_info = unsafe { ffi::Pa_GetDeviceInfo(device) };
     if c_info.is_null() {
         None
@@ -287,8 +287,8 @@ pub fn get_device_info(device : PaDeviceIndex) -> Option<PaDeviceInfo> {
  * format is not supported otherwise. The constant PaFormatIsSupported is
  * provided to compare with the return value for success.
  */
-pub fn is_format_supported(input_parameters : &PaStreamParameters,
-                                       output_parameters : &PaStreamParameters,
+pub fn is_format_supported(input_parameters: &PaStreamParameters,
+                                       output_parameters: &PaStreamParameters,
                                        sample_rate : f64)
                                        -> PaError {
     let c_input = input_parameters.unwrap();
@@ -304,7 +304,7 @@ pub fn is_format_supported(input_parameters : &PaStreamParameters,
  * Return the size in bytes of a single sample in the specified format,
  * or PaSampleFormatNotSupported if the format is not supported.
  */
-pub fn get_sample_size(format : PaSampleFormat) -> PaError {
+pub fn get_sample_size(format: PaSampleFormat) -> PaError {
     unsafe {
         ffi::Pa_GetSampleSize(format as u64)
     }
@@ -332,13 +332,13 @@ pub fn sleep(m_sec : int) -> () {
 /// Representation of an audio stream, where the format of the stream is defined
 /// by the S parameter.
 pub struct PaStream<S> {
-    priv c_pa_stream : *ffi::C_PaStream,
-    priv sample_format : PaSampleFormat,
-    priv c_input : Option<ffi::C_PaStreamParameters>,
-    priv c_output : Option<ffi::C_PaStreamParameters>,
-    priv unsafe_buffer : *c_void,
-    priv callback_function : Option<PaCallbackFunction>,
-    priv num_input_channels : i32
+    c_pa_stream : *ffi::C_PaStream,
+    sample_format : PaSampleFormat,
+    c_input : Option<ffi::C_PaStreamParameters>,
+    c_output : Option<ffi::C_PaStreamParameters>,
+    unsafe_buffer : *c_void,
+    callback_function : Option<PaCallbackFunction>,
+    num_input_channels : i32
 }
 
 impl<S> PaStream<S> {
@@ -347,7 +347,7 @@ impl<S> PaStream<S> {
      *
      * Return a new PaStream.
      */
-    pub fn new(sample_format : PaSampleFormat) -> PaStream<S> {
+    pub fn new(sample_format: PaSampleFormat) -> PaStream<S> {
         PaStream {
             c_pa_stream : ptr::null(),
             sample_format : sample_format,
@@ -379,17 +379,19 @@ impl<S> PaStream<S> {
      * If fails, a non-zero error code is returned.
      */
     pub fn open(&mut self,
-                input_parameters : Option<&PaStreamParameters>,
-                output_parameters : Option<&PaStreamParameters>,
-                sample_rate : f64,
-                frames_per_buffer : u32,
-                stream_flags : PaStreamFlags)
+                input_parameters: Option<&PaStreamParameters>,
+                output_parameters: Option<&PaStreamParameters>,
+                sample_rate: f64,
+                frames_per_buffer: u32,
+                stream_flags: PaStreamFlags)
                 -> PaError {
         if !input_parameters.is_none() {
             self.c_input = Some(input_parameters.unwrap().unwrap());
             self.num_input_channels = input_parameters.unwrap().channel_count;
             self.unsafe_buffer = unsafe {
-                malloc(mem::size_of::<S>() as size_t * frames_per_buffer as size_t * input_parameters.unwrap().channel_count as size_t) as *c_void};
+                malloc(mem::size_of::<S>() as size_t *
+                       frames_per_buffer as size_t *
+                       input_parameters.unwrap().channel_count as size_t) as *c_void};
         }
         if !output_parameters.is_none() {
             self.c_output = Some(output_parameters.unwrap().unwrap());
@@ -456,18 +458,20 @@ impl<S> PaStream<S> {
      * If fails, a non-zero error code is returned.
      */
     pub fn open_default(&mut self,
-                        sample_rate : f64,
-                        frames_per_buffer : u32,
-                        num_input_channels : i32,
-                        num_output_channels : i32,
-                        sample_format : PaSampleFormat)
+                        sample_rate: f64,
+                        frames_per_buffer: u32,
+                        num_input_channels: i32,
+                        num_output_channels: i32,
+                        sample_format: PaSampleFormat)
                         -> PaError {
 
         if num_input_channels > 0 {
             self.c_input = None;
             self.num_input_channels = num_input_channels;
             self.unsafe_buffer = unsafe {
-                malloc(mem::size_of::<S>() as size_t * frames_per_buffer as size_t * num_input_channels as size_t) as *c_void };
+                malloc(mem::size_of::<S>() as size_t *
+                       frames_per_buffer as size_t *
+                       num_input_channels as size_t) as *c_void };
         }
         unsafe {
            ffi::Pa_OpenDefaultStream(&self.c_pa_stream,
@@ -616,7 +620,7 @@ impl<S> PaStream<S> {
     #[doc(hidden)]
     // Temporary OSX Fixe : Return always PaInputOverflowed
     #[cfg(target_os="macos")]
-    pub fn read(&self, frames_per_buffer : u32) -> Result<~[S], PaError> {
+    pub fn read(&self, frames_per_buffer: u32) -> Result<~[S], PaError> {
         unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream,
                                self.unsafe_buffer,
@@ -640,7 +644,7 @@ impl<S> PaStream<S> {
      */
     #[cfg(target_os="win32")]
     #[cfg(target_os="linux")]
-    pub fn read(&self, frames_per_buffer : u32) -> Result<~[S], PaError> {
+    pub fn read(&self, frames_per_buffer: u32) -> Result<~[S], PaError> {
         let err = unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
         };
@@ -663,7 +667,7 @@ impl<S> PaStream<S> {
      *
      * Return PaNoError on success, or a PaError code if fail.
      */
-    pub fn write(&self, output_buffer : ~[S],
+    pub fn write(&self, output_buffer: ~[S],
                  frames_per_buffer : u32) -> PaError {
         unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream,

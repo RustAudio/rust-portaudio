@@ -28,76 +28,76 @@ use types::{PaError, PaDeviceIndex, PaHostApiIndex, PaStreamCallbackFlags,
 
 // Sample format
 pub type PaSampleFormat = u64;
-pub static PaFloat32 :          PaSampleFormat = 0x00000001;
-pub static PaInt32 :            PaSampleFormat = 0x00000002;
-// pub static PaInt24 :          PaSampleFormat = 0x00000004;
-pub static PaInt16 :            PaSampleFormat = 0x00000008;
-pub static PaInt8 :             PaSampleFormat = 0x00000010;
-pub static PaUInt8 :            PaSampleFormat = 0x00000020;
-pub static PaCustomFormat :     PaSampleFormat = 0x00010000;
-pub static PaNonInterleaved :   PaSampleFormat = 0x80000000;
+pub static PaFloat32: PaSampleFormat = 0x00000001;
+pub static PaInt32: PaSampleFormat = 0x00000002;
+// pub static PaInt24: PaSampleFormat = 0x00000004;
+pub static PaInt16: PaSampleFormat = 0x00000008;
+pub static PaInt8: PaSampleFormat = 0x00000010;
+pub static PaUInt8: PaSampleFormat = 0x00000020;
+pub static PaCustomFormat: PaSampleFormat = 0x00010000;
+pub static PaNonInterleaved: PaSampleFormat = 0x80000000;
 
 // Stream flags
 pub type PaStreamFlags = u64;
-pub static PaNoFlag :                                   PaStreamFlags = 0;
-pub static PaClipOff :                                  PaStreamFlags = 0x00000001;
-pub static PaDitherOff :                                PaStreamFlags = 0x00000002;
-pub static PaNeverDropInput :                           PaStreamFlags = 0x00000004;
-pub static PaPrimeOutputBuffersUsingStreamCallback :    PaStreamFlags = 0x00000008;
-pub static PaPlatformSpecificFlags :                    PaStreamFlags = 0xFFFF0000;
+pub static PaNoFlag: PaStreamFlags = 0;
+pub static PaClipOff: PaStreamFlags = 0x00000001;
+pub static PaDitherOff: PaStreamFlags = 0x00000002;
+pub static PaNeverDropInput: PaStreamFlags = 0x00000004;
+pub static PaPrimeOutputBuffersUsingStreamCallback: PaStreamFlags = 0x00000008;
+pub static PaPlatformSpecificFlags: PaStreamFlags = 0xFFFF0000;
 
 /// Unchanging unique identifiers for each supported host API
 pub type PaHostApiTypeId = i32;
-pub static PaInDevelopment : PaHostApiTypeId = 0;
-pub static PaDirectSound : PaHostApiTypeId = 1;
-pub static PaMME : PaHostApiTypeId = 2;
-pub static PaASIO : PaHostApiTypeId = 3;
-pub static PaSoundManager : PaHostApiTypeId = 4;
-pub static PaCoreAudio : PaHostApiTypeId = 5;
-pub static PaOSS : PaHostApiTypeId = 7;
-pub static PaALSA : PaHostApiTypeId = 8;
-pub static PaAL : PaHostApiTypeId = 9;
-pub static PaBeOS : PaHostApiTypeId = 10;
-pub static PaWDMKS : PaHostApiTypeId = 11;
-pub static PaJACK : PaHostApiTypeId = 12;
-pub static PaWASAPI : PaHostApiTypeId = 13;
-pub static PaAudioScienceHPI : PaHostApiTypeId = 14;
+pub static PaInDevelopment: PaHostApiTypeId = 0;
+pub static PaDirectSound: PaHostApiTypeId = 1;
+pub static PaMME: PaHostApiTypeId = 2;
+pub static PaASIO: PaHostApiTypeId = 3;
+pub static PaSoundManager: PaHostApiTypeId = 4;
+pub static PaCoreAudio: PaHostApiTypeId = 5;
+pub static PaOSS: PaHostApiTypeId = 7;
+pub static PaALSA: PaHostApiTypeId = 8;
+pub static PaAL: PaHostApiTypeId = 9;
+pub static PaBeOS: PaHostApiTypeId = 10;
+pub static PaWDMKS: PaHostApiTypeId = 11;
+pub static PaJACK: PaHostApiTypeId = 12;
+pub static PaWASAPI: PaHostApiTypeId = 13;
+pub static PaAudioScienceHPI: PaHostApiTypeId = 14;
 
 pub type C_PaStream = c_void;
 
 pub struct C_PaStreamParameters {
-    device : PaDeviceIndex,
-    channel_count : i32,
-    sample_format : PaSampleFormat,
-    suggested_latency : PaTime,
-    host_api_specific_stream_info : *c_void
+    pub device : PaDeviceIndex,
+    pub channel_count : i32,
+    pub sample_format : PaSampleFormat,
+    pub suggested_latency : PaTime,
+    pub host_api_specific_stream_info : *c_void
 }
 
 pub struct C_PaDeviceInfo {
-    struct_version : i32,
-    name : *c_char,
-    host_api : PaHostApiIndex,
-    max_input_channels : i32,
-    max_output_channels : i32,
-    default_low_input_latency : PaTime,
-    default_low_output_latency : PaTime,
-    default_high_input_latency : PaTime,
-    default_high_output_latency : PaTime,
-    default_sample_rate : c_double
+    pub struct_version: i32,
+    pub name: *c_char,
+    pub host_api: PaHostApiIndex,
+    pub max_input_channels: i32,
+    pub max_output_channels: i32,
+    pub default_low_input_latency: PaTime,
+    pub default_low_output_latency: PaTime,
+    pub default_high_input_latency: PaTime,
+    pub default_high_output_latency: PaTime,
+    pub default_sample_rate: c_double
 }
 
 pub struct C_PaHostErrorInfo {
-    error_code : u32,
-    error_text : *c_char
+    pub error_code: u32,
+    pub error_text: *c_char
 }
 
 pub struct C_PaHostApiInfo {
-    struct_version : i32,
-    host_type : i32,
-    name : *c_char,
-    device_count : i32,
-    default_input_device : i32,
-    default_output_device : i32
+    pub struct_version: i32,
+    pub host_type: i32,
+    pub name: *c_char,
+    pub device_count: i32,
+    pub default_input_device: i32,
+    pub default_output_device: i32
 }
 
 extern "C" {
