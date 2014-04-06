@@ -22,8 +22,8 @@
 //! The portable PortAudio API.
 
 use std::{str, ptr, slice, mem, cast};
-use std::libc::{c_double, c_void, malloc};
-use std::libc::types::os::arch::c95::size_t;
+use libc::{c_double, c_void, malloc};
+use libc::types::os::arch::c95::size_t;
 
 use types::*;
 use ffi;

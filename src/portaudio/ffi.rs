@@ -21,7 +21,7 @@
 
 #![allow(dead_code, non_camel_case_types)]
 
-use std::libc::{c_char, c_double, c_void};
+use libc::{c_char, c_double, c_void};
 
 use types::{PaError, PaDeviceIndex, PaHostApiIndex, PaStreamCallbackFlags,
     PaStreamCallbackTimeInfo, PaStreamInfo, PaTime, PaStreamCallbackResult};
