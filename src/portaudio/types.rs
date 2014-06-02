@@ -23,7 +23,8 @@
 
 #![allow(dead_code)]
 
-use std::{str, ptr, cast};
+use std::{str, ptr};
+use std::mem::{transmute};
 
 use ffi;
 
@@ -46,7 +47,7 @@ pub type PaTime = f64;
 
 /// A type used to specify one or more sample formats.
 #[repr(u64)]
-#[deriving(Clone, Eq, Ord, Show)]
+#[deriving(Clone, PartialEq, PartialOrd, Show)]
 pub enum PaSampleFormat {
     /// 32 bits float sample format
     PaFloat32 =         ffi::PaFloat32,
@@ -66,7 +67,7 @@ pub enum PaSampleFormat {
 
 /// The flags to pass to a stream
 #[repr(u64)]
-#[deriving(Clone, Eq, Ord, Show)]
+#[deriving(Clone, PartialEq, PartialOrd, Show)]
 pub enum PaStreamFlags {
     /// No flags
     PaNoFlag =                                  ffi::PaNoFlag,
@@ -104,7 +105,7 @@ pub enum PaStreamCallbackResult {
 
 /// Error codes returned by PortAudio functions.
 #[repr(C)]
-#[deriving(Clone, Eq, Ord, Show)]
+#[deriving(Clone, PartialEq, PartialOrd, Show)]
 pub enum PaError {
     /// No Error
     PaNoError = 0,
@@ -170,7 +171,7 @@ pub enum PaError {
 
 /// Unchanging unique identifiers for each supported host API
 #[repr(i32)]
-#[deriving(Clone, Eq, Ord, Show)]
+#[deriving(Clone, PartialEq, PartialOrd, Show)]
 pub enum PaHostApiTypeId {
     /// In development host
     PaInDevelopment =   ffi::PaInDevelopment,
@@ -209,7 +210,7 @@ pub struct PaHostApiInfo{
     /// The type of the current host
     pub host_type : PaHostApiTypeId,
     /// The name of the host
-    pub name : ~str,
+    pub name : String,
     /// The total count of device in the host
     pub device_count : int,
     /// The index to the default input device
@@ -224,7 +225,7 @@ impl PaHostApiInfo {
         unsafe {
             PaHostApiInfo {
                 struct_version : (*c_info).struct_version as int,
-                host_type : cast::transmute(((*c_info).host_type)),
+                host_type : transmute(((*c_info).host_type)),
                 name : str::raw::from_c_str((*c_info).name),
                 device_count : (*c_info).device_count as int,
                 default_input_device : (*c_info).default_input_device,
@@ -246,12 +247,12 @@ impl PaHostApiInfo {
 }
 
 /// Structure used to return information about a host error condition.
-#[deriving(Clone, Eq, Ord, Show)]
+#[deriving(Clone, PartialEq, PartialOrd, Show)]
 pub struct PaHostErrorInfo {
     /// The code of the error
     pub error_code : u32,
     /// The string which explain the error
-    pub error_text : ~str
+    pub error_text : String
 }
 
 #[doc(hidden)]
@@ -273,12 +274,12 @@ impl PaHostErrorInfo {
 
 /// A structure providing information and capabilities of PortAudio devices.
 /// Devices may support input, output or both input and output.
-#[deriving(Clone, Eq, Ord, Show)]
+#[deriving(Clone, PartialEq, PartialOrd, Show)]
 pub struct PaDeviceInfo {
     /// The version of the struct
     pub struct_version : int,
     /// The name of the devie
-    pub name : ~str,
+    pub name : String,
     /// Host API identifier
     pub host_api : PaHostApiIndex,
     /// Maximal number of input channels for this device
@@ -333,7 +334,7 @@ impl PaDeviceInfo {
 }
 
 /// Parameters for one direction (input or output) of a stream.
-#[deriving(Clone, Eq, Ord, Show)]
+#[deriving(Clone, PartialEq, PartialOrd, Show)]
 pub struct PaStreamParameters {
     /// Index of the device
     pub device : PaDeviceIndex,
@@ -352,7 +353,7 @@ impl PaStreamParameters {
             PaStreamParameters {
                 device : (*c_parameters).device,
                 channel_count : (*c_parameters).channel_count,
-                sample_format : cast::transmute((*c_parameters).sample_format),
+                sample_format : transmute((*c_parameters).sample_format),
                 suggested_latency : (*c_parameters).suggested_latency
             }
         }
@@ -378,7 +379,7 @@ pub struct PaStreamCallbackTimeInfo {
 }
 
 /// A structure containing unchanging information about an open stream.
-#[deriving(Clone, Eq, Ord, Show)]
+#[deriving(Clone, PartialEq, PartialOrd, Show)]
 pub struct PaStreamInfo {
     /// Struct version
     pub struct_version : i32,
