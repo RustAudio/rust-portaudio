@@ -1,4 +1,4 @@
-rust-portaudio [![Build Status](https://travis-ci.org/JeremyLetang/rust-portaudio.png?branch=master)](https://travis-ci.org/JeremyLetang/rust-portaudio)
+rust-portaudio [![Build Status](https://travis-ci.org/jeremyletang/rust-portaudio.png?branch=master)](https://travis-ci.org/jeremyletang/rust-portaudio)
 ==============
 
 __Portaudio__ bindings for Rust
@@ -19,7 +19,7 @@ Only the blocking API work for the moment.
 
 You must install on your computer the Portaudio libraries who is used for the binding.
 
-Portaudio is available with package management tools on Linux, or brew on Mac OS. 
+Portaudio is available with package management tools on Linux, or brew on Mac OS.
 
 You can download it directly from the website : [portaudio](http://www.portaudio.com/download.html)
 

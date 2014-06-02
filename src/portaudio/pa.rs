@@ -21,7 +21,7 @@
 
 //! The portable PortAudio API.
 
-use std::{str, ptr, slice, mem};
+use std::{str, ptr, mem};
 use std::mem::{transmute};
 use std::vec::{Vec};
 use std::vec::raw::{from_buf};
@@ -623,7 +623,7 @@ impl<S> PaStream<S> {
     #[doc(hidden)]
     // Temporary OSX Fixe : Return always PaInputOverflowed
     #[cfg(target_os="macos")]
-    pub fn read(&self, frames_per_buffer: u32) -> Result<~[S], PaError> {
+    pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<S>, PaError> {
         unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream,
                                self.unsafe_buffer,
