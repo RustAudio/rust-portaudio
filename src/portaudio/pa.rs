@@ -21,7 +21,10 @@
 
 //! The portable PortAudio API.
 
-use std::{str, ptr, slice, mem, cast};
+use std::{str, ptr, slice, mem};
+use std::mem::{transmute};
+use std::vec::{Vec};
+use std::vec::raw::{from_buf};
 use libc::{c_double, c_void, malloc};
 use libc::types::os::arch::c95::size_t;
 
@@ -37,7 +40,7 @@ pub fn get_version() -> i32 {
 }
 
 /// Retrieve a textual description of the current PortAudio build.
-pub fn get_version_text() -> ~str {
+pub fn get_version_text() -> String {
     unsafe {
         str::raw::from_c_str(ffi::Pa_GetVersionText())
     }
@@ -51,7 +54,7 @@ pub fn get_version_text() -> ~str {
  *
  * Return the error as a string.
  */
-pub fn get_error_text(error_code: PaError) -> ~str {
+pub fn get_error_text(error_code: PaError) -> String {
     unsafe {
         str::raw::from_c_str(ffi::Pa_GetErrorText(error_code))
     }
@@ -550,7 +553,7 @@ impl<S> PaStream<S> {
         match err {
             0 => Ok(false),
             1 => Ok(true),
-            _ => Err(unsafe { cast::transmute::<i32, PaError>(err) })
+            _ => Err(unsafe { transmute::<i32, PaError>(err) })
         }
     }
 
@@ -627,8 +630,8 @@ impl<S> PaStream<S> {
                                frames_per_buffer)
         };
         Ok(unsafe {
-            slice::raw::from_buf_raw::<S>(self.unsafe_buffer as *S,
-                                          (frames_per_buffer * self.num_input_channels as u32) as uint) })
+            from_buf(self.unsafe_buffer as *S,
+                     (frames_per_buffer * self.num_input_channels as u32) as uint) })
     }
 
     /**
@@ -644,14 +647,14 @@ impl<S> PaStream<S> {
      */
     #[cfg(target_os="win32")]
     #[cfg(target_os="linux")]
-    pub fn read(&self, frames_per_buffer: u32) -> Result<~[S], PaError> {
+    pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<S>, PaError> {
         let err = unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
         };
         match err {
          PaNoError  => Ok(unsafe {
-             slice::raw::from_buf_raw::<S>(self.unsafe_buffer as *S,
-                                           (frames_per_buffer * self.num_input_channels as u32) as uint) }),
+             from_buf(self.unsafe_buffer as *S,
+                     (frames_per_buffer * self.num_input_channels as u32) as uint) }),
          _          => Err(err)
         }
     }
@@ -667,7 +670,7 @@ impl<S> PaStream<S> {
      *
      * Return PaNoError on success, or a PaError code if fail.
      */
-    pub fn write(&self, output_buffer: ~[S],
+    pub fn write(&self, output_buffer: Vec<S>,
                  frames_per_buffer : u32) -> PaError {
         unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream,
