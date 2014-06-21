@@ -11,4 +11,4 @@ install:
 env:
   - RUST_TEST_TASKS=1
 script:
-  - rustc src/portaudio/lib.rs
+  - make lib
