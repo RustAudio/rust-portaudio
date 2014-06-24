@@ -1,3 +1,4 @@
+#![crate_id = "tests"]
 #![feature(globs)]
 #![allow(unreachable_code, dead_assignment)]
 
