@@ -8,8 +8,3 @@ authors = ["Jeremy Letang <letang.jeremy@gmail.com>"]
 
 name = "portaudio"
 crate-type = ["dylib", "rlib"]
-
-[[bin]]
-
-name = "test"
-path = "examples/main.rs"
