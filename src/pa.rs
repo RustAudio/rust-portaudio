@@ -335,11 +335,11 @@ pub fn sleep(m_sec : int) -> () {
 /// Representation of an audio stream, where the format of the stream is defined
 /// by the S parameter.
 pub struct PaStream<S> {
-    c_pa_stream : *ffi::C_PaStream,
+    c_pa_stream : *mut ffi::C_PaStream,
     sample_format : PaSampleFormat,
     c_input : Option<ffi::C_PaStreamParameters>,
     c_output : Option<ffi::C_PaStreamParameters>,
-    unsafe_buffer : *c_void,
+    unsafe_buffer : *mut c_void,
     callback_function : Option<PaCallbackFunction>,
     num_input_channels : i32
 }
@@ -352,11 +352,11 @@ impl<S> PaStream<S> {
      */
     pub fn new(sample_format: PaSampleFormat) -> PaStream<S> {
         PaStream {
-            c_pa_stream : ptr::null(),
+            c_pa_stream : ptr::mut_null(),
             sample_format : sample_format,
             c_input : None,
             c_output : None,
-            unsafe_buffer : ptr::null(),
+            unsafe_buffer : ptr::mut_null(),
             callback_function : None,
             num_input_channels : 0
         }
@@ -394,7 +394,7 @@ impl<S> PaStream<S> {
             self.unsafe_buffer = unsafe {
                 malloc(mem::size_of::<S>() as size_t *
                        frames_per_buffer as size_t *
-                       input_parameters.unwrap().channel_count as size_t) as *c_void};
+                       input_parameters.unwrap().channel_count as size_t) as *mut c_void};
         }
         if !output_parameters.is_none() {
             self.c_output = Some(output_parameters.unwrap().unwrap());
@@ -403,34 +403,34 @@ impl<S> PaStream<S> {
         unsafe {
             if !self.c_input.is_none() &&
                !self.c_output.is_none() {
-                ffi::Pa_OpenStream(&self.c_pa_stream,
+                ffi::Pa_OpenStream(&mut self.c_pa_stream,
                                    &(self.c_input.unwrap()),
                                    &(self.c_output.unwrap()),
                                    sample_rate as c_double,
                                    frames_per_buffer,
                                    stream_flags as u64,
                                    None,
-                                   ptr::null())
+                                   ptr::mut_null())
             }
             else if !self.c_input.is_none() {
-                ffi::Pa_OpenStream(&self.c_pa_stream,
+                ffi::Pa_OpenStream(&mut self.c_pa_stream,
                                    &(self.c_input.unwrap()),
                                    ptr::null(),
                                    sample_rate as c_double,
                                    frames_per_buffer,
                                    stream_flags as u64,
                                    None,
-                                   ptr::null())
+                                   ptr::mut_null())
             }
             else if !self.c_output.is_none() {
-                ffi::Pa_OpenStream(&self.c_pa_stream,
+                ffi::Pa_OpenStream(&mut self.c_pa_stream,
                                    ptr::null(),
                                    &(self.c_output.unwrap()),
                                    sample_rate as c_double,
                                    frames_per_buffer,
                                    stream_flags as u64,
                                    None,
-                                   ptr::null())
+                                   ptr::mut_null())
             }
             else {
                 PaBadStreamPtr
@@ -474,17 +474,17 @@ impl<S> PaStream<S> {
             self.unsafe_buffer = unsafe {
                 malloc(mem::size_of::<S>() as size_t *
                        frames_per_buffer as size_t *
-                       num_input_channels as size_t) as *c_void };
+                       num_input_channels as size_t) as *mut c_void };
         }
         unsafe {
-           ffi::Pa_OpenDefaultStream(&self.c_pa_stream,
+           ffi::Pa_OpenDefaultStream(&mut self.c_pa_stream,
                                      num_input_channels,
                                      num_output_channels,
                                      sample_format as u64,
                                      sample_rate as c_double,
                                      frames_per_buffer,
                                      None,
-                                     ptr::null())
+                                     ptr::mut_null())
         }
     }
 
@@ -630,7 +630,7 @@ impl<S> PaStream<S> {
                                frames_per_buffer)
         };
         Ok(unsafe {
-            from_buf(self.unsafe_buffer as *S,
+            from_buf(self.unsafe_buffer as *const S,
                      (frames_per_buffer * self.num_input_channels as u32) as uint) })
     }
 
@@ -653,7 +653,7 @@ impl<S> PaStream<S> {
         };
         match err {
          PaNoError  => Ok(unsafe {
-             from_buf(self.unsafe_buffer as *S,
+             from_buf(self.unsafe_buffer as *const S,
                      (frames_per_buffer * self.num_input_channels as u32) as uint) }),
          _          => Err(err)
         }
@@ -674,7 +674,7 @@ impl<S> PaStream<S> {
                  frames_per_buffer : u32) -> PaError {
         unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream,
-                                output_buffer.as_ptr() as *c_void,
+                                output_buffer.as_ptr() as *mut c_void,
                                 frames_per_buffer)
         }
     }
@@ -688,7 +688,7 @@ impl<S> PaStream<S> {
     }
 
     #[doc(hidden)]
-    pub fn get_c_pa_stream(&self) -> *ffi::C_PaStream {
+    pub fn get_c_pa_stream(&self) -> *mut ffi::C_PaStream {
         self.c_pa_stream
     }
 }

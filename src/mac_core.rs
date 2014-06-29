@@ -46,8 +46,8 @@ pub struct PaMacCoreStreamInfo {
     host_api_type : PaHostApiTypeId,
     version : u32,
     flags : u32,
-    channel_map : *i32,
-    channel_map_size : u32    
+    channel_map : *const i32,
+    channel_map_size : u32
 }
 
 pub trait MacCore {

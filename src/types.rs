@@ -221,7 +221,7 @@ pub struct PaHostApiInfo{
 
 #[doc(hidden)]
 impl PaHostApiInfo {
-    pub fn wrap(c_info : *ffi::C_PaHostApiInfo) -> PaHostApiInfo {
+    pub fn wrap(c_info : *const ffi::C_PaHostApiInfo) -> PaHostApiInfo {
         unsafe {
             PaHostApiInfo {
                 struct_version : (*c_info).struct_version as int,
@@ -257,7 +257,7 @@ pub struct PaHostErrorInfo {
 
 #[doc(hidden)]
 impl PaHostErrorInfo {
-    pub fn wrap(c_error : *ffi::C_PaHostErrorInfo) -> PaHostErrorInfo {
+    pub fn wrap(c_error : *const ffi::C_PaHostErrorInfo) -> PaHostErrorInfo {
         PaHostErrorInfo {
             error_code : unsafe { (*c_error).error_code },
             error_text : unsafe { str::raw::from_c_str((*c_error).error_text) }
@@ -300,7 +300,7 @@ pub struct PaDeviceInfo {
 
 #[doc(hidden)]
 impl PaDeviceInfo {
-    pub fn wrap(c_info : *ffi::C_PaDeviceInfo) -> PaDeviceInfo {
+    pub fn wrap(c_info : *const ffi::C_PaDeviceInfo) -> PaDeviceInfo {
         unsafe {
             PaDeviceInfo {
                 struct_version : (*c_info).struct_version as int,
@@ -348,7 +348,7 @@ pub struct PaStreamParameters {
 
 #[doc(hidden)]
 impl PaStreamParameters {
-    pub fn wrap(c_parameters : *ffi::C_PaStreamParameters) -> PaStreamParameters {
+    pub fn wrap(c_parameters : *mut ffi::C_PaStreamParameters) -> PaStreamParameters {
         unsafe {
             PaStreamParameters {
                 device : (*c_parameters).device,
@@ -365,7 +365,7 @@ impl PaStreamParameters {
             channel_count : self.channel_count as i32,
             sample_format : self.sample_format as ffi::PaSampleFormat,
             suggested_latency : self.suggested_latency,
-            host_api_specific_stream_info : ptr::null()
+            host_api_specific_stream_info : ptr::mut_null()
         }
     }
 }
