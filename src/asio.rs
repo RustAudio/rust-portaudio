@@ -82,9 +82,9 @@ pub fn get_available_buffer_sizes(device : PaDeviceIndex) -> Result<(i32, i32, i
 * The string will be no longer than 32 characters including the null terminator.
 */
 pub fn get_input_channel_name(device : PaDeviceIndex, channel_index : i32) -> Result<~str, PaError> {
-    let c_string : *c_char = ptr::null();
+    let c_string : *const c_char = ptr::null();
     let err = unsafe {
-        ffi::PaAsio_GetInputChannelName(device, channel_index, &c_string)
+        ffi::PaAsio_GetInputChannelName(device, channel_index, &mut c_string)
     };
     match err {
         PaNoError   => Ok(unsafe { str::raw::from_c_str(c_string) } ),
@@ -98,9 +98,9 @@ pub fn get_input_channel_name(device : PaDeviceIndex, channel_index : i32) -> Re
 * The string will be no longer than 32 characters including the null terminator.
 */
 pub fn get_output_channel_name(device : PaDeviceIndex, channel_index : i32) -> Result<~str, PaError> {
-    let c_string : *c_char = ptr::null();
+    let c_string : *const c_char = ptr::null();
     let err = unsafe {
-        ffi::PaAsio_GetOutputChannelName(device, channel_index, &c_string)
+        ffi::PaAsio_GetOutputChannelName(device, channel_index, &mut c_string)
     };
     match err {
         PaNoError   => Ok(unsafe { str::raw::from_c_str(c_string) } ),
