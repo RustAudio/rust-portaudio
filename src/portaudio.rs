@@ -52,7 +52,7 @@ __rust-portaudio__ is build with the rustpkg tool :
 
 */
 
-#![crate_id = "portaudio#0.1"]
+#![crate_name = "portaudio"]
 
 #![comment = "Portaudio binding for Rust"]
 #![license = "MIT"]
