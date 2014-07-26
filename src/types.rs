@@ -23,7 +23,7 @@
 
 #![allow(dead_code)]
 
-use std::{str, ptr};
+use std::{string, ptr};
 use std::mem::{transmute};
 
 use ffi;
@@ -226,7 +226,7 @@ impl PaHostApiInfo {
             PaHostApiInfo {
                 struct_version : (*c_info).struct_version as int,
                 host_type : transmute(((*c_info).host_type)),
-                name : str::raw::from_c_str((*c_info).name),
+                name : string::raw::from_buf((*c_info).name as *const u8),
                 device_count : (*c_info).device_count as int,
                 default_input_device : (*c_info).default_input_device,
                 default_output_device : (*c_info).default_output_device
@@ -260,7 +260,7 @@ impl PaHostErrorInfo {
     pub fn wrap(c_error : *const ffi::C_PaHostErrorInfo) -> PaHostErrorInfo {
         PaHostErrorInfo {
             error_code : unsafe { (*c_error).error_code },
-            error_text : unsafe { str::raw::from_c_str((*c_error).error_text) }
+            error_text : unsafe { string::raw::from_buf((*c_error).error_text as *const u8) }
         }
     }
 
@@ -304,7 +304,7 @@ impl PaDeviceInfo {
         unsafe {
             PaDeviceInfo {
                 struct_version : (*c_info).struct_version as int,
-                name : str::raw::from_c_str((*c_info).name),
+                name : string::raw::from_buf((*c_info).name as *const u8),
                 host_api : (*c_info).host_api,
                 max_input_channels : (*c_info).max_input_channels as int,
                 max_output_channels : (*c_info).max_output_channels as int,

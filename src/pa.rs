@@ -21,7 +21,7 @@
 
 //! The portable PortAudio API.
 
-use std::{str, ptr, mem};
+use std::{string, ptr, mem};
 use std::mem::{transmute};
 use std::vec::{Vec};
 use std::vec::raw::{from_buf};
@@ -42,7 +42,7 @@ pub fn get_version() -> i32 {
 /// Retrieve a textual description of the current PortAudio build.
 pub fn get_version_text() -> String {
     unsafe {
-        str::raw::from_c_str(ffi::Pa_GetVersionText())
+        string::raw::from_buf(ffi::Pa_GetVersionText() as *const u8)
     }
 }
 
@@ -56,7 +56,7 @@ pub fn get_version_text() -> String {
  */
 pub fn get_error_text(error_code: PaError) -> String {
     unsafe {
-        str::raw::from_c_str(ffi::Pa_GetErrorText(error_code))
+        string::raw::from_buf(ffi::Pa_GetErrorText(error_code) as *const u8)
     }
 }
 
