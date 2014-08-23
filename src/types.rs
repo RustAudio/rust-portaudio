@@ -380,6 +380,7 @@ pub struct PaStreamCallbackTimeInfo {
 
 /// A structure containing unchanging information about an open stream.
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
+#[repr(C)]
 pub struct PaStreamInfo {
     /// Struct version
     pub struct_version : i32,

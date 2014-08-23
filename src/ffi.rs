@@ -65,6 +65,7 @@ pub static PaAudioScienceHPI: PaHostApiTypeId = 14;
 
 pub type C_PaStream = c_void;
 
+#[repr(C)]
 pub struct C_PaStreamParameters {
     pub device : PaDeviceIndex,
     pub channel_count : i32,
@@ -73,6 +74,7 @@ pub struct C_PaStreamParameters {
     pub host_api_specific_stream_info : *mut c_void
 }
 
+#[repr(C)]
 pub struct C_PaDeviceInfo {
     pub struct_version: i32,
     pub name: *const c_char,
@@ -86,11 +88,13 @@ pub struct C_PaDeviceInfo {
     pub default_sample_rate: c_double
 }
 
+#[repr(C)]
 pub struct C_PaHostErrorInfo {
     pub error_code: u32,
     pub error_text: *const c_char
 }
 
+#[repr(C)]
 pub struct C_PaHostApiInfo {
     pub struct_version: i32,
     pub host_type: i32,
