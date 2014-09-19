@@ -352,11 +352,11 @@ impl<S> PaStream<S> {
      */
     pub fn new(sample_format: PaSampleFormat) -> PaStream<S> {
         PaStream {
-            c_pa_stream : ptr::mut_null(),
+            c_pa_stream : ptr::null_mut(),
             sample_format : sample_format,
             c_input : None,
             c_output : None,
-            unsafe_buffer : ptr::mut_null(),
+            unsafe_buffer : ptr::null_mut(),
             callback_function : None,
             num_input_channels : 0
         }
@@ -410,7 +410,7 @@ impl<S> PaStream<S> {
                                    frames_per_buffer,
                                    stream_flags as u64,
                                    None,
-                                   ptr::mut_null())
+                                   ptr::null_mut())
             }
             else if !self.c_input.is_none() {
                 ffi::Pa_OpenStream(&mut self.c_pa_stream,
@@ -420,7 +420,7 @@ impl<S> PaStream<S> {
                                    frames_per_buffer,
                                    stream_flags as u64,
                                    None,
-                                   ptr::mut_null())
+                                   ptr::null_mut())
             }
             else if !self.c_output.is_none() {
                 ffi::Pa_OpenStream(&mut self.c_pa_stream,
@@ -430,7 +430,7 @@ impl<S> PaStream<S> {
                                    frames_per_buffer,
                                    stream_flags as u64,
                                    None,
-                                   ptr::mut_null())
+                                   ptr::null_mut())
             }
             else {
                 PaBadStreamPtr
@@ -484,7 +484,7 @@ impl<S> PaStream<S> {
                                      sample_rate as c_double,
                                      frames_per_buffer,
                                      None,
-                                     ptr::mut_null())
+                                     ptr::null_mut())
         }
     }
 

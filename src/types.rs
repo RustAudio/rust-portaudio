@@ -97,6 +97,7 @@ pub type PaStreamCallbackFlags = u64;
 #[doc(hidden)]
 pub type PaCallbackFunction = extern fn(i : f32) -> PaStreamCallbackResult;
 #[doc(hidden)]
+#[repr(C)]
 pub enum PaStreamCallbackResult {
     PaContinue = 0,
     PaComplete = 1,
@@ -365,13 +366,14 @@ impl PaStreamParameters {
             channel_count : self.channel_count as i32,
             sample_format : self.sample_format as ffi::PaSampleFormat,
             suggested_latency : self.suggested_latency,
-            host_api_specific_stream_info : ptr::mut_null()
+            host_api_specific_stream_info : ptr::null_mut()
         }
     }
 }
 
 
 #[doc(hidden)]
+#[repr(C)]
 pub struct PaStreamCallbackTimeInfo {
     pub input_buffer_adc_time : PaTime,
     pub current_time : PaTime,

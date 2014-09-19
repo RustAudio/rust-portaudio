@@ -4,7 +4,7 @@ name = "rust-portaudio"
 version = "0.3.0"
 authors = ["Jeremy Letang <letang.jeremy@gmail.com>"]
 
-[[lib]]
+[lib]
 
 name = "portaudio"
 crate-type = ["dylib", "rlib"]
