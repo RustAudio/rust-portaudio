@@ -365,7 +365,7 @@ impl PaStreamParameters {
             channel_count : self.channel_count as i32,
             sample_format : self.sample_format as ffi::PaSampleFormat,
             suggested_latency : self.suggested_latency,
-            host_api_specific_stream_info : ptr::mut_null()
+            host_api_specific_stream_info : ptr::null_mut()
         }
     }
 }
