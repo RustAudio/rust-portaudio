@@ -97,6 +97,7 @@ pub type PaStreamCallbackFlags = u64;
 #[doc(hidden)]
 pub type PaCallbackFunction = extern fn(i : f32) -> PaStreamCallbackResult;
 #[doc(hidden)]
+#[repr(C)]
 pub enum PaStreamCallbackResult {
     PaContinue = 0,
     PaComplete = 1,
@@ -372,6 +373,7 @@ impl PaStreamParameters {
 
 
 #[doc(hidden)]
+#[repr(C)]
 pub struct PaStreamCallbackTimeInfo {
     pub input_buffer_adc_time : PaTime,
     pub current_time : PaTime,
