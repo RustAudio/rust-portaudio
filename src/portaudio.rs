@@ -62,13 +62,10 @@ __rust-portaudio__ is build with the rustpkg tool :
 #![feature(globs)]
 #![warn(missing_doc)]
 #![allow(dead_code)]
-#![allow(visible_private_types)]
 
 extern crate libc;
 
-#[cfg(target_os="macos")]
-#[cfg(target_os="linux")]
-#[cfg(target_os="win32")]
+#[cfg(any(target_os="macos", target_os="linux", target_os="win32"))]
 mod c_library {
     #[link(name = "portaudio")]
     extern {}
