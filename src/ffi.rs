@@ -28,40 +28,40 @@ use types::{PaError, PaDeviceIndex, PaHostApiIndex, PaStreamCallbackFlags,
 
 // Sample format
 pub type PaSampleFormat = u64;
-pub static PaFloat32: PaSampleFormat = 0x00000001;
-pub static PaInt32: PaSampleFormat = 0x00000002;
-// pub static PaInt24: PaSampleFormat = 0x00000004;
-pub static PaInt16: PaSampleFormat = 0x00000008;
-pub static PaInt8: PaSampleFormat = 0x00000010;
-pub static PaUInt8: PaSampleFormat = 0x00000020;
-pub static PaCustomFormat: PaSampleFormat = 0x00010000;
-pub static PaNonInterleaved: PaSampleFormat = 0x80000000;
+pub const PA_FLOAT_32: PaSampleFormat = 0x00000001;
+pub const PA_INT_32: PaSampleFormat = 0x00000002;
+// pub const PA_INT_24: PaSampleFormat = 0x00000004;
+pub const PA_INT_16: PaSampleFormat = 0x00000008;
+pub const PA_INT_8: PaSampleFormat = 0x00000010;
+pub const PA_UINT_8: PaSampleFormat = 0x00000020;
+pub const PA_CUSTOM_FORMAT: PaSampleFormat = 0x00010000;
+pub const PA_NON_INTERLEAVED: PaSampleFormat = 0x80000000;
 
 // Stream flags
 pub type PaStreamFlags = u64;
-pub static PaNoFlag: PaStreamFlags = 0;
-pub static PaClipOff: PaStreamFlags = 0x00000001;
-pub static PaDitherOff: PaStreamFlags = 0x00000002;
-pub static PaNeverDropInput: PaStreamFlags = 0x00000004;
-pub static PaPrimeOutputBuffersUsingStreamCallback: PaStreamFlags = 0x00000008;
-pub static PaPlatformSpecificFlags: PaStreamFlags = 0xFFFF0000;
+pub const PA_NO_FLAG: PaStreamFlags = 0;
+pub const PA_CLIP_OFF: PaStreamFlags = 0x00000001;
+pub const PA_DITHER_OFF: PaStreamFlags = 0x00000002;
+pub const PA_NEVER_DROP_INPUT: PaStreamFlags = 0x00000004;
+pub const PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK: PaStreamFlags = 0x00000008;
+pub const PA_PLATFORM_SPECIFIC_FLAGS: PaStreamFlags = 0xFFFF0000;
 
 /// Unchanging unique identifiers for each supported host API
 pub type PaHostApiTypeId = i32;
-pub static PaInDevelopment: PaHostApiTypeId = 0;
-pub static PaDirectSound: PaHostApiTypeId = 1;
-pub static PaMME: PaHostApiTypeId = 2;
-pub static PaASIO: PaHostApiTypeId = 3;
-pub static PaSoundManager: PaHostApiTypeId = 4;
-pub static PaCoreAudio: PaHostApiTypeId = 5;
-pub static PaOSS: PaHostApiTypeId = 7;
-pub static PaALSA: PaHostApiTypeId = 8;
-pub static PaAL: PaHostApiTypeId = 9;
-pub static PaBeOS: PaHostApiTypeId = 10;
-pub static PaWDMKS: PaHostApiTypeId = 11;
-pub static PaJACK: PaHostApiTypeId = 12;
-pub static PaWASAPI: PaHostApiTypeId = 13;
-pub static PaAudioScienceHPI: PaHostApiTypeId = 14;
+pub const PA_IN_DEVELOPMENT: PaHostApiTypeId = 0;
+pub const PA_DIRECT_SOUND: PaHostApiTypeId = 1;
+pub const PA_MME: PaHostApiTypeId = 2;
+pub const PA_ASIO: PaHostApiTypeId = 3;
+pub const PA_SOUND_MANAGER: PaHostApiTypeId = 4;
+pub const PA_CORE_AUDIO: PaHostApiTypeId = 5;
+pub const PA_OSS: PaHostApiTypeId = 7;
+pub const PA_ALSA: PaHostApiTypeId = 8;
+pub const PA_AL: PaHostApiTypeId = 9;
+pub const PA_BE_OS: PaHostApiTypeId = 10;
+pub const PA_WDMKS: PaHostApiTypeId = 11;
+pub const PA_JACK: PaHostApiTypeId = 12;
+pub const PA_WASAPI: PaHostApiTypeId = 13;
+pub const PA_AUDIO_SCIENCE_HPI: PaHostApiTypeId = 14;
 
 pub type C_PaStream = c_void;
 

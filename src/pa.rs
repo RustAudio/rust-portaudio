@@ -645,8 +645,7 @@ impl<S> PaStream<S> {
      * Return Ok(~[S]), a buffer containing the sample of the format S.
      * If fail return a PaError code.
      */
-    #[cfg(target_os="win32")]
-    #[cfg(target_os="linux")]
+    #[cfg(any(target_os="win32", target_os="linux"))]
     pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<S>, PaError> {
         let err = unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)

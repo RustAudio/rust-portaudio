@@ -33,10 +33,10 @@ use ffi;
 pub type PaDeviceIndex = i32;
 /// A special PaDeviceIndex value indicating that no device is available,
 /// or should be used.
-pub static PaNoDevice: PaDeviceIndex = -1;
+pub const PA_NO_DEVICE: PaDeviceIndex = -1;
 /// A special PaDeviceIndex value indicating that the device(s) to be used are
 /// specified in the host api specific stream info structure.
-pub static PaUseHostApiSpecificDeviceSpecification: PaDeviceIndex = -2;
+pub const PA_USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION: PaDeviceIndex = -2;
 
 /// The type used to enumerate to host APIs at runtime.
 /// Values of this type range from 0 to (pa::get_host_api_count()-1).
@@ -50,19 +50,19 @@ pub type PaTime = f64;
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
 pub enum PaSampleFormat {
     /// 32 bits float sample format
-    PaFloat32 =         ffi::PaFloat32,
+    PaFloat32 =         ffi::PA_FLOAT_32,
     /// 32 bits int sample format
-    PaInt32 =           ffi::PaInt32,
+    PaInt32 =           ffi::PA_INT_32,
     /// 16 bits int sample format
-    PaInt16 =           ffi::PaInt16,
+    PaInt16 =           ffi::PA_INT_16,
     /// 8 bits int sample format
-    PaInt8 =            ffi::PaInt8,
+    PaInt8 =            ffi::PA_INT_8,
     /// 8 bits unsigned int sample format
-    PaUInt8 =           ffi::PaUInt8,
+    PaUInt8 =           ffi::PA_UINT_8,
     /// Custom sample format
-    PaCustomFormat =    ffi::PaCustomFormat,
+    PaCustomFormat =    ffi::PA_CUSTOM_FORMAT,
     /// Non interleaved sample format
-    PaNonInterleaved =  ffi::PaNonInterleaved
+    PaNonInterleaved =  ffi::PA_NON_INTERLEAVED
 }
 
 /// The flags to pass to a stream
@@ -70,17 +70,17 @@ pub enum PaSampleFormat {
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
 pub enum PaStreamFlags {
     /// No flags
-    PaNoFlag =                                  ffi::PaNoFlag,
+    PaNoFlag =                                  ffi::PA_NO_FLAG,
     /// Disable default clipping of out of range samples.
-    PaClipOff =                                 ffi::PaClipOff,
+    PaClipOff =                                 ffi::PA_CLIP_OFF,
     /// Disable default dithering.
-    PaDitherOff =                               ffi::PaDitherOff,
+    PaDitherOff =                               ffi::PA_DITHER_OFF,
     /// Flag requests that where possible a full duplex stream will not discard overflowed input samples without calling the stream callback.
-    PaNeverDropInput =                          ffi::PaNeverDropInput,
+    PaNeverDropInput =                          ffi::PA_NEVER_DROP_INPUT,
     /// Call the stream callback to fill initial output buffers, rather than the default behavior of priming the buffers with zeros (silence)
-    PaPrimeOutputBuffersUsingStreamCallback =   ffi::PaPrimeOutputBuffersUsingStreamCallback,
+    PaPrimeOutputBuffersUsingStreamCallback =   ffi::PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK,
     /// A mask specifying the platform specific bits.
-    PaPlatformSpecificFlags =                   ffi::PaPlatformSpecificFlags
+    PaPlatformSpecificFlags =                   ffi::PA_PLATFORM_SPECIFIC_FLAGS
 }
 
 
@@ -175,33 +175,33 @@ pub enum PaError {
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
 pub enum PaHostApiTypeId {
     /// In development host
-    PaInDevelopment =   ffi::PaInDevelopment,
+    PaInDevelopment =   ffi::PA_IN_DEVELOPMENT,
     /// Direct sound
-    PaDirectSound =     ffi::PaDirectSound,
+    PaDirectSound =     ffi::PA_DIRECT_SOUND,
     /// MMe API
-    PaMME =             ffi::PaMME,
+    PaMME =             ffi::PA_MME,
     /// ASIO API
-    PaASIO =            ffi::PaASIO,
+    PaASIO =            ffi::PA_ASIO,
     /// Sound manager API
-    PaSoundManager =    ffi::PaSoundManager,
+    PaSoundManager =    ffi::PA_SOUND_MANAGER,
     /// Core Audio API
-    PaCoreAudio =       ffi::PaCoreAudio,
+    PaCoreAudio =       ffi::PA_CORE_AUDIO,
     /// OSS API
-    PaOSS =             ffi::PaOSS,
+    PaOSS =             ffi::PA_OSS,
     /// Alsa API
-    PaALSA =            ffi::PaALSA,
+    PaALSA =            ffi::PA_ALSA,
     /// AL API
-    PaAL =              ffi::PaAL,
+    PaAL =              ffi::PA_AL,
     /// BeOS API
-    PaBeOS =            ffi::PaBeOS,
+    PaBeOS =            ffi::PA_BE_OS,
     /// WDMKS
-    PaWDMKS =           ffi::PaWDMKS,
+    PaWDMKS =           ffi::PA_WDMKS,
     /// Jack API
-    PaJACK =            ffi::PaJACK,
+    PaJACK =            ffi::PA_JACK,
     /// WASAPI
-    PaWASAPI =          ffi::PaWASAPI,
+    PaWASAPI =          ffi::PA_WASAPI,
     /// Audio Science HPI
-    PaAudioScienceHPI = ffi::PaAudioScienceHPI
+    PaAudioScienceHPI = ffi::PA_AUDIO_SCIENCE_HPI
 }
 
 /// A structure containing information about a particular host API.
