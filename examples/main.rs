@@ -83,7 +83,7 @@ fn main() -> () {
                 // }
                 stream.write(res, 1024)
             },
-            Err(err)    => fail!(format!("Portaudio error read : {}", pa::get_error_text(err)))
+            Err(err)    => panic!(format!("Portaudio error read : {}", pa::get_error_text(err)))
         };
     }
 
