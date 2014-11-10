@@ -1,6 +1,5 @@
-#![crate_id = "tests"]
 #![feature(globs)]
-#![allow(unreachable_code, dead_assignment)]
+#![allow(unreachable_code, unused_assignments)]
 
 extern crate portaudio;
 
@@ -13,20 +12,20 @@ fn main() -> () {
 
     println!("Portaudio init error : {}", pa::get_error_text(pa::initialize()));
 
-    let host_count = pa::get_host_api_count();
+    let host_count = pa::host::get_api_count();
     println!("Portaudio host count : {}", host_count as int);
 
-    let default_host = pa::get_default_host_api();
+    let default_host = pa::host::get_default_api();
     println!("Portaudio default host : {}", default_host as int);
 
-    let host_info = pa::get_host_api_info(default_host);
+    let host_info = pa::host::get_api_info(default_host);
     println!("Portaudio host name : {}", host_info.unwrap().name);
 
     println!("Portaudio type id : {}",
-             pa::host_api_type_id_to_host_api_index(types::PaCoreAudio) as int);
+             pa::host::api_type_id_to_host_api_index(types::PaCoreAudio) as int);
 
-    let def_input = pa::get_default_input_device();
-    let info_input = pa::get_device_info(def_input).unwrap();
+    let def_input = pa::device::get_default_input();
+    let info_input = pa::device::get_info(def_input).unwrap();
     println!("Default input device info :");
     println!("version : {}", info_input.struct_version);
     println!("name : {}", info_input.name);
@@ -35,7 +34,7 @@ fn main() -> () {
     println!("default sample rate : {}", info_input.default_sample_rate);
 
 
-    if pa::get_device_info(def_input).is_none() {
+    if pa::device::get_info(def_input).is_none() {
        println!("error");
     }
     // PaStream test :
@@ -43,17 +42,17 @@ fn main() -> () {
         device : def_input,
         channel_count : 2,
         sample_format : types::PaFloat32,
-        suggested_latency : pa::get_device_info(def_input).unwrap().default_low_input_latency
+        suggested_latency : pa::device::get_info(def_input).unwrap().default_low_input_latency
     };
 
-    let def_output = pa::get_default_output_device();
-    println!("name : {}", pa::get_device_info(def_output).unwrap().name);
+    let def_output = pa::device::get_default_output();
+    println!("name : {}", pa::device::get_info(def_output).unwrap().name);
 
     let stream_params_out = types::PaStreamParameters {
         device : def_output,
         channel_count : 2,
         sample_format : types::PaFloat32,
-        suggested_latency : pa::get_device_info(def_output).unwrap().default_low_output_latency
+        suggested_latency : pa::device::get_info(def_output).unwrap().default_low_output_latency
     };
 
 
