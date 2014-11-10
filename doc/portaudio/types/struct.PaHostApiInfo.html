@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `PaHostApiInfo` struct in crate `portaudio`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, PaHostApiInfo">
+
     <title>portaudio::types::PaHostApiInfo - Rust</title>
 
-    <link href='http://fonts.googleapis.com/css?family=Oswald:700|Inconsolata:400,700'
-          rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
+    
 </head>
-<body>
+<body class="rustdoc">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -18,40 +22,44 @@
     </div>
     <![endif]-->
 
+    
+
     <section class="sidebar">
         
-
-        <p class='location'><a href='../index.html'>portaudio</a>&#8203;::<a href='index.html'>types</a></p><div class='block struct'><h2>Structs</h2><a class='struct ' href='struct.PaDeviceInfo.html'>PaDeviceInfo</a><br/><a class='struct current' href='struct.PaHostApiInfo.html'>PaHostApiInfo</a><br/><a class='struct ' href='struct.PaHostErrorInfo.html'>PaHostErrorInfo</a><br/><a class='struct ' href='struct.PaStreamInfo.html'>PaStreamInfo</a><br/><a class='struct ' href='struct.PaStreamParameters.html'>PaStreamParameters</a><br/></div><div class='block enum'><h2>Enums</h2><a class='enum ' href='enum.PaError.html'>PaError</a><br/><a class='enum ' href='enum.PaHostApiTypeId.html'>PaHostApiTypeId</a><br/><a class='enum ' href='enum.PaSampleFormat.html'>PaSampleFormat</a><br/><a class='enum ' href='enum.PaStreamFlags.html'>PaStreamFlags</a><br/></div>
+        <p class='location'><a href='../index.html'>portaudio</a>::<wbr><a href='index.html'>types</a></p><div class='block struct'><h2>Structs</h2><a class='struct ' href='struct.PaDeviceInfo.html'>PaDeviceInfo</a><a class='struct current' href='struct.PaHostApiInfo.html'>PaHostApiInfo</a><a class='struct ' href='struct.PaHostErrorInfo.html'>PaHostErrorInfo</a><a class='struct ' href='struct.PaStreamInfo.html'>PaStreamInfo</a><a class='struct ' href='struct.PaStreamParameters.html'>PaStreamParameters</a></div><div class='block enum'><h2>Enums</h2><a class='enum ' href='enum.PaError.html'>PaError</a><a class='enum ' href='enum.PaHostApiTypeId.html'>PaHostApiTypeId</a><a class='enum ' href='enum.PaSampleFormat.html'>PaSampleFormat</a><a class='enum ' href='enum.PaStreamFlags.html'>PaStreamFlags</a></div>
     </section>
 
     <nav class="sub">
         <form class="search-form js-only">
-            <button class="do-search">Search</button>
             <div class="search-container">
                 <input class="search-input" name="search"
                        autocomplete="off"
-                       placeholder="Search documentation..."
-                       type="search" />
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
             </div>
         </form>
     </nav>
 
-    <section id='main' class="content struct"><a class='source'
-                              href='../../src/portaudio/src/portaudio/types.rs.html#206-219'>[src]</a><h1 class='fqn'>Struct <a href='../index.html'>portaudio</a>::<a href='index.html'>types</a>::<a class='struct' href=''>PaHostApiInfo</a></h1><pre class='rust struct'>pub struct PaHostApiInfo {
-    pub struct_version: int,
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>portaudio</a>::<wbr><a href='index.html'>types</a>::<wbr><a class='struct' href=''>PaHostApiInfo</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+            <a id="collapse-all" href="#">[-]
+            </a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-8015' href='../../src/portaudio/src/types.rs.html#208-221'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct PaHostApiInfo {
+    pub struct_version: <a href='http://doc.rust-lang.org/nightly/std/primitive.int.html'>int</a>,
     pub host_type: <a class='enum' href='../../portaudio/types/enum.PaHostApiTypeId.html' title='portaudio::types::PaHostApiTypeId'>PaHostApiTypeId</a>,
-    pub name: ~str,
-    pub device_count: int,
-    pub default_input_device: <a class='typedef' href='../../portaudio/types/typedef.PaDeviceIndex.html' title='portaudio::types::PaDeviceIndex'>PaDeviceIndex</a>,
-    pub default_output_device: <a class='typedef' href='../../portaudio/types/typedef.PaDeviceIndex.html' title='portaudio::types::PaDeviceIndex'>PaDeviceIndex</a>,
+    pub name: <a class='struct' href='http://doc.rust-lang.org/nightly/collections/string/struct.String.html' title='collections::string::String'>String</a>,
+    pub device_count: <a href='http://doc.rust-lang.org/nightly/std/primitive.int.html'>int</a>,
+    pub default_input_device: <a class='type' href='../../portaudio/types/type.PaDeviceIndex.html' title='portaudio::types::PaDeviceIndex'>PaDeviceIndex</a>,
+    pub default_output_device: <a class='type' href='../../portaudio/types/type.PaDeviceIndex.html' title='portaudio::types::PaDeviceIndex'>PaDeviceIndex</a>,
 }</pre><div class='docblock'><p>A structure containing information about a particular host API.</p>
 </div><h2 class='fields'>Fields</h2>
-<table><tr><td id='structfield.struct_version'><code>struct_version</code></td><td><div class='docblock'><p>The version of the struct</p>
-</div></td></tr><tr><td id='structfield.host_type'><code>host_type</code></td><td><div class='docblock'><p>The type of the current host</p>
-</div></td></tr><tr><td id='structfield.name'><code>name</code></td><td><div class='docblock'><p>The name of the host</p>
-</div></td></tr><tr><td id='structfield.device_count'><code>device_count</code></td><td><div class='docblock'><p>The total count of device in the host</p>
-</div></td></tr><tr><td id='structfield.default_input_device'><code>default_input_device</code></td><td><div class='docblock'><p>The index to the default input device</p>
-</div></td></tr><tr><td id='structfield.default_output_device'><code>default_output_device</code></td><td><div class='docblock'><p>The index to the default output device</p>
+<table><tr><td id='structfield.struct_version'><a class='stability Unmarked' title='No stability level'></a><code>struct_version</code></td><td><div class='docblock'><p>The version of the struct</p>
+</div></td></tr><tr><td id='structfield.host_type'><a class='stability Unmarked' title='No stability level'></a><code>host_type</code></td><td><div class='docblock'><p>The type of the current host</p>
+</div></td></tr><tr><td id='structfield.name'><a class='stability Unmarked' title='No stability level'></a><code>name</code></td><td><div class='docblock'><p>The name of the host</p>
+</div></td></tr><tr><td id='structfield.device_count'><a class='stability Unmarked' title='No stability level'></a><code>device_count</code></td><td><div class='docblock'><p>The total count of device in the host</p>
+</div></td></tr><tr><td id='structfield.default_input_device'><a class='stability Unmarked' title='No stability level'></a><code>default_input_device</code></td><td><div class='docblock'><p>The index to the default input device</p>
+</div></td></tr><tr><td id='structfield.default_output_device'><a class='stability Unmarked' title='No stability level'></a><code>default_output_device</code></td><td><div class='docblock'><p>The index to the default output device</p>
 </div></td></tr></table></section>
     <section id='search' class="content hidden"></section>
 
@@ -65,9 +73,9 @@
                 <dd>Show this help dialog</dd>
                 <dt>S</dt>
                 <dd>Focus the search field</dd>
-                <dt>&uarr;</dt>
+                <dt>&larrb;</dt>
                 <dd>Move up in search results</dd>
-                <dt>&darr;</dt>
+                <dt>&rarrb;</dt>
                 <dd>Move down in search results</dd>
                 <dt>&#9166;</dt>
                 <dd>Go to active search result</dd>
@@ -81,19 +89,23 @@
             </p>
             <p>
                 Accepted types are: <code>fn</code>, <code>mod</code>,
-                <code>struct</code> (or <code>str</code>), <code>enum</code>,
+                <code>struct</code>, <code>enum</code>,
                 <code>trait</code>, <code>typedef</code> (or
                 <code>tdef</code>).
             </p>
         </div>
     </div>
 
+    
+
     <script>
-        var rootPath = "../../";
-        var currentCrate = "portaudio";
+        window.rootPath = "../../";
+        window.currentCrate = "portaudio";
+        window.playgroundUrl = "";
     </script>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
+    
     <script async src="../../search-index.js"></script>
 </body>
 </html>

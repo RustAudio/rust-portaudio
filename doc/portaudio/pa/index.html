@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `pa` mod in crate `portaudio`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, pa">
+
     <title>portaudio::pa - Rust</title>
 
-    <link href='http://fonts.googleapis.com/css?family=Oswald:700|Inconsolata:400,700'
-          rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="../../main.css">
 
     
+    
 </head>
-<body>
+<body class="rustdoc">
     <!--[if lte IE 8]>
     <div class="warning">
         This old browser is unsupported and will most likely display funky
@@ -18,103 +22,65 @@
     </div>
     <![endif]-->
 
+    
+
     <section class="sidebar">
         
-
-        <p class='location'><a href='../index.html'>portaudio</a></p><div class='block mod'><h2>Modules</h2><a class='mod current' href='../pa/index.html'>pa</a><br/><a class='mod ' href='../types/index.html'>types</a><br/></div>
+        <p class='location'><a href='../index.html'>portaudio</a></p><div class='block mod'><h2>Modules</h2><a class='mod current' href='../pa/index.html'>pa</a><a class='mod ' href='../types/index.html'>types</a></div>
     </section>
 
     <nav class="sub">
         <form class="search-form js-only">
-            <button class="do-search">Search</button>
             <div class="search-container">
                 <input class="search-input" name="search"
                        autocomplete="off"
-                       placeholder="Search documentation..."
-                       type="search" />
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
             </div>
         </form>
     </nav>
 
-    <section id='main' class="content mod"><a class='source'
-                              href='../../src/portaudio/src/portaudio/lib.rs.html#77'>[src]</a><h1 class='fqn'>Module <a href='../index.html'>portaudio</a>::<a class='mod' href=''>pa</a></h1><div class='docblock'><p>The portable PortAudio API.</p>
-</div><h2 id='structs' class='section-link'><a href="#structs">Structs</a></h2>
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>portaudio</a>::<wbr><a class='mod' href=''>pa</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+            <a id="collapse-all" href="#">[-]
+            </a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-12206' href='../../src/portaudio/src/pa/mod.rs.html#22-503'>[src]</a></span></h1>
+<div class='docblock'><p>The portable PortAudio API.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
 <table>
                     <tr>
-                        <td><a class='struct' href='struct.PaStream.html'
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='mod' href='device/index.html'
+                               title='portaudio::pa::device'>device</a></td>
+                        <td class='docblock short'><p>Device management</p>
+</td>
+                    </tr>
+                
+                    <tr>
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='mod' href='host/index.html'
+                               title='portaudio::pa::host'>host</a></td>
+                        <td class='docblock short'><p>Host api management</p>
+</td>
+                    </tr>
+                </table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr>
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='struct' href='struct.PaStream.html'
                                title='portaudio::pa::PaStream'>PaStream</a></td>
                         <td class='docblock short'><p>Representation of an audio stream, where the format of the stream is defined
 by the S parameter.</p>
 </td>
                     </tr>
-                </table><h2 id='functions' class='section-link'><a href="#functions">Functions</a></h2>
+                </table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
 <table>
                     <tr>
-                        <td><a class='fn' href='fn.get_default_host_api.html'
-                               title='portaudio::pa::get_default_host_api'>get_default_host_api</a></td>
-                        <td class='docblock short'><p>Retrieve the index of the default host API.
-The default host API will be the lowest common denominator host API
-on the current platform and is unlikely to provide the best performance.</p>
-</td>
-                    </tr>
-                
-                    <tr>
-                        <td><a class='fn' href='fn.get_default_input_device.html'
-                               title='portaudio::pa::get_default_input_device'>get_default_input_device</a></td>
-                        <td class='docblock short'><p>Retrieve the index of the default input device.
-The result can be used in the inputDevice parameter to open_stream().</p>
-</td>
-                    </tr>
-                
-                    <tr>
-                        <td><a class='fn' href='fn.get_default_output_device.html'
-                               title='portaudio::pa::get_default_output_device'>get_default_output_device</a></td>
-                        <td class='docblock short'><p>Retrieve the index of the default output device. The result can be
-used in the outputDevice parameter to open_stream().</p>
-</td>
-                    </tr>
-                
-                    <tr>
-                        <td><a class='fn' href='fn.get_device_count.html'
-                               title='portaudio::pa::get_device_count'>get_device_count</a></td>
-                        <td class='docblock short'><p>Retrieve the number of available devices. The number of available devices may
-be zero.</p>
-</td>
-                    </tr>
-                
-                    <tr>
-                        <td><a class='fn' href='fn.get_device_info.html'
-                               title='portaudio::pa::get_device_info'>get_device_info</a></td>
-                        <td class='docblock short'><p>Retrieve a pointer to a PaDeviceInfo structure containing information about
-the specified device.</p>
-</td>
-                    </tr>
-                
-                    <tr>
-                        <td><a class='fn' href='fn.get_error_text.html'
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='fn' href='fn.get_error_text.html'
                                title='portaudio::pa::get_error_text'>get_error_text</a></td>
                         <td class='docblock short'><p>Translate the supplied PortAudio error code into a human readable message.</p>
 </td>
                     </tr>
                 
                     <tr>
-                        <td><a class='fn' href='fn.get_host_api_count.html'
-                               title='portaudio::pa::get_host_api_count'>get_host_api_count</a></td>
-                        <td class='docblock short'><p>Retrieve the number of available host APIs.
-Even if a host API is available it may have no devices available.</p>
-</td>
-                    </tr>
-                
-                    <tr>
-                        <td><a class='fn' href='fn.get_host_api_info.html'
-                               title='portaudio::pa::get_host_api_info'>get_host_api_info</a></td>
-                        <td class='docblock short'><p>Retrieve a pointer to a structure containing information about a specific host
-Api.</p>
-</td>
-                    </tr>
-                
-                    <tr>
-                        <td><a class='fn' href='fn.get_last_host_error_info.html'
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='fn' href='fn.get_last_host_error_info.html'
                                title='portaudio::pa::get_last_host_error_info'>get_last_host_error_info</a></td>
                         <td class='docblock short'><p>Return information about the last host error encountered.
 The error information returned by get_last_host_error_info() will never be
@@ -124,44 +90,28 @@ modified asynchronously by errors occurring in other PortAudio owned threads
                     </tr>
                 
                     <tr>
-                        <td><a class='fn' href='fn.get_sample_size.html'
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='fn' href='fn.get_sample_size.html'
                                title='portaudio::pa::get_sample_size'>get_sample_size</a></td>
                         <td class='docblock short'><p>Retrieve the size of a given sample format in bytes.</p>
 </td>
                     </tr>
                 
                     <tr>
-                        <td><a class='fn' href='fn.get_version.html'
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='fn' href='fn.get_version.html'
                                title='portaudio::pa::get_version'>get_version</a></td>
                         <td class='docblock short'><p>Retrieve the release number of the currently running PortAudio build.</p>
 </td>
                     </tr>
                 
                     <tr>
-                        <td><a class='fn' href='fn.get_version_text.html'
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='fn' href='fn.get_version_text.html'
                                title='portaudio::pa::get_version_text'>get_version_text</a></td>
                         <td class='docblock short'><p>Retrieve a textual description of the current PortAudio build.</p>
 </td>
                     </tr>
                 
                     <tr>
-                        <td><a class='fn' href='fn.host_api_device_index_to_device_index.html'
-                               title='portaudio::pa::host_api_device_index_to_device_index'>host_api_device_index_to_device_index</a></td>
-                        <td class='docblock short'><p>Convert a host-API-specific device index to standard PortAudio device index.
-This function may be used in conjunction with the deviceCount field of
-PaHostApiInfo to enumerate all devices for the specified host API.</p>
-</td>
-                    </tr>
-                
-                    <tr>
-                        <td><a class='fn' href='fn.host_api_type_id_to_host_api_index.html'
-                               title='portaudio::pa::host_api_type_id_to_host_api_index'>host_api_type_id_to_host_api_index</a></td>
-                        <td class='docblock short'><p>Convert a static host API unique identifier, into a runtime host API index.</p>
-</td>
-                    </tr>
-                
-                    <tr>
-                        <td><a class='fn' href='fn.initialize.html'
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='fn' href='fn.initialize.html'
                                title='portaudio::pa::initialize'>initialize</a></td>
                         <td class='docblock short'><p>Library initialization function - call this before using PortAudio.
 This function initializes internal data structures and prepares underlying
@@ -172,7 +122,7 @@ PortAudio API functions.</p>
                     </tr>
                 
                     <tr>
-                        <td><a class='fn' href='fn.is_format_supported.html'
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='fn' href='fn.is_format_supported.html'
                                title='portaudio::pa::is_format_supported'>is_format_supported</a></td>
                         <td class='docblock short'><p>Determine whether it would be possible to open a stream with the specified
 parameters.</p>
@@ -180,7 +130,7 @@ parameters.</p>
                     </tr>
                 
                     <tr>
-                        <td><a class='fn' href='fn.sleep.html'
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='fn' href='fn.sleep.html'
                                title='portaudio::pa::sleep'>sleep</a></td>
                         <td class='docblock short'><p>Put the caller to sleep for at least &#39;msec&#39; milliseconds.
 This function is provided only as a convenience for authors of portable code
@@ -189,7 +139,7 @@ This function is provided only as a convenience for authors of portable code
                     </tr>
                 
                     <tr>
-                        <td><a class='fn' href='fn.terminate.html'
+                        <td><a class='stability Unmarked' title='No stability level'></a><a class='fn' href='fn.terminate.html'
                                title='portaudio::pa::terminate'>terminate</a></td>
                         <td class='docblock short'><p>Library termination function - call this when finished using PortAudio.
 This function deallocates all resources allocated by PortAudio since it was
@@ -212,9 +162,9 @@ any PortAudio streams that are still open.</p>
                 <dd>Show this help dialog</dd>
                 <dt>S</dt>
                 <dd>Focus the search field</dd>
-                <dt>&uarr;</dt>
+                <dt>&larrb;</dt>
                 <dd>Move up in search results</dd>
-                <dt>&darr;</dt>
+                <dt>&rarrb;</dt>
                 <dd>Move down in search results</dd>
                 <dt>&#9166;</dt>
                 <dd>Go to active search result</dd>
@@ -228,19 +178,23 @@ any PortAudio streams that are still open.</p>
             </p>
             <p>
                 Accepted types are: <code>fn</code>, <code>mod</code>,
-                <code>struct</code> (or <code>str</code>), <code>enum</code>,
+                <code>struct</code>, <code>enum</code>,
                 <code>trait</code>, <code>typedef</code> (or
                 <code>tdef</code>).
             </p>
         </div>
     </div>
 
+    
+
     <script>
-        var rootPath = "../../";
-        var currentCrate = "portaudio";
+        window.rootPath = "../../";
+        window.currentCrate = "portaudio";
+        window.playgroundUrl = "";
     </script>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
+    
     <script async src="../../search-index.js"></script>
 </body>
 </html>
