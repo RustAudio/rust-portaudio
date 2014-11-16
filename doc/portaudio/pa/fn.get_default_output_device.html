@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `get_default_output_device` fn in crate `portaudio`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, get_default_output_device">
+
+    <title>portaudio::pa::get_default_output_device - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='../index.html'>portaudio</a>::<wbr><a href='index.html'>pa</a></p><div class='block struct'><h2>Structs</h2><a class='struct ' href='struct.PaStream.html'>PaStream</a></div><div class='block fn'><h2>Functions</h2><a class='fn ' href='fn.get_default_host_api.html'>get_default_host_api</a><a class='fn ' href='fn.get_default_input_device.html'>get_default_input_device</a><a class='fn current' href='fn.get_default_output_device.html'>get_default_output_device</a><a class='fn ' href='fn.get_device_count.html'>get_device_count</a><a class='fn ' href='fn.get_device_info.html'>get_device_info</a><a class='fn ' href='fn.get_error_text.html'>get_error_text</a><a class='fn ' href='fn.get_host_api_count.html'>get_host_api_count</a><a class='fn ' href='fn.get_host_api_info.html'>get_host_api_info</a><a class='fn ' href='fn.get_last_host_error_info.html'>get_last_host_error_info</a><a class='fn ' href='fn.get_sample_size.html'>get_sample_size</a><a class='fn ' href='fn.get_version.html'>get_version</a><a class='fn ' href='fn.get_version_text.html'>get_version_text</a><a class='fn ' href='fn.host_api_device_index_to_device_index.html'>host_api_device_index_to_device_index</a><a class='fn ' href='fn.host_api_type_id_to_host_api_index.html'>host_api_type_id_to_host_api_index</a><a class='fn ' href='fn.initialize.html'>initialize</a><a class='fn ' href='fn.is_format_supported.html'>is_format_supported</a><a class='fn ' href='fn.sleep.html'>sleep</a><a class='fn ' href='fn.terminate.html'>terminate</a></div>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content fn">
+<h1 class='fqn'><span class='in-band'>Function <a href='../index.html'>portaudio</a>::<wbr><a href='index.html'>pa</a>::<wbr><a class='fn' href=''>get_default_output_device</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+            <a id="collapse-all" href="#">[-]
+            </a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-12451' href='../../src/portaudio/src/pa.rs.html#246-250'>[src]</a></span></h1>
+<pre class='rust fn'>pub fn get_default_output_device() -&gt; <a class='type' href='../../portaudio/types/type.PaDeviceIndex.html' title='portaudio::types::PaDeviceIndex'>PaDeviceIndex</a></pre><div class='docblock'><p>Retrieve the index of the default output device. The result can be
+used in the outputDevice parameter to open_stream().</p>
+
+<p>Return the default output device index for the default host API, or PaNoDevice
+if no default output device is available or an error was encountered.</p>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "portaudio";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

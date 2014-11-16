@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `get_info` fn in crate `portaudio`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, get_info">
+
+    <title>portaudio::pa::device::get_info - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='../../index.html'>portaudio</a>::<wbr><a href='../index.html'>pa</a>::<wbr><a href='index.html'>device</a></p><div class='block fn'><h2>Functions</h2><a class='fn ' href='fn.get_count.html'>get_count</a><a class='fn ' href='fn.get_default_input.html'>get_default_input</a><a class='fn ' href='fn.get_default_output.html'>get_default_output</a><a class='fn current' href='fn.get_info.html'>get_info</a></div>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press 'S' to search, '?' for more options..."
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content fn">
+<h1 class='fqn'><span class='in-band'>Function <a href='../../index.html'>portaudio</a>::<wbr><a href='../index.html'>pa</a>::<wbr><a href='index.html'>device</a>::<wbr><a class='fn' href=''>get_info</a><wbr></span><span class='out-of-band'><span id='render-detail'>
+            <a id="collapse-all" href="#">[-]
+            </a>&nbsp;<a id="expand-all" href="#">[+]</a>
+        </span><a id='src-12297' href='../../../src/portaudio/src/pa/device.rs.html#69-77'>[src]</a></span></h1>
+<pre class='rust fn'>pub fn get_info(device: <a class='type' href='../../../portaudio/types/type.PaDeviceIndex.html' title='portaudio::types::PaDeviceIndex'>PaDeviceIndex</a>) -&gt; <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='struct' href='../../../portaudio/types/struct.PaDeviceInfo.html' title='portaudio::types::PaDeviceInfo'>PaDeviceInfo</a>&gt;</pre><div class='docblock'><p>Retrieve a pointer to a PaDeviceInfo structure containing information about
+the specified device.</p>
+
+<h1 id="arguments" class='section-header'><a
+                           href="#arguments">Arguments</a></h1>
+<ul>
+<li>device - A valid device index in the range 0 to (Pa_GetDeviceCount()-1)</li>
+</ul>
+
+<p>Return Some(PaDeviceInfo) or, If the device parameter is out of range the
+function returns None.</p>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div class="shortcuts">
+            <h1>Keyboard shortcuts</h1>
+            <dl>
+                <dt>?</dt>
+                <dd>Show this help dialog</dd>
+                <dt>S</dt>
+                <dd>Focus the search field</dd>
+                <dt>&larrb;</dt>
+                <dd>Move up in search results</dd>
+                <dt>&rarrb;</dt>
+                <dd>Move down in search results</dd>
+                <dt>&#9166;</dt>
+                <dd>Go to active search result</dd>
+            </dl>
+        </div>
+        <div class="infos">
+            <h1>Search tricks</h1>
+            <p>
+                Prefix searches with a type followed by a colon (e.g.
+                <code>fn:</code>) to restrict the search to a given type.
+            </p>
+            <p>
+                Accepted types are: <code>fn</code>, <code>mod</code>,
+                <code>struct</code>, <code>enum</code>,
+                <code>trait</code>, <code>typedef</code> (or
+                <code>tdef</code>).
+            </p>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "portaudio";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../jquery.js"></script>
+    <script src="../../../main.js"></script>
+    
+    <script async src="../../../search-index.js"></script>
+</body>
+</html>
