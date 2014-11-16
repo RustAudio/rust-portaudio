@@ -73,12 +73,5 @@ mod c_library {
 
 pub mod types;
 pub mod pa;
-
-//#[doc(hidden)]
-//pub mod user_traits;
-//#[doc(hidden)]
-//#[cfg(target_os="macos")]
-//pub mod mac_core;
-//pub mod asio;
-#[doc(hidden)]
+// mod device;
 mod ffi;
