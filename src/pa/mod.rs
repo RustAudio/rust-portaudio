@@ -463,10 +463,10 @@ impl<S> PaStream<S> {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
         };
         match err {
-         PaNoError  => Ok(unsafe {
-             from_buf(self.unsafe_buffer as *const S,
-                     (frames_per_buffer * self.num_input_channels as u32) as uint) }),
-         _          => Err(err)
+            PaError::PaNoError  => Ok(unsafe {
+                from_buf(self.unsafe_buffer as *const S,
+                        (frames_per_buffer * self.num_input_channels as u32) as uint) }),
+            _                   => Err(err)
         }
     }
 
