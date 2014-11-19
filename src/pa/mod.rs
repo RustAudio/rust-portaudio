@@ -28,8 +28,9 @@ use std::vec::raw::{from_buf};
 use libc::{c_double, c_void, malloc};
 use libc::types::os::arch::c95::size_t;
 
-use types::*;
+use error::Error;
 use ffi;
+use types::*;
 
 pub mod device;
 pub mod host;
@@ -54,7 +55,7 @@ pub fn get_version_text() -> String {
 /// * error_code - The error code
 ///
 /// Return the error as a string.
-pub fn get_error_text(error_code: PaError) -> String {
+pub fn get_error_text(error_code: Error) -> String {
     unsafe {
         string::raw::from_buf(ffi::Pa_GetErrorText(error_code) as *const u8)
     }
@@ -71,9 +72,12 @@ pub fn get_error_text(error_code: PaError) -> String {
 ///
 /// Return PaNoError if successful, otherwise an error code indicating the cause
 /// of failure.
-pub fn initialize() -> PaError {
+pub fn initialize() -> Result<(), Error> {
     unsafe {
-        ffi::Pa_Initialize()
+        match ffi::Pa_Initialize() {
+            Error::NoError => Ok(()),
+            err => Err(err),
+        }
     }
 }
 
@@ -90,9 +94,12 @@ pub fn initialize() -> PaError {
 ///
 /// Return PaNoError if successful, otherwise an error code indicating the cause
 /// of failure.
-pub fn terminate() -> PaError {
+pub fn terminate() -> Result<(), Error> {
     unsafe {
-        ffi::Pa_Terminate()
+        match ffi::Pa_Terminate() {
+            Error::NoError => Ok(()),
+            err => Err(err),
+        }
     }
 }
 
@@ -133,13 +140,15 @@ pub fn get_last_host_error_info() -> PaHostErrorInfo {
 /// format is not supported otherwise. The constant PaFormatIsSupported is
 /// provided to compare with the return value for success.
 pub fn is_format_supported(input_parameters: &PaStreamParameters,
-                                       output_parameters: &PaStreamParameters,
-                                       sample_rate : f64)
-                                       -> PaError {
+                           output_parameters: &PaStreamParameters,
+                           sample_rate : f64) -> Result<(), Error> {
     let c_input = input_parameters.unwrap();
     let c_output = output_parameters.unwrap();
-    unsafe {
+    match unsafe {
         ffi::Pa_IsFormatSupported(&c_input, &c_output, sample_rate as c_double)
+    } {
+        Error::NoError => Ok(()),
+        err => Err(err),
     }
 }
 
@@ -147,9 +156,12 @@ pub fn is_format_supported(input_parameters: &PaStreamParameters,
 ///
 /// Return the size in bytes of a single sample in the specified format,
 /// or PaSampleFormatNotSupported if the format is not supported.
-pub fn get_sample_size(format: PaSampleFormat) -> PaError {
-    unsafe {
+pub fn get_sample_size(format: PaSampleFormat) -> Result<(), Error> {
+    match unsafe {
         ffi::Pa_GetSampleSize(format as u64)
+    } {
+        Error::NoError => Ok(()),
+        err => Err(err),
     }
 }
 
@@ -215,8 +227,7 @@ impl<S> PaStream<S> {
                 output_parameters: Option<&PaStreamParameters>,
                 sample_rate: f64,
                 frames_per_buffer: u32,
-                stream_flags: PaStreamFlags)
-                -> PaError {
+                stream_flags: PaStreamFlags) -> Result<(), Error> {
         if !input_parameters.is_none() {
             self.c_input = Some(input_parameters.unwrap().unwrap());
             self.num_input_channels = input_parameters.unwrap().channel_count;
@@ -232,37 +243,49 @@ impl<S> PaStream<S> {
         unsafe {
             if !self.c_input.is_none() &&
                !self.c_output.is_none() {
-                ffi::Pa_OpenStream(&mut self.c_pa_stream,
-                                   &(self.c_input.unwrap()),
-                                   &(self.c_output.unwrap()),
-                                   sample_rate as c_double,
-                                   frames_per_buffer,
-                                   stream_flags as u64,
-                                   None,
-                                   ptr::null_mut())
+                let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
+                                             &(self.c_input.unwrap()),
+                                             &(self.c_output.unwrap()),
+                                             sample_rate as c_double,
+                                             frames_per_buffer,
+                                             stream_flags as u64,
+                                             None,
+                                             ptr::null_mut());
+                match err {
+                    Error::NoError => Ok(()),
+                    _ => Err(err),
+                }
             }
             else if !self.c_input.is_none() {
-                ffi::Pa_OpenStream(&mut self.c_pa_stream,
-                                   &(self.c_input.unwrap()),
-                                   ptr::null(),
-                                   sample_rate as c_double,
-                                   frames_per_buffer,
-                                   stream_flags as u64,
-                                   None,
-                                   ptr::null_mut())
+                let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
+                                             &(self.c_input.unwrap()),
+                                             ptr::null(),
+                                             sample_rate as c_double,
+                                             frames_per_buffer,
+                                             stream_flags as u64,
+                                             None,
+                                             ptr::null_mut());
+                match err {
+                    Error::NoError => Ok(()),
+                    _ => Err(err),
+                }
             }
             else if !self.c_output.is_none() {
-                ffi::Pa_OpenStream(&mut self.c_pa_stream,
-                                   ptr::null(),
-                                   &(self.c_output.unwrap()),
-                                   sample_rate as c_double,
-                                   frames_per_buffer,
-                                   stream_flags as u64,
-                                   None,
-                                   ptr::null_mut())
+                let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
+                                             ptr::null(),
+                                             &(self.c_output.unwrap()),
+                                             sample_rate as c_double,
+                                             frames_per_buffer,
+                                             stream_flags as u64,
+                                             None,
+                                             ptr::null_mut());
+                match err {
+                    Error::NoError => Ok(()),
+                    _ => Err(err),
+                }
             }
             else {
-                PaBadStreamPtr
+                Err(Error::BadStreamPtr)
             }
         }
     }
@@ -292,8 +315,7 @@ impl<S> PaStream<S> {
                         frames_per_buffer: u32,
                         num_input_channels: i32,
                         num_output_channels: i32,
-                        sample_format: PaSampleFormat)
-                        -> PaError {
+                        sample_format: PaSampleFormat) -> Result<(), Error> {
 
         if num_input_channels > 0 {
             self.c_input = None;
@@ -303,7 +325,7 @@ impl<S> PaStream<S> {
                        frames_per_buffer as size_t *
                        num_input_channels as size_t) as *mut c_void };
         }
-        unsafe {
+        match unsafe {
            ffi::Pa_OpenDefaultStream(&mut self.c_pa_stream,
                                      num_input_channels,
                                      num_output_channels,
@@ -312,37 +334,52 @@ impl<S> PaStream<S> {
                                      frames_per_buffer,
                                      None,
                                      ptr::null_mut())
+        } {
+            Error::NoError => Ok(()),
+            err => Err(err),
         }
     }
 
     /// Closes an audio stream. If the audio stream is active it discards any
     /// pending buffers as if abort_tream() had been called.
-    pub fn close(&mut self) -> PaError {
-        unsafe {
+    pub fn close(&mut self) -> Result<(), Error> {
+        match unsafe {
             ffi::Pa_CloseStream(self.c_pa_stream)
+        } {
+            Error::NoError => Ok(()),
+            err => Err(err),
         }
     }
 
     /// Commences audio processing.
-    pub fn start(&mut self) -> PaError {
-        unsafe {
+    pub fn start(&mut self) -> Result<(), Error> {
+        match unsafe {
             ffi::Pa_StartStream(self.c_pa_stream)
+        } {
+            Error::NoError => Ok(()),
+            err => Err(err),
         }
     }
 
     /// Terminates audio processing. It waits until all pending audio buffers
     /// have been played before it returns.
-    pub fn stop(&mut self) -> PaError {
-        unsafe {
+    pub fn stop(&mut self) -> Result<(), Error> {
+        match unsafe {
             ffi::Pa_StopStream(self.c_pa_stream)
+        } {
+            Error::NoError => Ok(()),
+            err => Err(err),
         }
     }
 
     /// Terminates audio processing immediately without waiting for pending
     /// buffers to complete.
-    pub fn abort(&mut self) -> PaError {
-        unsafe {
+    pub fn abort(&mut self) -> Result<(), Error> {
+        match unsafe {
             ffi::Pa_AbortStream(self.c_pa_stream)
+        } {
+            Error::NoError => Ok(()),
+            err => Err(err),
         }
     }
 
@@ -353,11 +390,14 @@ impl<S> PaStream<S> {
     /// NOT considered to be stopped.
     ///
     /// Return one (1) when the stream is stopped, zero (0) when the stream is
-    /// running or, a PaErrorCode (which are always negative) if PortAudio is not
+    /// running or, a ErrorCode (which are always negative) if PortAudio is not
     /// initialized or an error is encountered.
-    pub fn is_stopped(&self) -> PaError {
-        unsafe {
+    pub fn is_stopped(&self) -> Result<(), Error> {
+        match unsafe {
             ffi::Pa_IsStreamStopped(self.c_pa_stream)
+        } {
+            Error::NoError => Ok(()),
+            err => Err(err),
         }
     }
 
@@ -369,14 +409,14 @@ impl<S> PaStream<S> {
     /// playing.
     ///
     /// Return Ok(true) when the stream is active (ie playing or recording audio),
-    /// Ok(false) when not playing or, a Err(PaError) if PortAudio is not
+    /// Ok(false) when not playing or, a Err(Error) if PortAudio is not
     /// initialized or an error is encountered.
-    pub fn is_active(&self) -> Result<bool, PaError> {
+    pub fn is_active(&self) -> Result<bool, Error> {
         let err = unsafe { ffi::Pa_IsStreamActive(self.c_pa_stream) };
         match err {
             0 => Ok(false),
             1 => Ok(true),
-            _ => Err(unsafe { transmute::<i32, PaError>(err) })
+            _ => Err(unsafe { transmute::<i32, Error>(err) })
         }
     }
 
@@ -413,7 +453,7 @@ impl<S> PaStream<S> {
     ///
     /// Returns a non-negative value representing the maximum number of frames
     /// that can be read from the stream without blocking or busy waiting or,
-    /// a PaErrorCode (which are always negative) if PortAudio is not initialized
+    /// a ErrorCode (which are always negative) if PortAudio is not initialized
     /// or an error is encountered.
     pub fn get_stream_read_available(&self) -> i64 {
         unsafe {
@@ -426,7 +466,7 @@ impl<S> PaStream<S> {
     ///
     /// Return a non-negative value representing the maximum number of frames that
     /// can be written to the stream without blocking or busy waiting or,
-    /// a PaErrorCode (which are always negative) if PortAudio is not initialized
+    /// a ErrorCode (which are always negative) if PortAudio is not initialized
     /// or an error is encountered.
     pub fn get_stream_write_available(&self) -> i64 {
         unsafe {
@@ -437,7 +477,7 @@ impl<S> PaStream<S> {
     #[doc(hidden)]
     // Temporary OSX Fixe : Return always PaInputOverflowed
     #[cfg(target_os="macos")]
-    pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<S>, PaError> {
+    pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<S>, Error> {
         unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream,
                                self.unsafe_buffer,
@@ -456,17 +496,17 @@ impl<S> PaStream<S> {
     /// * frames_per_buffer - The number of frames in the buffer.
     ///
     /// Return Ok(~[S]), a buffer containing the sample of the format S.
-    /// If fail return a PaError code.
+    /// If fail return a Error code.
     #[cfg(any(target_os="win32", target_os="linux"))]
-    pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<S>, PaError> {
+    pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<S>, Error> {
         let err = unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
         };
         match err {
-         PaNoError  => Ok(unsafe {
-             from_buf(self.unsafe_buffer as *const S,
-                     (frames_per_buffer * self.num_input_channels as u32) as uint) }),
-         _          => Err(err)
+            Error::NoError  => Ok(unsafe {
+                from_buf(self.unsafe_buffer as *const S,
+                        (frames_per_buffer * self.num_input_channels as u32) as uint) }),
+            _               => Err(err)
         }
     }
 
@@ -478,13 +518,15 @@ impl<S> PaStream<S> {
     /// * output_buffer - The buffer contains samples in the format specified by S.
     /// * frames_per_buffer - The number of frames in the buffer.
     ///
-    /// Return PaNoError on success, or a PaError code if fail.
-    pub fn write(&self, output_buffer: Vec<S>,
-                 frames_per_buffer : u32) -> PaError {
-        unsafe {
+    /// Return PaNoError on success, or a Error code if fail.
+    pub fn write(&self, output_buffer: Vec<S>, frames_per_buffer : u32) -> Result<(), Error> {
+        match unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream,
                                 output_buffer.as_ptr() as *mut c_void,
                                 frames_per_buffer)
+        } {
+            Error::NoError => Ok(()),
+            err => Err(err),
         }
     }
 

@@ -21,10 +21,11 @@
 
 #![allow(dead_code, non_camel_case_types)]
 
+use error::Error;
 use libc::{c_char, c_double, c_void};
 
-use types::{PaError, PaDeviceIndex, PaHostApiIndex, PaStreamCallbackFlags,
-    PaStreamCallbackTimeInfo, PaStreamInfo, PaTime, PaStreamCallbackResult};
+use types::{PaDeviceIndex, PaHostApiIndex, PaStreamCallbackFlags,
+            PaStreamCallbackTimeInfo, PaStreamInfo, PaTime, PaStreamCallbackResult};
 
 // Sample format
 pub type PaSampleFormat = u64;
@@ -110,9 +111,9 @@ extern "C" {
 
     pub fn Pa_GetVersion() -> i32;
     pub fn Pa_GetVersionText() -> *const c_char;
-    pub fn Pa_GetErrorText(errorCode : PaError) -> *const c_char;
-    pub fn Pa_Initialize() -> PaError;
-    pub fn Pa_Terminate() -> PaError;
+    pub fn Pa_GetErrorText(errorCode : Error) -> *const c_char;
+    pub fn Pa_Initialize() -> Error;
+    pub fn Pa_Terminate() -> Error;
     pub fn Pa_GetHostApiCount() -> PaHostApiIndex;
     pub fn Pa_GetDefaultHostApi() -> PaHostApiIndex;
     pub fn Pa_GetHostApiInfo(hostApi : PaHostApiIndex) -> *const C_PaHostApiInfo;
@@ -123,8 +124,8 @@ extern "C" {
     pub fn Pa_GetDefaultInputDevice() -> PaDeviceIndex;
     pub fn Pa_GetDefaultOutputDevice() -> PaDeviceIndex;
     pub fn Pa_GetDeviceInfo(device : PaDeviceIndex) -> *const C_PaDeviceInfo;
-    pub fn Pa_IsFormatSupported(input_parameters : *const C_PaStreamParameters, outputParameters : *const C_PaStreamParameters, sampleRate : c_double) -> PaError;
-    pub fn Pa_GetSampleSize(format : PaSampleFormat) -> PaError;
+    pub fn Pa_IsFormatSupported(input_parameters : *const C_PaStreamParameters, outputParameters : *const C_PaStreamParameters, sampleRate : c_double) -> Error;
+    pub fn Pa_GetSampleSize(format : PaSampleFormat) -> Error;
     pub fn Pa_Sleep(msec : i32) -> ();
     pub fn Pa_OpenStream(stream : *mut *mut C_PaStream,
                          inputParameters : *const C_PaStreamParameters,
@@ -134,7 +135,7 @@ extern "C" {
                          streamFlags : PaStreamFlags,
                          streamCallback : Option<extern "C" fn(*const c_void, *mut c_void, u32, *const PaStreamCallbackTimeInfo, PaStreamCallbackFlags, *mut c_void) -> PaStreamCallbackResult>,
                          userData : *mut c_void)
-                         -> PaError;
+                         -> Error;
     pub fn Pa_OpenDefaultStream(stream : *mut *mut C_PaStream,
                                 numInputChannels : i32,
                                 numOutputChannels : i32,
@@ -143,29 +144,29 @@ extern "C" {
                                 framesPerBuffer : u32,
                                 streamCallback : Option<extern "C" fn(*const c_void, *mut c_void, u32, *const PaStreamCallbackTimeInfo, PaStreamCallbackFlags, *mut c_void) -> PaStreamCallbackResult>,
                                 userData : *mut c_void)
-                                -> PaError;
-    pub fn Pa_CloseStream(stream : *mut C_PaStream) -> PaError;
-    //pub fn Pa_SetStreamFinishedCallback (stream : *PaStream, PaStreamFinishedCallback *streamFinishedCallback) -> PaError;
-    pub fn Pa_StartStream(stream : *mut C_PaStream) -> PaError;
-    pub fn Pa_StopStream(stream : *mut C_PaStream) -> PaError;
-    pub fn Pa_AbortStream(stream : *mut C_PaStream) -> PaError;
-    pub fn Pa_IsStreamStopped(stream : *mut C_PaStream) -> PaError;
+                                -> Error;
+    pub fn Pa_CloseStream(stream : *mut C_PaStream) -> Error;
+    //pub fn Pa_SetStreamFinishedCallback (stream : *PaStream, PaStreamFinishedCallback *streamFinishedCallback) -> Error;
+    pub fn Pa_StartStream(stream : *mut C_PaStream) -> Error;
+    pub fn Pa_StopStream(stream : *mut C_PaStream) -> Error;
+    pub fn Pa_AbortStream(stream : *mut C_PaStream) -> Error;
+    pub fn Pa_IsStreamStopped(stream : *mut C_PaStream) -> Error;
     pub fn Pa_IsStreamActive(stream : *mut C_PaStream) -> i32;
     pub fn Pa_GetStreamInfo(stream : *mut C_PaStream) -> *const PaStreamInfo;
     pub fn Pa_GetStreamTime(stream : *mut C_PaStream) -> PaTime;
     pub fn Pa_GetStreamCpuLoad(stream : *mut C_PaStream) -> c_double;
-    pub fn Pa_ReadStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> PaError;
-    pub fn Pa_WriteStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> PaError;
+    pub fn Pa_ReadStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> Error;
+    pub fn Pa_WriteStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> Error;
     pub fn Pa_GetStreamReadAvailable(stream : *mut C_PaStream) -> i64;
     pub fn Pa_GetStreamWriteAvailable(stream : *mut C_PaStream) -> i64;
 
     /*
     * PortAudio Specific ASIO
     */
-    pub fn PaAsio_GetAvailableBufferSizes(device : PaDeviceIndex, minBufferSizeFrames : *mut i32, maxBufferSizeFrames : *mut i32, preferredBufferSizeFrames : *mut i32, granularity : *mut i32) -> PaError;
-    pub fn PaAsio_GetInputChannelName(device : PaDeviceIndex, channelIndex : i32, channelName : *mut *const c_char) -> PaError;
-    pub fn PaAsio_GetOutputChannelName(device : PaDeviceIndex, channelIndex : i32, channelName : *mut *const c_char) -> PaError;
-    pub fn PaAsio_SetStreamSampleRate(stream : *mut C_PaStream, sampleRate : c_double) -> PaError;
+    pub fn PaAsio_GetAvailableBufferSizes(device : PaDeviceIndex, minBufferSizeFrames : *mut i32, maxBufferSizeFrames : *mut i32, preferredBufferSizeFrames : *mut i32, granularity : *mut i32) -> Error;
+    pub fn PaAsio_GetInputChannelName(device : PaDeviceIndex, channelIndex : i32, channelName : *mut *const c_char) -> Error;
+    pub fn PaAsio_GetOutputChannelName(device : PaDeviceIndex, channelIndex : i32, channelName : *mut *const c_char) -> Error;
+    pub fn PaAsio_SetStreamSampleRate(stream : *mut C_PaStream, sampleRate : c_double) -> Error;
 
 
     /*
@@ -174,7 +175,7 @@ extern "C" {
     pub fn PaMacCore_GetStreamInputDevice(s : *mut C_PaStream) -> PaDeviceIndex;
     pub fn PaMacCore_GetStreamOutputDevice(s : *mut C_PaStream) -> PaDeviceIndex;
     // pub fn PaMacCore_GetChannelName (int device, int channelIndex, bool intput) -> *c_char
-    pub fn PaMacCore_GetBufferSizeRange(device : PaDeviceIndex, minBufferSizeFrames : *mut u32, maxBufferSizeFrames : *mut u32) -> PaError;
+    pub fn PaMacCore_GetBufferSizeRange(device : PaDeviceIndex, minBufferSizeFrames : *mut u32, maxBufferSizeFrames : *mut u32) -> Error;
     //pub fn PaMacCore_SetupStreamInfo(PaMacCoreStreamInfo *data, unsigned long flags) -> ();
     //pub fn PaMacCore_SetupChannelMap(PaMacCoreStreamInfo *data, const SInt32 *const channelMap, unsigned long channelMapSize) -> ();
 }
