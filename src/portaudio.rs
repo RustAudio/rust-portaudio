@@ -71,7 +71,8 @@ mod c_library {
     extern {}
 }
 
-pub mod types;
-pub mod pa;
-// mod device;
+pub mod error;
 mod ffi;
+pub mod pa;
+pub mod types;
+// mod device;
