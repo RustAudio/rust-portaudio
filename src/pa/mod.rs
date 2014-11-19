@@ -262,7 +262,7 @@ impl<S> PaStream<S> {
                                    ptr::null_mut())
             }
             else {
-                PaBadStreamPtr
+                PaError::PaBadStreamPtr
             }
         }
     }
