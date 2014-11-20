@@ -70,7 +70,7 @@ pub fn get_error_text(error_code: Error) -> String {
 /// Note that if initialize() returns an error code, Pa_Terminate() should NOT be
 /// called.
 ///
-/// Return PaNoError if successful, otherwise an error code indicating the cause
+/// Return NoError if successful, otherwise an error code indicating the cause
 /// of failure.
 pub fn initialize() -> Result<(), Error> {
     unsafe {
@@ -92,7 +92,7 @@ pub fn initialize() -> Result<(), Error> {
 /// Failure to do so may result in serious resource leaks, such as audio devices
 /// not being available until the next reboot.
 ///
-/// Return PaNoError if successful, otherwise an error code indicating the cause
+/// Return NoError if successful, otherwise an error code indicating the cause
 /// of failure.
 pub fn terminate() -> Result<(), Error> {
     unsafe {
@@ -114,10 +114,10 @@ pub fn terminate() -> Result<(), Error> {
 /// Return a pointer to an immuspacespacespacele structure constraining
 /// information about the host error. The values in this structure will only be
 /// valid if a PortAudio function has previously returned the
-/// PaUnanticipatedHostError error code.
-pub fn get_last_host_error_info() -> PaHostErrorInfo {
+/// UnanticipatedHostError error code.
+pub fn get_last_host_error_info() -> HostErrorInfo {
     let c_error = unsafe { ffi::Pa_GetLastHostErrorInfo() };
-    PaHostErrorInfo::wrap(c_error)
+    HostErrorInfo::wrap(c_error)
 }
 
 /// Determine whether it would be possible to open a stream with the specified
@@ -126,11 +126,11 @@ pub fn get_last_host_error_info() -> PaHostErrorInfo {
 /// # Arguments
 /// * input_parameters - A structure that describes the input parameters used to
 /// open a stream.
-/// The suggestedLatency field is ignored. See PaStreamParameters for a
+/// The suggestedLatency field is ignored. See StreamParameters for a
 /// description of these parameters. inputParameters must be None for output-only
 /// streams.
 /// * output_parameters - A structure that describes the output parameters used to
-/// open a stream. The suggestedLatency field is ignored. See PaStreamParameters
+/// open a stream. The suggestedLatency field is ignored. See StreamParameters
 /// for a description of these parameters. outputParameters must be None for
 /// input-only streams.
 /// * sample_rate - The required sampleRate. For full-duplex streams it is the
@@ -139,8 +139,8 @@ pub fn get_last_host_error_info() -> PaHostErrorInfo {
 /// Return 0 if the format is supported, and an error code indicating why the
 /// format is not supported otherwise. The constant PaFormatIsSupported is
 /// provided to compare with the return value for success.
-pub fn is_format_supported(input_parameters: &PaStreamParameters,
-                           output_parameters: &PaStreamParameters,
+pub fn is_format_supported(input_parameters: &StreamParameters,
+                           output_parameters: &StreamParameters,
                            sample_rate : f64) -> Result<(), Error> {
     let c_input = input_parameters.unwrap();
     let c_output = output_parameters.unwrap();
@@ -155,8 +155,8 @@ pub fn is_format_supported(input_parameters: &PaStreamParameters,
 /// Retrieve the size of a given sample format in bytes.
 ///
 /// Return the size in bytes of a single sample in the specified format,
-/// or PaSampleFormatNotSupported if the format is not supported.
-pub fn get_sample_size(format: PaSampleFormat) -> Result<(), Error> {
+/// or SampleFormatNotSupported if the format is not supported.
+pub fn get_sample_size(format: SampleFormat) -> Result<(), Error> {
     match unsafe {
         ffi::Pa_GetSampleSize(format as u64)
     } {
@@ -179,22 +179,22 @@ pub fn sleep(m_sec : int) -> () {
 
 /// Representation of an audio stream, where the format of the stream is defined
 /// by the S parameter.
-pub struct PaStream<S> {
+pub struct Stream<S> {
     c_pa_stream : *mut ffi::C_PaStream,
-    sample_format : PaSampleFormat,
+    sample_format : SampleFormat,
     c_input : Option<ffi::C_PaStreamParameters>,
     c_output : Option<ffi::C_PaStreamParameters>,
     unsafe_buffer : *mut c_void,
-    callback_function : Option<PaCallbackFunction>,
+    callback_function : Option<CallbackFunction>,
     num_input_channels : i32
 }
 
-impl<S> PaStream<S> {
-    /// Constructor for PaStream.
+impl<S> Stream<S> {
+    /// Constructor for Stream.
     ///
-    /// Return a new PaStream.
-    pub fn new(sample_format: PaSampleFormat) -> PaStream<S> {
-        PaStream {
+    /// Return a new Stream.
+    pub fn new(sample_format: SampleFormat) -> Stream<S> {
+        Stream {
             c_pa_stream : ptr::null_mut(),
             sample_format : sample_format,
             c_input : None,
@@ -220,14 +220,14 @@ impl<S> PaStream<S> {
     /// This parameter may contain a combination of flags ORed together. Some
     /// flags may only be relevant to certain buffer formats.
     ///
-    /// Upon success returns PaNoError and the stream is inactive (stopped).
+    /// Upon success returns NoError and the stream is inactive (stopped).
     /// If fails, a non-zero error code is returned.
     pub fn open(&mut self,
-                input_parameters: Option<&PaStreamParameters>,
-                output_parameters: Option<&PaStreamParameters>,
+                input_parameters: Option<&StreamParameters>,
+                output_parameters: Option<&StreamParameters>,
                 sample_rate: f64,
                 frames_per_buffer: u32,
-                stream_flags: PaStreamFlags) -> Result<(), Error> {
+                stream_flags: StreamFlags) -> Result<(), Error> {
         if !input_parameters.is_none() {
             self.c_input = Some(input_parameters.unwrap().unwrap());
             self.num_input_channels = input_parameters.unwrap().channel_count;
@@ -300,22 +300,22 @@ impl<S> PaStream<S> {
     /// function
     /// * num_input_channels - The number of channels of sound that will be
     /// supplied to the stream callback or returned by Pa_ReadStream. It can range
-    /// from 1 to the value of maxInputChannels in the PaDeviceInfo record for the
+    /// from 1 to the value of maxInputChannels in the DeviceInfo record for the
     /// default input device. If 0 the stream is opened as an output-only stream.
     /// * num_output_channels - The number of channels of sound to be delivered to
     /// the stream callback or passed to Pa_WriteStream. It can range from 1 to
-    /// the value of maxOutputChannels in the PaDeviceInfo record for the default
+    /// the value of maxOutputChannels in the DeviceInfo record for the default
     /// output device. If 0 the stream is opened as an output-only stream.
     /// * sample_format - The sample_format for the input and output buffers.
     ///
-    /// Upon success returns PaNoError and the stream is inactive (stopped).
+    /// Upon success returns NoError and the stream is inactive (stopped).
     /// If fails, a non-zero error code is returned.
     pub fn open_default(&mut self,
                         sample_rate: f64,
                         frames_per_buffer: u32,
                         num_input_channels: i32,
                         num_output_channels: i32,
-                        sample_format: PaSampleFormat) -> Result<(), Error> {
+                        sample_format: SampleFormat) -> Result<(), Error> {
 
         if num_input_channels > 0 {
             self.c_input = None;
@@ -386,7 +386,7 @@ impl<S> PaStream<S> {
     /// Determine whether the stream is stopped.
     /// A stream is considered to be stopped prior to a successful call to
     /// start_stream and after a successful call to stop_stream or abort_stream.
-    /// If a stream callback returns a value other than PaContinue the stream is
+    /// If a stream callback returns a value other than Continue the stream is
     /// NOT considered to be stopped.
     ///
     /// Return one (1) when the stream is stopped, zero (0) when the stream is
@@ -421,7 +421,7 @@ impl<S> PaStream<S> {
     }
 
     /// Returns the current time in seconds for a stream according to the same
-    /// clock used to generate callback PaStreamCallbackTimeInfo timestamps.
+    /// clock used to generate callback StreamCallbackTimeInfo timestamps.
     /// The time values are monotonically increasing and have unspecified origin.
     ///
     /// get_stream_time returns valid time values for the entire life of the
@@ -430,7 +430,7 @@ impl<S> PaStream<S> {
     /// returned by Pa_GetStreamTime.
     ///
     /// Return the stream's current time in seconds, or 0 if an error occurred.
-    pub fn get_stream_time(&self) -> PaTime {
+    pub fn get_stream_time(&self) -> Time {
         unsafe {
             ffi::Pa_GetStreamTime(self.c_pa_stream)
         }
@@ -518,7 +518,7 @@ impl<S> PaStream<S> {
     /// * output_buffer - The buffer contains samples in the format specified by S.
     /// * frames_per_buffer - The number of frames in the buffer.
     ///
-    /// Return PaNoError on success, or a Error code if fail.
+    /// Return NoError on success, or a Error code if fail.
     pub fn write(&self, output_buffer: Vec<S>, frames_per_buffer : u32) -> Result<(), Error> {
         match unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream,
@@ -530,9 +530,9 @@ impl<S> PaStream<S> {
         }
     }
 
-    /// Retrieve a PaStreamInfo structure containing information about the
+    /// Retrieve a StreamInfo structure containing information about the
     /// specified stream.
-    pub fn get_stream_info(&self) -> PaStreamInfo {
+    pub fn get_stream_info(&self) -> StreamInfo {
         unsafe {
             *ffi::Pa_GetStreamInfo(self.c_pa_stream)
         }

@@ -1,0 +1,4 @@
+[root]
+name = "rust-portaudio"
+version = "0.3.0"
+

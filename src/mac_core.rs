@@ -23,27 +23,29 @@
 * The MAC_CORE specific API.
 */
 
-use pa::*;
-use types::*;
 use ffi;
+use pa::*;
+use types::{
+    DeviceIndex,
+};
 
-pub static PaMacCoreChangeDeviceParameters : u32 = 0x01;
-pub static PaMacCoreFailIfConversionRequired : u32 = 0x02;
-pub static PaMacCoreConversionQualityMin : u32 = 0x0100;
-pub static PaMacCoreConversionQualityMedium : u32 = 0x0200;
-pub static PaMacCoreConversionQualityLow : u32 = 0x0300;
-pub static PaMacCoreConversionQualityHigh : u32 = 0x0400;
-pub static PaMacCoreConversionQualityMax : u32 = 0x0000;
-pub static PaMacCorePlayNice : u32 = 0x00;
-pub static PaMacCorePro : u32 = 0x01;
-pub static PaMacCoreMinimizeCPUButPlayNice : u32 = 0x0100;
-pub static PaMacCoreMinimizeCPU : u32 = 0x0101;
+pub static MacCoreChangeDeviceParameters : u32 = 0x01;
+pub static MacCoreFailIfConversionRequired : u32 = 0x02;
+pub static MacCoreConversionQualityMin : u32 = 0x0100;
+pub static MacCoreConversionQualityMedium : u32 = 0x0200;
+pub static MacCoreConversionQualityLow : u32 = 0x0300;
+pub static MacCoreConversionQualityHigh : u32 = 0x0400;
+pub static MacCoreConversionQualityMax : u32 = 0x0000;
+pub static MacCorePlayNice : u32 = 0x00;
+pub static MacCorePro : u32 = 0x01;
+pub static MacCoreMinimizeCPUButPlayNice : u32 = 0x0100;
+pub static MacCoreMinimizeCPU : u32 = 0x0101;
 
 
 /// Not implemented
-pub struct PaMacCoreStreamInfo {
+pub struct MacCoreStreamInfo {
     size : u32,
-    host_api_type : PaHostApiTypeId,
+    host_api_type : HostApiTypeId,
     version : u32,
     flags : u32,
     channel_map : *const i32,
@@ -51,8 +53,8 @@ pub struct PaMacCoreStreamInfo {
 }
 
 pub trait MacCore {
-    fn get_stream_input_device(&self) -> PaDeviceIndex;
-    fn get_stream_output_device(&self) -> PaDeviceIndex; 
+    fn get_stream_input_device(&self) -> DeviceIndex;
+    fn get_stream_output_device(&self) -> DeviceIndex; 
 }
 
 // // fn get_buffer_size_range(device : PaDeviceIndex) -> Result<(u32, u32), PaError> {
@@ -66,13 +68,13 @@ pub trait MacCore {
 // }
 
 
-impl<S> MacCore for PaStream<S> {
-        fn get_stream_input_device(&self) -> PaDeviceIndex {
+impl<S> MacCore for Stream<S> {
+        fn get_stream_input_device(&self) -> DeviceIndex {
         unsafe {
             ffi::PaMacCore_GetStreamInputDevice(self.get_c_pa_stream())
         }
     }
-        fn get_stream_output_device(&self) -> PaDeviceIndex {
+        fn get_stream_output_device(&self) -> DeviceIndex {
         unsafe {
             ffi::PaMacCore_GetStreamOutputDevice(self.get_c_pa_stream())
         }

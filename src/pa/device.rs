@@ -30,7 +30,7 @@ use ffi;
 /// Return A non-negative value indicating the number of available devices or,
 /// a PaErrorCode (which are always negative) if PortAudio is not initialized or
 /// an error is encountered.
-pub fn get_count() -> PaDeviceIndex {
+pub fn get_count() -> DeviceIndex {
     unsafe {
         ffi::Pa_GetDeviceCount()
     }
@@ -41,7 +41,7 @@ pub fn get_count() -> PaDeviceIndex {
 ///
 /// Return the default input device index for the default host API, or PaNoDevice
 /// if no default input device is available or an error was encountered
-pub fn get_default_input() -> PaDeviceIndex {
+pub fn get_default_input() -> DeviceIndex {
     unsafe {
         ffi::Pa_GetDefaultInputDevice()
     }
@@ -52,7 +52,7 @@ pub fn get_default_input() -> PaDeviceIndex {
 ///
 /// Return the default output device index for the default host API, or PaNoDevice
 /// if no default output device is available or an error was encountered.
-pub fn get_default_output() -> PaDeviceIndex {
+pub fn get_default_output() -> DeviceIndex {
     unsafe {
         ffi::Pa_GetDefaultOutputDevice()
     }
@@ -66,12 +66,12 @@ pub fn get_default_output() -> PaDeviceIndex {
 ///
 /// Return Some(PaDeviceInfo) or, If the device parameter is out of range the
 /// function returns None.
-pub fn get_info(device: PaDeviceIndex) -> Option<PaDeviceInfo> {
+pub fn get_info(device: DeviceIndex) -> Option<DeviceInfo> {
     let c_info = unsafe { ffi::Pa_GetDeviceInfo(device) };
     if c_info.is_null() {
         None
     }
     else {
-        Some(PaDeviceInfo::wrap(c_info))
+        Some(DeviceInfo::wrap(c_info))
     }
 }

@@ -3,7 +3,6 @@
 //! implementing the std Error trait.
 //!
 
-
 /// Error codes returned by PortAudio functions.
 #[repr(C)]
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
