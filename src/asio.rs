@@ -32,10 +32,10 @@ use ffi;
 use pa::*;
 
 pub trait Asio {
-    fn set_stream_sample_rate(&self, sampleRate : f64) -> PaError;
+    fn set_stream_sample_rate(&self, sampleRate : f64) -> Error;
 }
 
-impl<I, O> Asio for PaStream<I, O> {
+impl<I, O> Asio for Stream<I, O> {
     /**
     * Set the sample rate of an open paASIO stream.
     * 
@@ -81,7 +81,7 @@ pub fn get_available_buffer_sizes(device : PaDeviceIndex) -> Result<(i32, i32, i
 *
 * The string will be no longer than 32 characters including the null terminator.
 */
-pub fn get_input_channel_name(device : PaDeviceIndex, channel_index : i32) -> Result<~str, PaError> {
+pub fn get_input_channel_name(device : PaDeviceIndex, channel_index : i32) -> Result<String, PaError> {
     let c_string : *const c_char = ptr::null();
     let err = unsafe {
         ffi::PaAsio_GetInputChannelName(device, channel_index, &mut c_string)
@@ -97,7 +97,7 @@ pub fn get_input_channel_name(device : PaDeviceIndex, channel_index : i32) -> Re
 *
 * The string will be no longer than 32 characters including the null terminator.
 */
-pub fn get_output_channel_name(device : PaDeviceIndex, channel_index : i32) -> Result<~str, PaError> {
+pub fn get_output_channel_name(device : PaDeviceIndex, channel_index : i32) -> Result<String, PaError> {
     let c_string : *const c_char = ptr::null();
     let err = unsafe {
         ffi::PaAsio_GetOutputChannelName(device, channel_index, &mut c_string)

@@ -25,12 +25,12 @@
 *
 */
 
-use types::*;
+use types::StreamCallbackResult;
 
 pub trait PortaudioCallback {
     /**
     *
     * T = type defined by PaSampleFormat
     */
-    fn callback_function(&self, input_buffer : ~[f32], frames_per_buffer : u32) -> (PaStreamCallbackResult, ~[f32]);
+    fn callback_function(&self, input_buffer : Box<[f32]>, frames_per_buffer : u32) -> (StreamCallbackResult, Box<[f32]>);
 }

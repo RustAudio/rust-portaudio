@@ -30,135 +30,135 @@ use ffi;
 
 /// The type used to refer to audio devices. Values of this type usually range
 /// from 0 to (pa::get_device_count()-1)
-pub type PaDeviceIndex = i32;
-/// A special PaDeviceIndex value indicating that no device is available,
+pub type DeviceIndex = i32;
+/// A special DeviceIndex value indicating that no device is available,
 /// or should be used.
-pub const PA_NO_DEVICE: PaDeviceIndex = -1;
-/// A special PaDeviceIndex value indicating that the device(s) to be used are
+pub const PA_NO_DEVICE: DeviceIndex = -1;
+/// A special DeviceIndex value indicating that the device(s) to be used are
 /// specified in the host api specific stream info structure.
-pub const PA_USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION: PaDeviceIndex = -2;
+pub const PA_USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION: DeviceIndex = -2;
 
 /// The type used to enumerate to host APIs at runtime.
 /// Values of this type range from 0 to (pa::get_host_api_count()-1).
-pub type PaHostApiIndex = i32;
+pub type HostApiIndex = i32;
 
 /// The type used to represent monotonic time in seconds.
-pub type PaTime = f64;
+pub type Time = f64;
 
 /// A type used to specify one or more sample formats.
 #[repr(u64)]
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
-pub enum PaSampleFormat {
+pub enum SampleFormat {
     /// 32 bits float sample format
-    PaFloat32 =         ffi::PA_FLOAT_32,
+    Float32 =         ffi::PA_FLOAT_32,
     /// 32 bits int sample format
-    PaInt32 =           ffi::PA_INT_32,
+    Int32 =           ffi::PA_INT_32,
     /// 16 bits int sample format
-    PaInt16 =           ffi::PA_INT_16,
+    Int16 =           ffi::PA_INT_16,
     /// 8 bits int sample format
-    PaInt8 =            ffi::PA_INT_8,
+    Int8 =            ffi::PA_INT_8,
     /// 8 bits unsigned int sample format
-    PaUInt8 =           ffi::PA_UINT_8,
+    UInt8 =           ffi::PA_UINT_8,
     /// Custom sample format
-    PaCustomFormat =    ffi::PA_CUSTOM_FORMAT,
+    CustomFormat =    ffi::PA_CUSTOM_FORMAT,
     /// Non interleaved sample format
-    PaNonInterleaved =  ffi::PA_NON_INTERLEAVED
+    NonInterleaved =  ffi::PA_NON_INTERLEAVED
 }
 
 /// The flags to pass to a stream
 #[repr(u64)]
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
-pub enum PaStreamFlags {
+pub enum StreamFlags {
     /// No flags
-    PaNoFlag =                                  ffi::PA_NO_FLAG,
+    NoFlag =                                  ffi::PA_NO_FLAG,
     /// Disable default clipping of out of range samples.
-    PaClipOff =                                 ffi::PA_CLIP_OFF,
+    ClipOff =                                 ffi::PA_CLIP_OFF,
     /// Disable default dithering.
-    PaDitherOff =                               ffi::PA_DITHER_OFF,
+    DitherOff =                               ffi::PA_DITHER_OFF,
     /// Flag requests that where possible a full duplex stream will not discard overflowed input samples without calling the stream callback.
-    PaNeverDropInput =                          ffi::PA_NEVER_DROP_INPUT,
+    NeverDropInput =                          ffi::PA_NEVER_DROP_INPUT,
     /// Call the stream callback to fill initial output buffers, rather than the default behavior of priming the buffers with zeros (silence)
-    PaPrimeOutputBuffersUsingStreamCallback =   ffi::PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK,
+    PrimeOutputBuffersUsingStreamCallback =   ffi::PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK,
     /// A mask specifying the platform specific bits.
-    PaPlatformSpecificFlags =                   ffi::PA_PLATFORM_SPECIFIC_FLAGS
+    PlatformSpecificFlags =                   ffi::PA_PLATFORM_SPECIFIC_FLAGS
 }
 
 
 #[doc(hidden)]
-pub type PaStreamCallbackFlags = u64;
+pub type StreamCallbackFlags = u64;
 /*
-    pub static PaInputUnderflow : PaStreamCallbackFlags = 0x00000001;
-    pub static PaInputOverflow : PaStreamCallbackFlags = 0x00000002;
-    pub static PaOutputUnderflow : PaStreamCallbackFlags = 0x00000004;
-    pub static PaOutputOverflow : PaStreamCallbackFlags = 0x00000008;
-    pub static PaPrimingOutput : PaStreamCallbackFlags = 0x00000010;
+    pub static InputUnderflow : StreamCallbackFlags = 0x00000001;
+    pub static InputOverflow : StreamCallbackFlags = 0x00000002;
+    pub static OutputUnderflow : StreamCallbackFlags = 0x00000004;
+    pub static OutputOverflow : StreamCallbackFlags = 0x00000008;
+    pub static PrimingOutput : StreamCallbackFlags = 0x00000010;
 */
 
 #[doc(hidden)]
-pub type PaCallbackFunction = extern fn(i : f32) -> PaStreamCallbackResult;
+pub type CallbackFunction = extern fn(i : f32) -> StreamCallbackResult;
 #[doc(hidden)]
 #[repr(C)]
-pub enum PaStreamCallbackResult {
-    PaContinue = 0,
-    PaComplete = 1,
-    PaAbort = 2
+pub enum StreamCallbackResult {
+    Continue = 0,
+    Complete = 1,
+    Abort = 2
 }
 
 /// Unchanging unique identifiers for each supported host API
 #[repr(i32)]
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
-pub enum PaHostApiTypeId {
+pub enum HostApiTypeId {
     /// In development host
-    PaInDevelopment =   ffi::PA_IN_DEVELOPMENT,
+    InDevelopment =   ffi::PA_IN_DEVELOPMENT,
     /// Direct sound
-    PaDirectSound =     ffi::PA_DIRECT_SOUND,
+    DirectSound =     ffi::PA_DIRECT_SOUND,
     /// MMe API
-    PaMME =             ffi::PA_MME,
+    MME =             ffi::PA_MME,
     /// ASIO API
-    PaASIO =            ffi::PA_ASIO,
+    ASIO =            ffi::PA_ASIO,
     /// Sound manager API
-    PaSoundManager =    ffi::PA_SOUND_MANAGER,
+    SoundManager =    ffi::PA_SOUND_MANAGER,
     /// Core Audio API
-    PaCoreAudio =       ffi::PA_CORE_AUDIO,
+    CoreAudio =       ffi::PA_CORE_AUDIO,
     /// OSS API
-    PaOSS =             ffi::PA_OSS,
+    OSS =             ffi::PA_OSS,
     /// Alsa API
-    PaALSA =            ffi::PA_ALSA,
+    ALSA =            ffi::PA_ALSA,
     /// AL API
-    PaAL =              ffi::PA_AL,
+    AL =              ffi::PA_AL,
     /// BeOS API
-    PaBeOS =            ffi::PA_BE_OS,
+    BeOS =            ffi::PA_BE_OS,
     /// WDMKS
-    PaWDMKS =           ffi::PA_WDMKS,
+    WDMKS =           ffi::PA_WDMKS,
     /// Jack API
-    PaJACK =            ffi::PA_JACK,
+    JACK =            ffi::PA_JACK,
     /// WASAPI
-    PaWASAPI =          ffi::PA_WASAPI,
+    WASAPI =          ffi::PA_WASAPI,
     /// Audio Science HPI
-    PaAudioScienceHPI = ffi::PA_AUDIO_SCIENCE_HPI
+    AudioScienceHPI = ffi::PA_AUDIO_SCIENCE_HPI
 }
 
 /// A structure containing information about a particular host API.
-pub struct PaHostApiInfo{
+pub struct HostApiInfo{
     /// The version of the struct
     pub struct_version : int,
     /// The type of the current host
-    pub host_type : PaHostApiTypeId,
+    pub host_type : HostApiTypeId,
     /// The name of the host
     pub name : String,
     /// The total count of device in the host
     pub device_count : int,
     /// The index to the default input device
-    pub default_input_device : PaDeviceIndex,
+    pub default_input_device : DeviceIndex,
     /// The index to the default output device
-    pub default_output_device : PaDeviceIndex
+    pub default_output_device : DeviceIndex
 }
 
 #[doc(hidden)]
-impl PaHostApiInfo {
-    pub fn wrap(c_info : *const ffi::C_PaHostApiInfo) -> PaHostApiInfo {
+impl HostApiInfo {
+    pub fn wrap(c_info : *const ffi::C_PaHostApiInfo) -> HostApiInfo {
         unsafe {
-            PaHostApiInfo {
+            HostApiInfo {
                 struct_version : (*c_info).struct_version as int,
                 host_type : transmute(((*c_info).host_type)),
                 name : string::raw::from_buf((*c_info).name as *const u8),
@@ -183,7 +183,7 @@ impl PaHostApiInfo {
 
 /// Structure used to return information about a host error condition.
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
-pub struct PaHostErrorInfo {
+pub struct HostErrorInfo {
     /// The code of the error
     pub error_code : u32,
     /// The string which explain the error
@@ -191,9 +191,9 @@ pub struct PaHostErrorInfo {
 }
 
 #[doc(hidden)]
-impl PaHostErrorInfo {
-    pub fn wrap(c_error : *const ffi::C_PaHostErrorInfo) -> PaHostErrorInfo {
-        PaHostErrorInfo {
+impl HostErrorInfo {
+    pub fn wrap(c_error : *const ffi::C_PaHostErrorInfo) -> HostErrorInfo {
+        HostErrorInfo {
             error_code : unsafe { (*c_error).error_code },
             error_text : unsafe { string::raw::from_buf((*c_error).error_text as *const u8) }
         }
@@ -210,34 +210,34 @@ impl PaHostErrorInfo {
 /// A structure providing information and capabilities of PortAudio devices.
 /// Devices may support input, output or both input and output.
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
-pub struct PaDeviceInfo {
+pub struct DeviceInfo {
     /// The version of the struct
     pub struct_version : int,
     /// The name of the devie
     pub name : String,
     /// Host API identifier
-    pub host_api : PaHostApiIndex,
+    pub host_api : HostApiIndex,
     /// Maximal number of input channels for this device
     pub max_input_channels : int,
     /// maximal number of output channel for this device
     pub max_output_channels : int,
     /// The default low latency for input with this device
-    pub default_low_input_latency : PaTime,
+    pub default_low_input_latency : Time,
     /// The default low latency for output with this device
-    pub default_low_output_latency : PaTime,
+    pub default_low_output_latency : Time,
     /// The default high latency for input with this device
-    pub default_high_input_latency : PaTime,
+    pub default_high_input_latency : Time,
     /// The default high latency for output with this device
-    pub default_high_output_latency : PaTime,
+    pub default_high_output_latency : Time,
     /// The default sample rate for this device
     pub default_sample_rate : f64
 }
 
 #[doc(hidden)]
-impl PaDeviceInfo {
-    pub fn wrap(c_info : *const ffi::C_PaDeviceInfo) -> PaDeviceInfo {
+impl DeviceInfo {
+    pub fn wrap(c_info : *const ffi::C_PaDeviceInfo) -> DeviceInfo {
         unsafe {
-            PaDeviceInfo {
+            DeviceInfo {
                 struct_version : (*c_info).struct_version as int,
                 name : string::raw::from_buf((*c_info).name as *const u8),
                 host_api : (*c_info).host_api,
@@ -270,22 +270,22 @@ impl PaDeviceInfo {
 
 /// Parameters for one direction (input or output) of a stream.
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
-pub struct PaStreamParameters {
+pub struct StreamParameters {
     /// Index of the device
-    pub device : PaDeviceIndex,
+    pub device : DeviceIndex,
     /// The number of channels for this device
     pub channel_count : i32,
     /// Sample format of the device
-    pub sample_format : PaSampleFormat,
+    pub sample_format : SampleFormat,
     /// The suggested latency for this device
-    pub suggested_latency : PaTime,
+    pub suggested_latency : Time,
 }
 
 #[doc(hidden)]
-impl PaStreamParameters {
-    pub fn wrap(c_parameters : *mut ffi::C_PaStreamParameters) -> PaStreamParameters {
+impl StreamParameters {
+    pub fn wrap(c_parameters : *mut ffi::C_PaStreamParameters) -> StreamParameters {
         unsafe {
-            PaStreamParameters {
+            StreamParameters {
                 device : (*c_parameters).device,
                 channel_count : (*c_parameters).channel_count,
                 sample_format : transmute((*c_parameters).sample_format),
@@ -298,7 +298,7 @@ impl PaStreamParameters {
         ffi::C_PaStreamParameters {
             device : self.device,
             channel_count : self.channel_count as i32,
-            sample_format : self.sample_format as ffi::PaSampleFormat,
+            sample_format : self.sample_format as ffi::SampleFormat,
             suggested_latency : self.suggested_latency,
             host_api_specific_stream_info : ptr::null_mut()
         }
@@ -308,22 +308,22 @@ impl PaStreamParameters {
 
 #[doc(hidden)]
 #[repr(C)]
-pub struct PaStreamCallbackTimeInfo {
-    pub input_buffer_adc_time : PaTime,
-    pub current_time : PaTime,
-    pub output_buffer_dac_time : PaTime
+pub struct StreamCallbackTimeInfo {
+    pub input_buffer_adc_time : Time,
+    pub current_time : Time,
+    pub output_buffer_dac_time : Time
 }
 
 /// A structure containing unchanging information about an open stream.
 #[deriving(Clone, PartialEq, PartialOrd, Show)]
 #[repr(C)]
-pub struct PaStreamInfo {
+pub struct StreamInfo {
     /// Struct version
     pub struct_version : i32,
     /// The input latency for this open stream
-    pub input_latency : PaTime,
+    pub input_latency : Time,
     /// The output latency for this open stream
-    pub output_latency : PaTime,
+    pub output_latency : Time,
     /// The sample rate for this open stream
     pub sample_rate : f64
 }

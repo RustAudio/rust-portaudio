@@ -30,7 +30,7 @@ use ffi;
 /// Return a non-negative value indicating the number of available host APIs or,
 /// a PaErrorCode (which are always negative) if PortAudio is not initialized or
 /// an error is encountered.
-pub fn get_api_count() -> PaHostApiIndex {
+pub fn get_api_count() -> HostApiIndex {
     unsafe {
         ffi::Pa_GetHostApiCount()
     }
@@ -43,7 +43,7 @@ pub fn get_api_count() -> PaHostApiIndex {
 /// Return a non-negative value ranging from 0 to (get_host_api_count()-1)
 /// indicating the default host API index or, a PaErrorCode (which are always
 /// negative) if PortAudio is not initialized or an error is encountered.
-pub fn get_default_api() -> PaHostApiIndex {
+pub fn get_default_api() -> HostApiIndex {
     unsafe {
         ffi::Pa_GetDefaultHostApi()
     }
@@ -57,13 +57,13 @@ pub fn get_default_api() -> PaHostApiIndex {
 ///
 /// Return Some(PaHostApiInfo) describing a specific host API. If the hostApi
 /// parameter is out of range or an error is encountered, the function returns None.
-pub fn get_api_info(host_api: PaHostApiIndex) -> Option<PaHostApiInfo> {
+pub fn get_api_info(host_api: HostApiIndex) -> Option<HostApiInfo> {
     let c_host_info = unsafe { ffi::Pa_GetHostApiInfo(host_api) };
     if c_host_info.is_null() {
         None
     }
     else {
-        Some(PaHostApiInfo::wrap(c_host_info))
+        Some(HostApiInfo::wrap(c_host_info))
     }
 }
 
@@ -73,11 +73,10 @@ pub fn get_api_info(host_api: PaHostApiIndex) -> Option<PaHostApiInfo> {
 /// * typde_id - A unique host API identifier belonging to the PaHostApiTypeId
 /// enumeration.
 ///
-/// Return a valid PaHostApiIndex ranging from 0 to (get_host_api_count()-1) or,
+/// Return a valid HostApiIndex ranging from 0 to (get_host_api_count()-1) or,
 /// a PaErrorCode (which are always negative) if PortAudio is not initialized or
 /// an error is encountered.
-pub fn api_type_id_to_host_api_index(type_id: PaHostApiTypeId)
-                                          -> PaHostApiIndex {
+pub fn api_type_id_to_host_api_index(type_id: HostApiTypeId) -> HostApiIndex {
     unsafe {
         ffi::Pa_HostApiTypeIdToHostApiIndex(type_id as i32)
     }
@@ -95,9 +94,8 @@ pub fn api_type_id_to_host_api_index(type_id: PaHostApiTypeId)
 /// Return a non-negative PaDeviceIndex ranging from 0 to (get_device_count()-1)
 /// or, a PaErrorCode (which are always negative) if PortAudio is not initialized
 /// or an error is encountered.
-pub fn api_device_index_to_device_index(host_api: PaHostApiIndex,
-                                             host_api_device_index: int)
-                                             -> PaDeviceIndex {
+pub fn api_device_index_to_device_index(host_api: HostApiIndex,
+                                        host_api_device_index: int) -> DeviceIndex {
     unsafe {
         ffi::Pa_HostApiDeviceIndexToDeviceIndex(host_api,
                                                 host_api_device_index as i32)
