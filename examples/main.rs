@@ -23,7 +23,7 @@ fn main() -> () {
     println!("Portaudio host name : {}", host_info.unwrap().name);
 
     println!("Portaudio type id : {}",
-             pa::host::api_type_id_to_host_api_index(types::CoreAudio) as int);
+             pa::host::api_type_id_to_host_api_index(pa::HostApiTypeId::CoreAudio) as int);
 
     let def_input = pa::device::get_default_input();
     let info_input = pa::device::get_info(def_input).unwrap();
@@ -39,27 +39,27 @@ fn main() -> () {
        println!("error");
     }
     // PaStream test :
-    let stream_params  = types::StreamParameters {
+    let stream_params  = pa::StreamParameters {
         device : def_input,
         channel_count : 2,
-        sample_format : types::Float32,
+        sample_format : pa::SampleFormat::Float32,
         suggested_latency : pa::device::get_info(def_input).unwrap().default_low_input_latency
     };
 
     let def_output = pa::device::get_default_output();
     println!("name : {}", pa::device::get_info(def_output).unwrap().name);
 
-    let stream_params_out = types::StreamParameters {
+    let stream_params_out = pa::StreamParameters {
         device : def_output,
         channel_count : 2,
-        sample_format : types::Float32,
+        sample_format : pa::SampleFormat::Float32,
         suggested_latency : pa::device::get_info(def_output).unwrap().default_low_output_latency
     };
 
 
     let mut stream : pa::Stream<f32, f32> = pa::Stream::new();
 
-    let mut err= stream.open(Some(&stream_params), Some(&stream_params_out), 44100., 1024, types::ClipOff);
+    let mut err= stream.open(Some(&stream_params), Some(&stream_params_out), 44100., 1024, pa::StreamFlags::ClipOff);
 
     // println!("Portaudio Open error : {}", pa::get_error_text(err));
 

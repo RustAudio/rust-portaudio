@@ -24,10 +24,11 @@
 //! The MAC_CORE specific API.
 
 use ffi;
-use pa::*;
-use pa::types::{
+use pa::{
     DeviceIndex,
-    HostApiTypeId
+    HostApiTypeId,
+    Sample,
+    Stream
 };
 
 pub static MacCoreChangeDeviceParameters : u32 = 0x01;

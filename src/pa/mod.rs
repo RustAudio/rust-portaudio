@@ -30,10 +30,28 @@ use libc::types::os::arch::c95::size_t;
 
 use self::error::Error;
 use ffi;
-use self::types::*;
+// use self::types::*;
+
+pub use self::types::{
+    SampleFormat,
+    StreamFlags,
+    StreamParameters,
+    HostErrorInfo,
+    Time,
+    StreamInfo,
+    CallbackFunction,
+    DeviceIndex,
+    HostApiIndex,
+    StreamCallbackFlags,
+    StreamCallbackTimeInfo,
+    StreamCallbackResult,
+    PA_NO_DEVICE,
+    HostApiTypeId,
+    PA_USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION
+};
 
 pub mod error;
-pub mod types;
+mod types;
 pub mod device;
 pub mod host;
 

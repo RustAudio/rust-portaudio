@@ -24,8 +24,15 @@
 use pa::error::Error;
 use libc::{c_char, c_double, c_void};
 
-use pa::types::{DeviceIndex, HostApiIndex, StreamCallbackFlags,
-                StreamCallbackTimeInfo, StreamInfo, Time, StreamCallbackResult};
+use pa::{
+    DeviceIndex,
+    HostApiIndex,
+    StreamCallbackFlags,
+    StreamCallbackTimeInfo,
+    StreamInfo,
+    Time,
+    StreamCallbackResult
+};
 
 // Sample format
 pub type SampleFormat = u64;
@@ -160,18 +167,14 @@ extern "C" {
     pub fn Pa_GetStreamReadAvailable(stream : *mut C_PaStream) -> i64;
     pub fn Pa_GetStreamWriteAvailable(stream : *mut C_PaStream) -> i64;
 
-    /*
-    * PortAudio Specific ASIO
-    */
+    // PortAudio Specific ASIO
     pub fn PaAsio_GetAvailableBufferSizes(device : DeviceIndex, minBufferSizeFrames : *mut i32, maxBufferSizeFrames : *mut i32, preferredBufferSizeFrames : *mut i32, granularity : *mut i32) -> Error;
     pub fn PaAsio_GetInputChannelName(device : DeviceIndex, channelIndex : i32, channelName : *mut *const c_char) -> Error;
     pub fn PaAsio_GetOutputChannelName(device : DeviceIndex, channelIndex : i32, channelName : *mut *const c_char) -> Error;
     pub fn PaAsio_SetStreamSampleRate(stream : *mut C_PaStream, sampleRate : c_double) -> Error;
 
 
-    /*
-    * PortAudio Specific MAC_CORE
-    */
+    // PortAudio Specific MAC_CORE
     pub fn PaMacCore_GetStreamInputDevice(s : *mut C_PaStream) -> DeviceIndex;
     pub fn PaMacCore_GetStreamOutputDevice(s : *mut C_PaStream) -> DeviceIndex;
     // pub fn PaMacCore_GetChannelName (int device, int channelIndex, bool intput) -> *c_char

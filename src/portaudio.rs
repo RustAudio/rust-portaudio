@@ -74,7 +74,3 @@ mod c_library {
 pub mod pa;
 pub mod ext;
 mod ffi;
-// pub mod error;
-// mod ffi;
-// pub mod types;
-// mod device;

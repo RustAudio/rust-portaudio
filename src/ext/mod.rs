@@ -19,9 +19,9 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-//! portaudio plateform specific extensions
-
-// pub mod asio;
+//! Portaudio plateform specific extensions
 
 #[cfg(any(target_os="macos"))]
 pub mod mac_core;
+
+// pub mod asio;
