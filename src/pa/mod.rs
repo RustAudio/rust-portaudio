@@ -28,11 +28,11 @@ use std::vec::raw::{from_buf};
 use libc::{c_double, c_void, malloc};
 use libc::types::os::arch::c95::size_t;
 
-use self::error::Error;
 use ffi;
-// use self::types::*;
-
+use self::error::Error;
 pub use self::types::{
+    HostApiInfo,
+    DeviceInfo,
     SampleFormat,
     StreamFlags,
     StreamParameters,

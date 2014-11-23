@@ -59,7 +59,6 @@ __rust-portaudio__ is build with the rustpkg tool :
 #![crate_type = "dylib"]
 #![crate_type = "rlib"]
 
-#![feature(globs)]
 #![warn(missing_docs)]
 #![allow(dead_code)]
 

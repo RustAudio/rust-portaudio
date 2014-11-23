@@ -21,7 +21,10 @@
 
 //! Device management
 
-use pa::types::*;
+use pa::{
+    DeviceIndex,
+    DeviceInfo
+};
 use ffi;
 
 /// Retrieve the number of available devices. The number of available devices may
