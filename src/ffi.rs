@@ -21,11 +21,11 @@
 
 #![allow(dead_code, non_camel_case_types)]
 
-use error::Error;
+use pa::error::Error;
 use libc::{c_char, c_double, c_void};
 
-use types::{DeviceIndex, HostApiIndex, StreamCallbackFlags,
-            StreamCallbackTimeInfo, StreamInfo, Time, StreamCallbackResult};
+use pa::types::{DeviceIndex, HostApiIndex, StreamCallbackFlags,
+                StreamCallbackTimeInfo, StreamInfo, Time, StreamCallbackResult};
 
 // Sample format
 pub type SampleFormat = u64;

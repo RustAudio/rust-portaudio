@@ -21,7 +21,7 @@
 
 //! Host api management
 
-use types::*;
+use pa::types::*;
 use ffi;
 
 /// Retrieve the number of available host APIs.

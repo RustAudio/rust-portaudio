@@ -19,14 +19,15 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-/*!
-* The MAC_CORE specific API.
-*/
+#![allow(non_upper_case_globals, missing_docs)]
+
+//! The MAC_CORE specific API.
 
 use ffi;
 use pa::*;
-use types::{
+use pa::types::{
     DeviceIndex,
+    HostApiTypeId
 };
 
 pub static MacCoreChangeDeviceParameters : u32 = 0x01;
@@ -54,7 +55,7 @@ pub struct MacCoreStreamInfo {
 
 pub trait MacCore {
     fn get_stream_input_device(&self) -> DeviceIndex;
-    fn get_stream_output_device(&self) -> DeviceIndex; 
+    fn get_stream_output_device(&self) -> DeviceIndex;
 }
 
 // // fn get_buffer_size_range(device : PaDeviceIndex) -> Result<(u32, u32), PaError> {
@@ -68,7 +69,7 @@ pub trait MacCore {
 // }
 
 
-impl<S> MacCore for Stream<S> {
+impl<I: Sample, O: Sample> MacCore for Stream<I, O> {
         fn get_stream_input_device(&self) -> DeviceIndex {
         unsafe {
             ffi::PaMacCore_GetStreamInputDevice(self.get_c_pa_stream())
