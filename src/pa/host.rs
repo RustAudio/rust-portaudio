@@ -21,7 +21,12 @@
 
 //! Host api management
 
-use types::*;
+use pa::{
+    HostApiIndex,
+    HostApiInfo,
+    HostApiTypeId,
+    DeviceIndex
+};
 use ffi;
 
 /// Retrieve the number of available host APIs.

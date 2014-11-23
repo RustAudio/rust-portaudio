@@ -28,10 +28,30 @@ use std::vec::raw::{from_buf};
 use libc::{c_double, c_void, malloc};
 use libc::types::os::arch::c95::size_t;
 
-use error::Error;
 use ffi;
-use types::*;
+use self::error::Error;
+pub use self::types::{
+    HostApiInfo,
+    DeviceInfo,
+    SampleFormat,
+    StreamFlags,
+    StreamParameters,
+    HostErrorInfo,
+    Time,
+    StreamInfo,
+    CallbackFunction,
+    DeviceIndex,
+    HostApiIndex,
+    StreamCallbackFlags,
+    StreamCallbackTimeInfo,
+    StreamCallbackResult,
+    PA_NO_DEVICE,
+    HostApiTypeId,
+    PA_USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION
+};
 
+pub mod error;
+mod types;
 pub mod device;
 pub mod host;
 
@@ -177,11 +197,57 @@ pub fn sleep(m_sec : int) -> () {
     }
 }
 
+mod private {
+
+    use super::types::SampleFormat;
+
+    /// internal private trait for Sample format management
+    pub trait SamplePrivate: ::std::default::Default {
+        /// return the size of a sample format
+        fn size<S: SamplePrivate>() -> uint {
+            ::std::mem::size_of::<S>()
+        }
+
+        /// return the sample format for a type
+        fn sample_format_for<S: SamplePrivate>() {
+            let s: S = ::std::default::Default::default();
+            s.sample_format();
+        }
+
+        /// get the sample format
+        fn sample_format(&self) -> SampleFormat;
+    }
+
+}
+
+impl private::SamplePrivate for f32 {
+    fn sample_format(&self) -> SampleFormat { SampleFormat::Float32 }
+}
+
+impl private::SamplePrivate for i32 {
+    fn sample_format(&self) -> SampleFormat { SampleFormat::Int32 }
+}
+
+impl private::SamplePrivate for u8 {
+    fn sample_format(&self) -> SampleFormat { SampleFormat::UInt8 }
+}
+
+impl private::SamplePrivate for i8 {
+    fn sample_format(&self) -> SampleFormat { SampleFormat::Int8 }
+}
+
+/// public trait to constraint pa::Stream for specific types
+pub trait Sample: private::SamplePrivate {}
+
+impl Sample for f32 {}
+impl Sample for i32 {}
+impl Sample for i8 {}
+impl Sample for u8 {}
+
 /// Representation of an audio stream, where the format of the stream is defined
 /// by the S parameter.
-pub struct Stream<S> {
+pub struct Stream<I: Sample, O: Sample> {
     c_pa_stream : *mut ffi::C_PaStream,
-    sample_format : SampleFormat,
     c_input : Option<ffi::C_PaStreamParameters>,
     c_output : Option<ffi::C_PaStreamParameters>,
     unsafe_buffer : *mut c_void,
@@ -189,14 +255,13 @@ pub struct Stream<S> {
     num_input_channels : i32
 }
 
-impl<S> Stream<S> {
+impl<I: Sample, O: Sample> Stream<I, O> {
     /// Constructor for Stream.
     ///
     /// Return a new Stream.
-    pub fn new(sample_format: SampleFormat) -> Stream<S> {
+    pub fn new() -> Stream<I, O> {
         Stream {
             c_pa_stream : ptr::null_mut(),
-            sample_format : sample_format,
             c_input : None,
             c_output : None,
             unsafe_buffer : ptr::null_mut(),
@@ -228,21 +293,21 @@ impl<S> Stream<S> {
                 sample_rate: f64,
                 frames_per_buffer: u32,
                 stream_flags: StreamFlags) -> Result<(), Error> {
-        if !input_parameters.is_none() {
+        if input_parameters.is_some() {
             self.c_input = Some(input_parameters.unwrap().unwrap());
             self.num_input_channels = input_parameters.unwrap().channel_count;
             self.unsafe_buffer = unsafe {
-                malloc(mem::size_of::<S>() as size_t *
+                malloc(mem::size_of::<I>() as size_t *
                        frames_per_buffer as size_t *
                        input_parameters.unwrap().channel_count as size_t) as *mut c_void};
         }
-        if !output_parameters.is_none() {
+        if output_parameters.is_some() {
             self.c_output = Some(output_parameters.unwrap().unwrap());
         }
 
         unsafe {
-            if !self.c_input.is_none() &&
-               !self.c_output.is_none() {
+            if self.c_input.is_some() &&
+               self.c_output.is_some() {
                 let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
                                              &(self.c_input.unwrap()),
                                              &(self.c_output.unwrap()),
@@ -256,7 +321,7 @@ impl<S> Stream<S> {
                     _ => Err(err),
                 }
             }
-            else if !self.c_input.is_none() {
+            else if self.c_input.is_some() {
                 let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
                                              &(self.c_input.unwrap()),
                                              ptr::null(),
@@ -270,7 +335,7 @@ impl<S> Stream<S> {
                     _ => Err(err),
                 }
             }
-            else if !self.c_output.is_none() {
+            else if self.c_output.is_some() {
                 let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
                                              ptr::null(),
                                              &(self.c_output.unwrap()),
@@ -321,7 +386,7 @@ impl<S> Stream<S> {
             self.c_input = None;
             self.num_input_channels = num_input_channels;
             self.unsafe_buffer = unsafe {
-                malloc(mem::size_of::<S>() as size_t *
+                malloc(mem::size_of::<I>() as size_t *
                        frames_per_buffer as size_t *
                        num_input_channels as size_t) as *mut c_void };
         }
@@ -477,14 +542,14 @@ impl<S> Stream<S> {
     #[doc(hidden)]
     // Temporary OSX Fixe : Return always PaInputOverflowed
     #[cfg(target_os="macos")]
-    pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<S>, Error> {
+    pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<I>, Error> {
         unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream,
                                self.unsafe_buffer,
                                frames_per_buffer)
         };
         Ok(unsafe {
-            from_buf(self.unsafe_buffer as *const S,
+            from_buf(self.unsafe_buffer as *const I,
                      (frames_per_buffer * self.num_input_channels as u32) as uint) })
     }
 
@@ -498,13 +563,13 @@ impl<S> Stream<S> {
     /// Return Ok(~[S]), a buffer containing the sample of the format S.
     /// If fail return a Error code.
     #[cfg(any(target_os="win32", target_os="linux"))]
-    pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<S>, Error> {
+    pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<I>, Error> {
         let err = unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
         };
         match err {
             Error::NoError  => Ok(unsafe {
-                from_buf(self.unsafe_buffer as *const S,
+                from_buf(self.unsafe_buffer as *const I,
                         (frames_per_buffer * self.num_input_channels as u32) as uint) }),
             _               => Err(err)
         }
@@ -519,7 +584,7 @@ impl<S> Stream<S> {
     /// * frames_per_buffer - The number of frames in the buffer.
     ///
     /// Return NoError on success, or a Error code if fail.
-    pub fn write(&self, output_buffer: Vec<S>, frames_per_buffer : u32) -> Result<(), Error> {
+    pub fn write(&self, output_buffer: Vec<O>, frames_per_buffer : u32) -> Result<(), Error> {
         match unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream,
                                 output_buffer.as_ptr() as *mut c_void,

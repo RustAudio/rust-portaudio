@@ -31,9 +31,11 @@ use ffi;
 /// The type used to refer to audio devices. Values of this type usually range
 /// from 0 to (pa::get_device_count()-1)
 pub type DeviceIndex = i32;
+
 /// A special DeviceIndex value indicating that no device is available,
 /// or should be used.
 pub const PA_NO_DEVICE: DeviceIndex = -1;
+
 /// A special DeviceIndex value indicating that the device(s) to be used are
 /// specified in the host api specific stream info structure.
 pub const PA_USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION: DeviceIndex = -2;
