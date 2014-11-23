@@ -8,9 +8,10 @@ use portaudio::*;
 fn main() -> () {
     println!("Portaudio version : {}", pa::get_version());
     println!("Portaudio version text : {}", pa::get_version_text());
-    println!("Portaudio error text : {}", pa::get_error_text(types::PaNotInitialized));
+    // println!("Portaudio error text : {}", pa::get_error_text(error::Error::NotInitialized));
 
-    println!("Portaudio init error : {}", pa::get_error_text(pa::initialize()));
+    pa::initialize();
+    // println!("Portaudio init error : {}", pa::get_error_text(pa::initialize()));
 
     let host_count = pa::host::get_api_count();
     println!("Portaudio host count : {}", host_count as int);
@@ -22,7 +23,7 @@ fn main() -> () {
     println!("Portaudio host name : {}", host_info.unwrap().name);
 
     println!("Portaudio type id : {}",
-             pa::host::api_type_id_to_host_api_index(types::PaCoreAudio) as int);
+             pa::host::api_type_id_to_host_api_index(types::CoreAudio) as int);
 
     let def_input = pa::device::get_default_input();
     let info_input = pa::device::get_info(def_input).unwrap();
@@ -38,34 +39,34 @@ fn main() -> () {
        println!("error");
     }
     // PaStream test :
-    let stream_params  = types::PaStreamParameters {
+    let stream_params  = types::StreamParameters {
         device : def_input,
         channel_count : 2,
-        sample_format : types::PaFloat32,
+        sample_format : types::Float32,
         suggested_latency : pa::device::get_info(def_input).unwrap().default_low_input_latency
     };
 
     let def_output = pa::device::get_default_output();
     println!("name : {}", pa::device::get_info(def_output).unwrap().name);
 
-    let stream_params_out = types::PaStreamParameters {
+    let stream_params_out = types::StreamParameters {
         device : def_output,
         channel_count : 2,
-        sample_format : types::PaFloat32,
+        sample_format : types::Float32,
         suggested_latency : pa::device::get_info(def_output).unwrap().default_low_output_latency
     };
 
 
-    let mut stream : pa::PaStream<f32> = pa::PaStream::new(types::PaFloat32);
+    let mut stream : pa::Stream<f32, f32> = pa::Stream::new();
 
-    let mut err= stream.open(Some(&stream_params), Some(&stream_params_out), 44100., 1024, types::PaClipOff);
+    let mut err= stream.open(Some(&stream_params), Some(&stream_params_out), 44100., 1024, types::ClipOff);
 
-    println!("Portaudio Open error : {}", pa::get_error_text(err));
+    // println!("Portaudio Open error : {}", pa::get_error_text(err));
 
     //println!("Stream is active : {}", pa::get_error_text(stream.is_active().unwrap()));
 
     err = stream.start();
-    println!("Portaudio Start error : {}", pa::get_error_text(err));
+    // println!("Portaudio Start error : {}", pa::get_error_text(err));
 
     let mut test;
     loop {
@@ -86,13 +87,13 @@ fn main() -> () {
         };
     }
 
-    err = types::PaNotInitialized;
+    err = Ok(());
 
     err = stream.close();
-    println!("Portaudio Close stream error : {}", pa::get_error_text(err));
+    // println!("Portaudio Close stream error : {}", pa::get_error_text(err));
 
     println!("");
 
-
-    println!("Portaudio terminate error : {}", pa::get_error_text(pa::terminate()));
+    pa::terminate();
+    // println!("Portaudio terminate error : {}", pa::get_error_text(pa::terminate()));
 }

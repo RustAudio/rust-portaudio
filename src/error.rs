@@ -1,4 +1,4 @@
-//! 
+//!
 //! A module for implementing the Portaudio Error type and
 //! implementing the std Error trait.
 //!
