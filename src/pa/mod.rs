@@ -207,37 +207,38 @@ mod private {
         fn size<S: SamplePrivate>() -> uint {
             ::std::mem::size_of::<S>()
         }
-
-        /// return the sample format for a type
-        fn sample_format_for<S: SamplePrivate>() {
-            let s: S = ::std::default::Default::default();
-            s.sample_format();
-        }
-
         /// get the sample format
-        fn sample_format(&self) -> SampleFormat;
+        fn to_sample_format(&self) -> SampleFormat;
     }
 
 }
 
 impl private::SamplePrivate for f32 {
-    fn sample_format(&self) -> SampleFormat { SampleFormat::Float32 }
+    fn to_sample_format(&self) -> SampleFormat { SampleFormat::Float32 }
 }
 
 impl private::SamplePrivate for i32 {
-    fn sample_format(&self) -> SampleFormat { SampleFormat::Int32 }
+    fn to_sample_format(&self) -> SampleFormat { SampleFormat::Int32 }
 }
 
 impl private::SamplePrivate for u8 {
-    fn sample_format(&self) -> SampleFormat { SampleFormat::UInt8 }
+    fn to_sample_format(&self) -> SampleFormat { SampleFormat::UInt8 }
 }
 
 impl private::SamplePrivate for i8 {
-    fn sample_format(&self) -> SampleFormat { SampleFormat::Int8 }
+    fn to_sample_format(&self) -> SampleFormat { SampleFormat::Int8 }
 }
 
 /// public trait to constraint pa::Stream for specific types
-pub trait Sample: private::SamplePrivate {}
+pub trait Sample: private::SamplePrivate {
+    /// Retrieve the SampleFormat variant associated with the type.
+    fn sample_format_for<S: Sample>() -> SampleFormat {
+        let s: S = ::std::default::Default::default();
+        s.sample_format()
+    }
+    /// Retrieve the SampleFormat variant associated with the type.
+    fn sample_format(&self) -> SampleFormat { self.to_sample_format() }
+}
 
 impl Sample for f32 {}
 impl Sample for i32 {}

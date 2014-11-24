@@ -25,6 +25,7 @@ use pa::{
     DeviceIndex,
     DeviceInfo
 };
+use pa::error::Error;
 use ffi;
 
 /// Retrieve the number of available devices. The number of available devices may
@@ -67,14 +68,14 @@ pub fn get_default_output() -> DeviceIndex {
 /// # Arguments
 /// * device - A valid device index in the range 0 to (Pa_GetDeviceCount()-1)
 ///
-/// Return Some(PaDeviceInfo) or, If the device parameter is out of range the
-/// function returns None.
-pub fn get_info(device: DeviceIndex) -> Option<DeviceInfo> {
+/// Return Ok(PaDeviceInfo) or if the device parameter is out of range the
+/// function returns Err(Error::InvalidDevice).
+pub fn get_info(device: DeviceIndex) -> Result<DeviceInfo, Error> {
     let c_info = unsafe { ffi::Pa_GetDeviceInfo(device) };
     if c_info.is_null() {
-        None
+        Err(Error::InvalidDevice)
     }
     else {
-        Some(DeviceInfo::wrap(c_info))
+        Ok(DeviceInfo::wrap(c_info))
     }
 }
