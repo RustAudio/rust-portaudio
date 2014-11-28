@@ -5,7 +5,7 @@
 
 /// Error codes returned by PortAudio functions.
 #[repr(C)]
-#[deriving(Clone, PartialEq, PartialOrd, Show)]
+#[deriving(Clone, PartialEq, PartialOrd, Show, FromPrimitive)]
 pub enum Error {
     /// No Error
     NoError = 0,
@@ -66,7 +66,7 @@ pub enum Error {
     /// The stream is not compatible with the host API
     IncompatibleStreamHostApi,
     /// Invalid buffer
-    BadBufferPtr
+    BadBufferPtr,
 }
 
 impl ::std::error::Error for Error {
