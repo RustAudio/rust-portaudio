@@ -29,7 +29,7 @@ use libc::{c_double, c_void, malloc};
 use libc::types::os::arch::c95::size_t;
 
 use ffi;
-use self::error::Error;
+pub use self::error::Error;
 pub use self::types::{
     HostApiInfo,
     DeviceInfo,
