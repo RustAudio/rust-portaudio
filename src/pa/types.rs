@@ -47,6 +47,9 @@ pub type HostApiIndex = i32;
 /// The type used to represent monotonic time in seconds.
 pub type Time = f64;
 
+/// An type alias used to represent a given number of frames.
+pub type Frames = i64;
+
 /// A type used to specify one or more sample formats.
 #[repr(u64)]
 #[deriving(Clone, PartialEq, PartialOrd, Show)]

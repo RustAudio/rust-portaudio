@@ -38,6 +38,7 @@ pub use self::types::{
     StreamParameters,
     HostErrorInfo,
     Time,
+    Frames,
     StreamInfo,
     CallbackFunction,
     DeviceIndex,
@@ -47,7 +48,7 @@ pub use self::types::{
     StreamCallbackResult,
     PA_NO_DEVICE,
     HostApiTypeId,
-    PA_USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION
+    PA_USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION,
 };
 
 pub mod error;
@@ -202,7 +203,7 @@ mod private {
     use super::types::SampleFormat;
 
     /// internal private trait for Sample format management
-    pub trait SamplePrivate: ::std::default::Default {
+    pub trait SamplePrivate: ::std::default::Default + Copy + Clone + ::std::fmt::Show {
         /// return the size of a sample format
         fn size<S: SamplePrivate>() -> uint {
             ::std::mem::size_of::<S>()
@@ -521,9 +522,11 @@ impl<I: Sample, O: Sample> Stream<I, O> {
     /// that can be read from the stream without blocking or busy waiting or,
     /// a ErrorCode (which are always negative) if PortAudio is not initialized
     /// or an error is encountered.
-    pub fn get_stream_read_available(&self) -> i64 {
-        unsafe {
-            ffi::Pa_GetStreamReadAvailable(self.c_pa_stream)
+    pub fn get_stream_read_available(&self) -> Result<Option<Frames>, Error> {
+        match unsafe { ffi::Pa_GetStreamReadAvailable(self.c_pa_stream) } {
+            0          => Ok(None),
+            n if n > 0 => Ok(Some(n)),
+            n          => Err(FromPrimitive::from_i64(n).expect("Undefined error code.")),
         }
     }
 
@@ -534,9 +537,11 @@ impl<I: Sample, O: Sample> Stream<I, O> {
     /// can be written to the stream without blocking or busy waiting or,
     /// a ErrorCode (which are always negative) if PortAudio is not initialized
     /// or an error is encountered.
-    pub fn get_stream_write_available(&self) -> i64 {
-        unsafe {
-            ffi::Pa_GetStreamWriteAvailable(self.c_pa_stream)
+    pub fn get_stream_write_available(&self) -> Result<Option<Frames>, Error> {
+        match unsafe { ffi::Pa_GetStreamWriteAvailable(self.c_pa_stream) } {
+            0          => Ok(None),
+            n if n > 0 => Ok(Some(n)),
+            n          => Err(FromPrimitive::from_i64(n).expect("Undefined error code.")),
         }
     }
 
@@ -585,10 +590,11 @@ impl<I: Sample, O: Sample> Stream<I, O> {
     /// * frames_per_buffer - The number of frames in the buffer.
     ///
     /// Return NoError on success, or a Error code if fail.
-    pub fn write(&self, output_buffer: Vec<O>, frames_per_buffer : u32) -> Result<(), Error> {
+    pub fn write<T> (&self, output_buffer: T, frames_per_buffer : u32) -> Result<(), Error>
+    where T: AsSlice<O> {
         match unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream,
-                                output_buffer.as_ptr() as *mut c_void,
+                                output_buffer.as_slice().as_ptr() as *mut c_void,
                                 frames_per_buffer)
         } {
             Error::NoError => Ok(()),
