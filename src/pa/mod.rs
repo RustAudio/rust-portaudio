@@ -203,7 +203,7 @@ mod private {
     use super::types::SampleFormat;
 
     /// internal private trait for Sample format management
-    pub trait SamplePrivate: ::std::default::Default {
+    pub trait SamplePrivate: ::std::default::Default + Copy + Clone + ::std::fmt::Show {
         /// return the size of a sample format
         fn size<S: SamplePrivate>() -> uint {
             ::std::mem::size_of::<S>()
