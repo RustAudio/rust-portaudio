@@ -204,7 +204,7 @@ mod private {
 
     /// internal private trait for Sample format management
     pub trait SamplePrivate: ::std::default::Default + Copy + Clone + ::std::fmt::Show
-                             + ToPrimitive + FromPrimitive {
+                             + ToPrimitive + FromPrimitive + Add + Sub + Mul + Div {
         /// return the size of a sample format
         fn size<S: SamplePrivate>() -> uint {
             ::std::mem::size_of::<S>()
