@@ -1,3 +1,5 @@
+env:
+  - LD_LIBRARY_PATH=/usr/local/lib
 notifications:
   email:
     - letang.jeremy@gmail.com

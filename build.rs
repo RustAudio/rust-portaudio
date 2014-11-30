@@ -108,5 +108,5 @@ mod platform {
 
 #[cfg(any(target_os="linux", target_os="win32"))]
 mod platform {
-
+    fn build() {}
 }
