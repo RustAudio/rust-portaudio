@@ -20,17 +20,40 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 use std::io::process::Command;
+use std::path::Path;
+use std::io::fs::PathExtensions;
 use std::os;
 
 const PORTAUDIO_URL: &'static str = "http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz";
 const PORTAUDIO_TAR: &'static str = "pa_stable_v19_20140130.tgz";
 const PORTAUDIO_FOLDER: &'static str = "portaudio";
-const PORTAUDIO_LIB_PATH: &'static str = "portaudio/lib/.libs/libportaudio.dylib";
+const PORTAUDIO_LIB_PATH: &'static str = ".portaudio/lib/.libs/libportaudio.dylib";
 
+#[cfg(any(target_os="linux", target_os="win32"))]
+fn main() {}
+
+#[cfg(target_os="macos")]
 fn main() {
     // retrieve cargo deps out dir
     let out_dir = os::getenv("OUT_DIR").unwrap();
 
+    // check if the .portaudio folder exist
+    let fld: Path = Path::new_opt(".portaudio").unwrap();
+
+    if !fld.is_dir() {
+        build_osx_portaudio();
+    }
+
+    // move portaudio library inside the OUT_DIR folder
+    match Command::new("cp").arg(PORTAUDIO_LIB_PATH).arg(out_dir.clone()).output() {
+        Ok(_) => {},
+        Err(e) => panic!("{}", e)
+    }
+
+    println!("cargo:rustc-flags=-L {} -l portaudio", out_dir);
+}
+
+fn build_osx_portaudio() {
     // get portaudio library sources
     match Command::new("wget").arg(PORTAUDIO_URL).output() {
         Ok(_) => {},
@@ -67,18 +90,15 @@ fn main() {
         Err(e) => panic!("{}", e)
     }
 
-    // move portaudio library inside the OUT_DIR folder
-    match Command::new("cp").arg(PORTAUDIO_LIB_PATH).arg(out_dir.clone()).output() {
+    // cleaning portaudio sources
+    match Command::new("rm").arg("-rf").arg(PORTAUDIO_TAR).output() {
         Ok(_) => {},
         Err(e) => panic!("{}", e)
     }
 
     // cleaning portaudio sources
-    match Command::new("rm").arg("-rf").arg(PORTAUDIO_TAR).arg(PORTAUDIO_FOLDER).output() {
+    match Command::new("mv").arg(PORTAUDIO_FOLDER).arg(".portaudio").output() {
         Ok(_) => {},
         Err(e) => panic!("{}", e)
     }
-
-    println!("cargo:rustc-flags=-L {} -l portaudio", out_dir);
-
 }
