@@ -19,86 +19,94 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-use std::io::process::Command;
-use std::path::Path;
-use std::io::fs::PathExtensions;
-use std::os;
-
-const PORTAUDIO_URL: &'static str = "http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz";
-const PORTAUDIO_TAR: &'static str = "pa_stable_v19_20140130.tgz";
-const PORTAUDIO_FOLDER: &'static str = "portaudio";
-const PORTAUDIO_LIB_PATH: &'static str = ".portaudio/lib/.libs/libportaudio.dylib";
-
-#[cfg(any(target_os="linux", target_os="win32"))]
-fn main() {}
-
-#[cfg(target_os="macos")]
 fn main() {
-    // retrieve cargo deps out dir
-    let out_dir = os::getenv("OUT_DIR").unwrap();
-
-    // check if the .portaudio folder exist
-    let fld: Path = Path::new_opt(".portaudio").unwrap();
-
-    if !fld.is_dir() {
-        build_osx_portaudio();
-    }
-
-    // move portaudio library inside the OUT_DIR folder
-    match Command::new("cp").arg(PORTAUDIO_LIB_PATH).arg(out_dir.clone()).output() {
-        Ok(_) => {},
-        Err(e) => panic!("{}", e)
-    }
-
-    println!("cargo:rustc-flags=-L {} -l portaudio", out_dir);
+    platform::build();
 }
 
-fn build_osx_portaudio() {
-    // get portaudio library sources
-    match Command::new("wget").arg(PORTAUDIO_URL).output() {
-        Ok(_) => {},
-        Err(e) => panic!("{}", e)
+#[cfg(target_os="macos")]
+mod platform {
+    use std::io::process::Command;
+    use std::path::Path;
+    use std::io::fs::PathExtensions;
+    use std::os;
+
+    const PORTAUDIO_URL: &'static str = "http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz";
+    const PORTAUDIO_TAR: &'static str = "pa_stable_v19_20140130.tgz";
+    const PORTAUDIO_FOLDER: &'static str = "portaudio";
+    const PORTAUDIO_LIB_PATH: &'static str = ".portaudio/lib/.libs/libportaudio.dylib";
+
+    pub fn build() {
+        // retrieve cargo deps out dir
+        let out_dir = os::getenv("OUT_DIR").unwrap();
+
+        // check if the .portaudio folder exist
+        let fld: Path = Path::new_opt(".portaudio").unwrap();
+
+        if !fld.is_dir() {
+            build_osx_portaudio();
+        }
+
+        // move portaudio library inside the OUT_DIR folder
+        match Command::new("cp").arg(PORTAUDIO_LIB_PATH).arg(out_dir.clone()).output() {
+            Ok(_) => {},
+            Err(e) => panic!("{}", e)
+        }
+
+        println!("cargo:rustc-flags=-L {} -l portaudio", out_dir);
     }
 
-    // untar portaudio sources
-    match Command::new("tar").arg("xvf").arg(PORTAUDIO_TAR).output() {
-        Ok(_) => {},
-        Err(e) => panic!("{}", e)
-    }
+    fn build_osx_portaudio() {
+        // get portaudio library sources
+        match Command::new("wget").arg(PORTAUDIO_URL).output() {
+            Ok(_) => {},
+            Err(e) => panic!("{}", e)
+        }
 
-    // change dir to the portaudio folder
-    match os::change_dir(&from_str(PORTAUDIO_FOLDER).unwrap()) {
-        Ok(_) => {},
-        Err(e) => panic!("{}", e)
-    }
+        // untar portaudio sources
+        match Command::new("tar").arg("xvf").arg(PORTAUDIO_TAR).output() {
+            Ok(_) => {},
+            Err(e) => panic!("{}", e)
+        }
 
-    // run portaudio autoconf
-    match Command::new("./configure").output() {
-        Ok(_) => {},
-        Err(e) => panic!("{}", e)
-    }
+        // change dir to the portaudio folder
+        match os::change_dir(&from_str(PORTAUDIO_FOLDER).unwrap()) {
+            Ok(_) => {},
+            Err(e) => panic!("{}", e)
+        }
 
-    // then make
-    match Command::new("make").output() {
-        Ok(_) => {},
-        Err(e) => panic!("{}", e)
-    }
+        // run portaudio autoconf
+        match Command::new("./configure").output() {
+            Ok(_) => {},
+            Err(e) => panic!("{}", e)
+        }
 
-    // return to rust-portaudio root
-    match os::change_dir(&from_str("..").unwrap()) {
-        Ok(_) => {},
-        Err(e) => panic!("{}", e)
-    }
+        // then make
+        match Command::new("make").output() {
+            Ok(_) => {},
+            Err(e) => panic!("{}", e)
+        }
 
-    // cleaning portaudio sources
-    match Command::new("rm").arg("-rf").arg(PORTAUDIO_TAR).output() {
-        Ok(_) => {},
-        Err(e) => panic!("{}", e)
-    }
+        // return to rust-portaudio root
+        match os::change_dir(&from_str("..").unwrap()) {
+            Ok(_) => {},
+            Err(e) => panic!("{}", e)
+        }
 
-    // cleaning portaudio sources
-    match Command::new("mv").arg(PORTAUDIO_FOLDER).arg(".portaudio").output() {
-        Ok(_) => {},
-        Err(e) => panic!("{}", e)
+        // cleaning portaudio sources
+        match Command::new("rm").arg("-rf").arg(PORTAUDIO_TAR).output() {
+            Ok(_) => {},
+            Err(e) => panic!("{}", e)
+        }
+
+        // cleaning portaudio sources
+        match Command::new("mv").arg(PORTAUDIO_FOLDER).arg(".portaudio").output() {
+            Ok(_) => {},
+            Err(e) => panic!("{}", e)
+        }
     }
+}
+
+#[cfg(any(target_os="linux", target_os="win32"))]
+mod platform {
+
 }
