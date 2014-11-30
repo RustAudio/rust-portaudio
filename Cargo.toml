@@ -3,8 +3,13 @@
 name = "rust-portaudio"
 version = "0.3.0"
 authors = ["Jeremy Letang <letang.jeremy@gmail.com>"]
+build = "build.rs"
 
 [lib]
 
 name = "portaudio"
 crate-type = ["dylib", "rlib"]
+
+[[bin]]
+name = "portaudio_example"
+path = "examples/main.rs"
