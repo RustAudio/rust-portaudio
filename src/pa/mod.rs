@@ -576,7 +576,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
         };
         match err {
             Error::NoError  => Ok(unsafe {
-                from_buf(self.unsafe_buffer as *const I,
+                Vec::from_raw_buf(self.unsafe_buffer as *const I,
                         (frames_per_buffer * self.num_input_channels as u32) as uint) }),
             _               => Err(err)
         }
