@@ -14,6 +14,7 @@
 *.dummy
 *.exe
 *-test
+Cargo.lock
 /bin/main
 /bin/test-internal
 /bin/test-external

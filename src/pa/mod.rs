@@ -313,8 +313,8 @@ impl<I: Sample, O: Sample> Stream<I, O> {
             if self.c_input.is_some() &&
                self.c_output.is_some() {
                 let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
-                                             &(self.c_input.unwrap()),
-                                             &(self.c_output.unwrap()),
+                                             &(*self.c_input.as_ref().unwrap()),
+                                             &(*self.c_output.as_ref().unwrap()),
                                              sample_rate as c_double,
                                              frames_per_buffer,
                                              stream_flags as u64,
@@ -327,7 +327,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
             }
             else if self.c_input.is_some() {
                 let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
-                                             &(self.c_input.unwrap()),
+                                             &(*self.c_input.as_ref().unwrap()),
                                              ptr::null(),
                                              sample_rate as c_double,
                                              frames_per_buffer,
@@ -342,7 +342,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
             else if self.c_output.is_some() {
                 let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
                                              ptr::null(),
-                                             &(self.c_output.unwrap()),
+                                             &(*self.c_output.as_ref().unwrap()),
                                              sample_rate as c_double,
                                              frames_per_buffer,
                                              stream_flags as u64,
@@ -606,9 +606,9 @@ impl<I: Sample, O: Sample> Stream<I, O> {
 
     /// Retrieve a StreamInfo structure containing information about the
     /// specified stream.
-    pub fn get_stream_info(&self) -> StreamInfo {
+    pub fn get_stream_info(&self) -> &StreamInfo {
         unsafe {
-            *ffi::Pa_GetStreamInfo(self.c_pa_stream)
+            transmute(ffi::Pa_GetStreamInfo(self.c_pa_stream))
         }
     }
 

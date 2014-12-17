@@ -177,7 +177,7 @@ impl HostApiInfo {
     pub fn unwrap(&self) -> ffi::C_PaHostApiInfo {
         ffi::C_PaHostApiInfo {
             struct_version : self.struct_version as i32,
-            host_type : self.host_type as i32,
+            host_type : self.host_type.clone() as i32,
             name : unsafe { self.name.to_c_str().unwrap() },
             device_count : self.device_count as i32,
             default_input_device : self.default_input_device as i32,
@@ -303,7 +303,7 @@ impl StreamParameters {
         ffi::C_PaStreamParameters {
             device : self.device,
             channel_count : self.channel_count as i32,
-            sample_format : self.sample_format as ffi::SampleFormat,
+            sample_format : self.sample_format.clone() as ffi::SampleFormat,
             suggested_latency : self.suggested_latency,
             host_api_specific_stream_info : ptr::null_mut()
         }
