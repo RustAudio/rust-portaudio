@@ -23,7 +23,7 @@
 
 #![allow(dead_code)]
 
-use std::{string, ptr};
+use std::ptr;
 use std::mem::{transmute};
 
 use ffi;
@@ -52,7 +52,7 @@ pub type Frames = i64;
 
 /// A type used to specify one or more sample formats.
 #[repr(u64)]
-#[deriving(Clone, PartialEq, PartialOrd, Show)]
+#[deriving(Copy, Clone, PartialEq, PartialOrd, Show)]
 pub enum SampleFormat {
     /// 32 bits float sample format
     Float32 =         ffi::PA_FLOAT_32,
@@ -72,7 +72,7 @@ pub enum SampleFormat {
 
 /// The flags to pass to a stream
 #[repr(u64)]
-#[deriving(Clone, PartialEq, PartialOrd, Show)]
+#[deriving(Copy, Clone, PartialEq, PartialOrd, Show)]
 pub enum StreamFlags {
     /// No flags
     NoFlag =                                  ffi::PA_NO_FLAG,
@@ -102,6 +102,7 @@ pub type StreamCallbackFlags = u64;
 #[doc(hidden)]
 pub type CallbackFunction = extern fn(i : f32) -> StreamCallbackResult;
 #[doc(hidden)]
+#[deriving(Copy)]
 #[repr(C)]
 pub enum StreamCallbackResult {
     Continue = 0,
@@ -111,7 +112,7 @@ pub enum StreamCallbackResult {
 
 /// Unchanging unique identifiers for each supported host API
 #[repr(i32)]
-#[deriving(Clone, PartialEq, PartialOrd, Show)]
+#[deriving(Copy, Clone, PartialEq, PartialOrd, Show)]
 pub enum HostApiTypeId {
     /// In development host
     InDevelopment =   ffi::PA_IN_DEVELOPMENT,
@@ -166,7 +167,7 @@ impl HostApiInfo {
             HostApiInfo {
                 struct_version : (*c_info).struct_version as int,
                 host_type : transmute(((*c_info).host_type)),
-                name : string::raw::from_buf((*c_info).name as *const u8),
+                name : String::from_raw_buf((*c_info).name as *const u8),
                 device_count : (*c_info).device_count as int,
                 default_input_device : (*c_info).default_input_device,
                 default_output_device : (*c_info).default_output_device
@@ -178,7 +179,7 @@ impl HostApiInfo {
         ffi::C_PaHostApiInfo {
             struct_version : self.struct_version as i32,
             host_type : self.host_type as i32,
-            name : unsafe { self.name.to_c_str().unwrap() },
+            name : unsafe { self.name.to_c_str().into_inner() },
             device_count : self.device_count as i32,
             default_input_device : self.default_input_device as i32,
             default_output_device : self.default_output_device as i32
@@ -200,14 +201,14 @@ impl HostErrorInfo {
     pub fn wrap(c_error : *const ffi::C_PaHostErrorInfo) -> HostErrorInfo {
         HostErrorInfo {
             error_code : unsafe { (*c_error).error_code },
-            error_text : unsafe { string::raw::from_buf((*c_error).error_text as *const u8) }
+            error_text : unsafe { String::from_raw_buf((*c_error).error_text as *const u8) }
         }
     }
 
     pub fn unwrap(&self) -> ffi::C_PaHostErrorInfo {
         ffi::C_PaHostErrorInfo {
             error_code : self.error_code,
-            error_text : unsafe { self.error_text.to_c_str().unwrap() }
+            error_text : unsafe { self.error_text.to_c_str().into_inner() }
         }
     }
 }
@@ -244,7 +245,7 @@ impl DeviceInfo {
         unsafe {
             DeviceInfo {
                 struct_version : (*c_info).struct_version as int,
-                name : string::raw::from_buf((*c_info).name as *const u8),
+                name : String::from_raw_buf((*c_info).name as *const u8),
                 host_api : (*c_info).host_api,
                 max_input_channels : (*c_info).max_input_channels as int,
                 max_output_channels : (*c_info).max_output_channels as int,
@@ -260,7 +261,7 @@ impl DeviceInfo {
     pub fn unwrap(&self) -> ffi::C_PaDeviceInfo {
         ffi::C_PaDeviceInfo {
             struct_version : self.struct_version as i32,
-            name : unsafe { self.name.to_c_str().unwrap() },
+            name : unsafe { self.name.to_c_str().into_inner() },
             host_api : self.host_api,
             max_input_channels : self.max_input_channels as i32,
             max_output_channels : self.max_output_channels as i32,
@@ -274,7 +275,7 @@ impl DeviceInfo {
 }
 
 /// Parameters for one direction (input or output) of a stream.
-#[deriving(Clone, PartialEq, PartialOrd, Show)]
+#[deriving(Copy, Clone, PartialEq, PartialOrd, Show)]
 pub struct StreamParameters {
     /// Index of the device
     pub device : DeviceIndex,
@@ -312,6 +313,7 @@ impl StreamParameters {
 
 
 #[doc(hidden)]
+#[deriving(Copy)]
 #[repr(C)]
 pub struct StreamCallbackTimeInfo {
     pub input_buffer_adc_time : Time,
@@ -320,7 +322,7 @@ pub struct StreamCallbackTimeInfo {
 }
 
 /// A structure containing unchanging information about an open stream.
-#[deriving(Clone, PartialEq, PartialOrd, Show)]
+#[deriving(Copy, Clone, PartialEq, PartialOrd, Show)]
 #[repr(C)]
 pub struct StreamInfo {
     /// Struct version

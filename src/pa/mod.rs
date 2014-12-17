@@ -21,10 +21,9 @@
 
 //! The portable PortAudio API.
 
-use std::{string, ptr, mem};
+use std::{ptr, mem};
 use std::mem::{transmute};
 use std::vec::{Vec};
-use std::vec::raw::{from_buf};
 use libc::{c_double, c_void, malloc};
 use libc::types::os::arch::c95::size_t;
 
@@ -66,7 +65,7 @@ pub fn get_version() -> i32 {
 /// Retrieve a textual description of the current PortAudio build.
 pub fn get_version_text() -> String {
     unsafe {
-        string::raw::from_buf(ffi::Pa_GetVersionText() as *const u8)
+        String::from_raw_buf(ffi::Pa_GetVersionText() as *const u8)
     }
 }
 
@@ -78,7 +77,7 @@ pub fn get_version_text() -> String {
 /// Return the error as a string.
 pub fn get_error_text(error_code: Error) -> String {
     unsafe {
-        string::raw::from_buf(ffi::Pa_GetErrorText(error_code) as *const u8)
+        String::from_raw_buf(ffi::Pa_GetErrorText(error_code) as *const u8)
     }
 }
 
@@ -557,8 +556,8 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                                frames_per_buffer)
         };
         Ok(unsafe {
-            from_buf(self.unsafe_buffer as *const I,
-                     (frames_per_buffer * self.num_input_channels as u32) as uint) })
+            Vec::from_raw_buf(self.unsafe_buffer as *const I,
+                              (frames_per_buffer * self.num_input_channels as u32) as uint) })
     }
 
     /// Read samples from an input stream.
