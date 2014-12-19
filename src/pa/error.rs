@@ -4,8 +4,8 @@
 //!
 
 /// Error codes returned by PortAudio functions.
+#[deriving(Copy, Clone, PartialEq, PartialOrd, Show, FromPrimitive)]
 #[repr(C)]
-#[deriving(Clone, PartialEq, PartialOrd, Show, FromPrimitive)]
 pub enum Error {
     /// No Error
     NoError = 0,

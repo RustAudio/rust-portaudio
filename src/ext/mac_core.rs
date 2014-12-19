@@ -45,6 +45,8 @@ pub static MacCoreMinimizeCPU : u32 = 0x0101;
 
 
 /// Not implemented
+#[allow(raw_pointer_deriving)]
+#[deriving(Copy)]
 pub struct MacCoreStreamInfo {
     size : u32,
     host_api_type : HostApiTypeId,

@@ -6,7 +6,7 @@ extern crate portaudio;
 use portaudio::*;
 use std::error::Error;
 
-const SAMPLE_RATE: f64 = 44100.0;
+const SAMPLE_RATE: f64 = 44_100.0;
 const FRAMES: u32 = 256;
 
 fn main() -> () {
