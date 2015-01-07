@@ -25,6 +25,7 @@
 
 use std::ptr;
 use std::mem::{transmute};
+use std::c_str::ToCStr;
 
 use ffi;
 

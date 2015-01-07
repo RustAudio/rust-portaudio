@@ -23,6 +23,7 @@
 
 use std::{ptr, mem};
 use std::mem::{transmute};
+use std::num::{FromPrimitive};
 use std::vec::{Vec};
 use libc::{c_double, c_void, malloc};
 use libc::types::os::arch::c95::size_t;
@@ -199,12 +200,13 @@ pub fn sleep(m_sec : int) -> () {
 
 mod private {
 
+    use std::num::{FromPrimitive, ToPrimitive};
+    use std::ops::{Add, Sub, Mul, Div};
     use super::types::SampleFormat;
 
     /// internal private trait for Sample format management
     pub trait SamplePrivate: ::std::default::Default + Copy + Clone + ::std::fmt::Show
-                             + ToPrimitive + FromPrimitive + Add<Self, Self>
-                             + Sub<Self, Self> + Mul<Self, Self> + Div<Self, Self> {
+                             + ToPrimitive + FromPrimitive + Add + Sub + Mul + Div {
         /// return the size of a sample format
         fn size<S: SamplePrivate>() -> uint {
             ::std::mem::size_of::<S>()
