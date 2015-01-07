@@ -52,7 +52,7 @@ pub type Frames = i64;
 
 /// A type used to specify one or more sample formats.
 #[repr(u64)]
-#[deriving(Copy, Clone, PartialEq, PartialOrd, Show)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Show)]
 pub enum SampleFormat {
     /// 32 bits float sample format
     Float32 =         ffi::PA_FLOAT_32,
@@ -72,7 +72,7 @@ pub enum SampleFormat {
 
 /// The flags to pass to a stream
 #[repr(u64)]
-#[deriving(Copy, Clone, PartialEq, PartialOrd, Show)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Show)]
 pub enum StreamFlags {
     /// No flags
     NoFlag =                                  ffi::PA_NO_FLAG,
@@ -102,7 +102,7 @@ pub type StreamCallbackFlags = u64;
 #[doc(hidden)]
 pub type CallbackFunction = extern fn(i : f32) -> StreamCallbackResult;
 #[doc(hidden)]
-#[deriving(Copy)]
+#[derive(Copy)]
 #[repr(C)]
 pub enum StreamCallbackResult {
     Continue = 0,
@@ -112,7 +112,7 @@ pub enum StreamCallbackResult {
 
 /// Unchanging unique identifiers for each supported host API
 #[repr(i32)]
-#[deriving(Copy, Clone, PartialEq, PartialOrd, Show)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Show)]
 pub enum HostApiTypeId {
     /// In development host
     InDevelopment =   ffi::PA_IN_DEVELOPMENT,
@@ -188,7 +188,7 @@ impl HostApiInfo {
 }
 
 /// Structure used to return information about a host error condition.
-#[deriving(Clone, PartialEq, PartialOrd, Show)]
+#[derive(Clone, PartialEq, PartialOrd, Show)]
 pub struct HostErrorInfo {
     /// The code of the error
     pub error_code : u32,
@@ -215,7 +215,7 @@ impl HostErrorInfo {
 
 /// A structure providing information and capabilities of PortAudio devices.
 /// Devices may support input, output or both input and output.
-#[deriving(Clone, PartialEq, PartialOrd, Show)]
+#[derive(Clone, PartialEq, PartialOrd, Show)]
 pub struct DeviceInfo {
     /// The version of the struct
     pub struct_version : int,
@@ -275,7 +275,7 @@ impl DeviceInfo {
 }
 
 /// Parameters for one direction (input or output) of a stream.
-#[deriving(Copy, Clone, PartialEq, PartialOrd, Show)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Show)]
 pub struct StreamParameters {
     /// Index of the device
     pub device : DeviceIndex,
@@ -313,7 +313,7 @@ impl StreamParameters {
 
 
 #[doc(hidden)]
-#[deriving(Copy)]
+#[derive(Copy)]
 #[repr(C)]
 pub struct StreamCallbackTimeInfo {
     pub input_buffer_adc_time : Time,
@@ -322,7 +322,7 @@ pub struct StreamCallbackTimeInfo {
 }
 
 /// A structure containing unchanging information about an open stream.
-#[deriving(Copy, Clone, PartialEq, PartialOrd, Show)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Show)]
 #[repr(C)]
 pub struct StreamInfo {
     /// Struct version

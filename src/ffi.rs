@@ -74,7 +74,7 @@ pub const PA_AUDIO_SCIENCE_HPI: HostApiTypeId = 14;
 pub type C_PaStream = c_void;
 
 #[allow(raw_pointer_deriving)]
-#[deriving(Copy)]
+#[derive(Copy)]
 #[repr(C)]
 pub struct C_PaStreamParameters {
     pub device : DeviceIndex,
