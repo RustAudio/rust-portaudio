@@ -192,9 +192,9 @@ pub fn get_sample_size(format: SampleFormat) -> Result<(), Error> {
 ///
 /// The function may sleep longer than requested so don't rely on this for
 /// accurate musical timing.
-pub fn sleep(m_sec : int) -> () {
+pub fn sleep(m_sec : i32) -> () {
     unsafe {
-        ffi::Pa_Sleep(m_sec as i32)
+        ffi::Pa_Sleep(m_sec)
     }
 }
 
@@ -208,7 +208,7 @@ mod private {
     pub trait SamplePrivate: ::std::default::Default + Copy + Clone + ::std::fmt::Show
                              + ToPrimitive + FromPrimitive + Add + Sub + Mul + Div {
         /// return the size of a sample format
-        fn size<S: SamplePrivate>() -> uint {
+        fn size<S: SamplePrivate>() -> usize {
             ::std::mem::size_of::<S>()
         }
         /// get the sample format
@@ -559,7 +559,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
         };
         Ok(unsafe {
             Vec::from_raw_buf(self.unsafe_buffer as *const I,
-                              (frames_per_buffer * self.num_input_channels as u32) as uint) })
+                              frames_per_buffer * self.num_input_channels) })
     }
 
     /// Read samples from an input stream.

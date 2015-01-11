@@ -148,13 +148,13 @@ pub enum HostApiTypeId {
 /// A structure containing information about a particular host API.
 pub struct HostApiInfo{
     /// The version of the struct
-    pub struct_version : int,
+    pub struct_version : i32,
     /// The type of the current host
     pub host_type : HostApiTypeId,
     /// The name of the host
     pub name : String,
     /// The total count of device in the host
-    pub device_count : int,
+    pub device_count : i32,
     /// The index to the default input device
     pub default_input_device : DeviceIndex,
     /// The index to the default output device
@@ -166,10 +166,10 @@ impl HostApiInfo {
     pub fn wrap(c_info : *const ffi::C_PaHostApiInfo) -> HostApiInfo {
         unsafe {
             HostApiInfo {
-                struct_version : (*c_info).struct_version as int,
+                struct_version : (*c_info).struct_version,
                 host_type : transmute(((*c_info).host_type)),
                 name : String::from_raw_buf((*c_info).name as *const u8),
-                device_count : (*c_info).device_count as int,
+                device_count : (*c_info).device_count,
                 default_input_device : (*c_info).default_input_device,
                 default_output_device : (*c_info).default_output_device
             }
@@ -219,15 +219,15 @@ impl HostErrorInfo {
 #[derive(Clone, PartialEq, PartialOrd, Show)]
 pub struct DeviceInfo {
     /// The version of the struct
-    pub struct_version : int,
+    pub struct_version : i32,
     /// The name of the devie
     pub name : String,
     /// Host API identifier
     pub host_api : HostApiIndex,
     /// Maximal number of input channels for this device
-    pub max_input_channels : int,
+    pub max_input_channels : i32,
     /// maximal number of output channel for this device
-    pub max_output_channels : int,
+    pub max_output_channels : i32,
     /// The default low latency for input with this device
     pub default_low_input_latency : Time,
     /// The default low latency for output with this device
@@ -245,11 +245,11 @@ impl DeviceInfo {
     pub fn wrap(c_info : *const ffi::C_PaDeviceInfo) -> DeviceInfo {
         unsafe {
             DeviceInfo {
-                struct_version : (*c_info).struct_version as int,
+                struct_version : (*c_info).struct_version,
                 name : String::from_raw_buf((*c_info).name as *const u8),
                 host_api : (*c_info).host_api,
-                max_input_channels : (*c_info).max_input_channels as int,
-                max_output_channels : (*c_info).max_output_channels as int,
+                max_input_channels : (*c_info).max_input_channels,
+                max_output_channels : (*c_info).max_output_channels,
                 default_low_input_latency : (*c_info).default_low_input_latency,
                 default_low_output_latency : (*c_info).default_low_output_latency,
                 default_high_input_latency : (*c_info).default_high_input_latency,
