@@ -66,7 +66,7 @@ pub fn get_version() -> i32 {
 /// Retrieve a textual description of the current PortAudio build.
 pub fn get_version_text() -> String {
     unsafe {
-        String::from_raw_buf(ffi::Pa_GetVersionText() as *const u8)
+        ffi::c_str_to_string(&ffi::Pa_GetVersionText())
     }
 }
 
@@ -78,7 +78,7 @@ pub fn get_version_text() -> String {
 /// Return the error as a string.
 pub fn get_error_text(error_code: Error) -> String {
     unsafe {
-        String::from_raw_buf(ffi::Pa_GetErrorText(error_code) as *const u8)
+        ffi::c_str_to_string(&ffi::Pa_GetErrorText(error_code))
     }
 }
 
@@ -559,7 +559,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
         };
         Ok(unsafe {
             Vec::from_raw_buf(self.unsafe_buffer as *const I,
-                              frames_per_buffer * self.num_input_channels) })
+                              (frames_per_buffer as usize) * (self.num_input_channels as usize)) })
     }
 
     /// Read samples from an input stream.

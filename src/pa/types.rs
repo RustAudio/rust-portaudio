@@ -25,7 +25,6 @@
 
 use std::ptr;
 use std::mem::{transmute};
-use std::c_str::ToCStr;
 
 use ffi;
 
@@ -168,7 +167,7 @@ impl HostApiInfo {
             HostApiInfo {
                 struct_version : (*c_info).struct_version,
                 host_type : transmute(((*c_info).host_type)),
-                name : String::from_raw_buf((*c_info).name as *const u8),
+                name : ffi::c_str_to_string(&(*c_info).name),
                 device_count : (*c_info).device_count,
                 default_input_device : (*c_info).default_input_device,
                 default_output_device : (*c_info).default_output_device
@@ -180,7 +179,7 @@ impl HostApiInfo {
         ffi::C_PaHostApiInfo {
             struct_version : self.struct_version as i32,
             host_type : self.host_type as i32,
-            name : unsafe { self.name.to_c_str().into_inner() },
+            name : unsafe { ffi::string_to_c_str(&self.name) },
             device_count : self.device_count as i32,
             default_input_device : self.default_input_device as i32,
             default_output_device : self.default_output_device as i32
@@ -202,14 +201,14 @@ impl HostErrorInfo {
     pub fn wrap(c_error : *const ffi::C_PaHostErrorInfo) -> HostErrorInfo {
         HostErrorInfo {
             error_code : unsafe { (*c_error).error_code },
-            error_text : unsafe { String::from_raw_buf((*c_error).error_text as *const u8) }
+            error_text : unsafe { ffi::c_str_to_string(&(*c_error).error_text) }
         }
     }
 
     pub fn unwrap(&self) -> ffi::C_PaHostErrorInfo {
         ffi::C_PaHostErrorInfo {
             error_code : self.error_code,
-            error_text : unsafe { self.error_text.to_c_str().into_inner() }
+            error_text : unsafe { ffi::string_to_c_str(&self.error_text) }
         }
     }
 }
@@ -246,7 +245,7 @@ impl DeviceInfo {
         unsafe {
             DeviceInfo {
                 struct_version : (*c_info).struct_version,
-                name : String::from_raw_buf((*c_info).name as *const u8),
+                name : ffi::c_str_to_string(&(*c_info).name),
                 host_api : (*c_info).host_api,
                 max_input_channels : (*c_info).max_input_channels,
                 max_output_channels : (*c_info).max_output_channels,
@@ -262,7 +261,7 @@ impl DeviceInfo {
     pub fn unwrap(&self) -> ffi::C_PaDeviceInfo {
         ffi::C_PaDeviceInfo {
             struct_version : self.struct_version as i32,
-            name : unsafe { self.name.to_c_str().into_inner() },
+            name : unsafe { ffi::string_to_c_str(&self.name) },
             host_api : self.host_api,
             max_input_channels : self.max_input_channels as i32,
             max_output_channels : self.max_output_channels as i32,
@@ -335,4 +334,3 @@ pub struct StreamInfo {
     /// The sample rate for this open stream
     pub sample_rate : f64
 }
-
