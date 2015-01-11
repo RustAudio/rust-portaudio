@@ -179,7 +179,7 @@ impl HostApiInfo {
         ffi::C_PaHostApiInfo {
             struct_version : self.struct_version as i32,
             host_type : self.host_type as i32,
-            name : unsafe { ffi::string_to_c_str(&self.name) },
+            name : ffi::string_to_c_str(&self.name),
             device_count : self.device_count as i32,
             default_input_device : self.default_input_device as i32,
             default_output_device : self.default_output_device as i32
@@ -208,7 +208,7 @@ impl HostErrorInfo {
     pub fn unwrap(&self) -> ffi::C_PaHostErrorInfo {
         ffi::C_PaHostErrorInfo {
             error_code : self.error_code,
-            error_text : unsafe { ffi::string_to_c_str(&self.error_text) }
+            error_text : ffi::string_to_c_str(&self.error_text)
         }
     }
 }
@@ -261,7 +261,7 @@ impl DeviceInfo {
     pub fn unwrap(&self) -> ffi::C_PaDeviceInfo {
         ffi::C_PaDeviceInfo {
             struct_version : self.struct_version as i32,
-            name : unsafe { ffi::string_to_c_str(&self.name) },
+            name : ffi::string_to_c_str(&self.name),
             host_api : self.host_api,
             max_input_channels : self.max_input_channels as i32,
             max_output_channels : self.max_output_channels as i32,
