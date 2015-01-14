@@ -100,9 +100,8 @@ pub fn api_type_id_to_host_api_index(type_id: HostApiTypeId) -> HostApiIndex {
 /// or, a PaErrorCode (which are always negative) if PortAudio is not initialized
 /// or an error is encountered.
 pub fn api_device_index_to_device_index(host_api: HostApiIndex,
-                                        host_api_device_index: int) -> DeviceIndex {
+                                        host_api_device_index: i32) -> DeviceIndex {
     unsafe {
-        ffi::Pa_HostApiDeviceIndexToDeviceIndex(host_api,
-                                                host_api_device_index as i32)
+        ffi::Pa_HostApiDeviceIndexToDeviceIndex(host_api, host_api_device_index)
     }
 }

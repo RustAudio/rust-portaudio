@@ -23,6 +23,8 @@
 
 use pa::error::Error;
 use libc::{c_char, c_double, c_void};
+use std;
+use std::ffi::CString;
 
 use pa::{
     DeviceIndex,
@@ -73,8 +75,8 @@ pub const PA_AUDIO_SCIENCE_HPI: HostApiTypeId = 14;
 
 pub type C_PaStream = c_void;
 
-#[allow(raw_pointer_deriving)]
-#[deriving(Copy)]
+#[allow(raw_pointer_derive)]
+#[derive(Copy)]
 #[repr(C)]
 pub struct C_PaStreamParameters {
     pub device : DeviceIndex,
@@ -183,4 +185,16 @@ extern "C" {
     pub fn PaMacCore_GetBufferSizeRange(device : DeviceIndex, minBufferSizeFrames : *mut u32, maxBufferSizeFrames : *mut u32) -> Error;
     //pub fn PaMacCore_SetupStreamInfo(PaMacCoreStreamInfo *data, unsigned long flags) -> ();
     //pub fn PaMacCore_SetupChannelMap(PaMacCoreStreamInfo *data, const SInt32 *const channelMap, unsigned long channelMapSize) -> ();
+}
+
+/// A function to convert C strings to Rust strings
+pub fn c_str_to_string<'a>(c_str: &'a *const c_char) -> String
+{
+    unsafe {String::from_utf8_lossy(std::ffi::c_str_to_bytes(c_str)).into_owned() }
+}
+
+/// A function to convert Rust strings to C strings
+pub fn string_to_c_str(rust_str: &String) -> *const c_char
+{
+    CString::from_slice(rust_str.as_bytes()).as_ptr()
 }
