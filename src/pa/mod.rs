@@ -205,7 +205,7 @@ mod private {
     use super::types::SampleFormat;
 
     /// internal private trait for Sample format management
-    pub trait SamplePrivate: ::std::default::Default + Copy + Clone + ::std::fmt::Show
+    pub trait SamplePrivate: ::std::default::Default + Copy + Clone + ::std::fmt::Debug
                              + ToPrimitive + FromPrimitive + Add + Sub + Mul + Div {
         /// return the size of a sample format
         fn size<S: SamplePrivate>() -> usize {
@@ -579,7 +579,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
         match err {
             Error::NoError  => Ok(unsafe {
                 Vec::from_raw_buf(self.unsafe_buffer as *const I,
-                        (frames_per_buffer * self.num_input_channels as u32) as uint) }),
+                        (frames_per_buffer * self.num_input_channels as u32) as usize) }),
             _               => Err(err)
         }
     }

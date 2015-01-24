@@ -1,4 +1,3 @@
-#![feature(globs)]
 #![allow(unreachable_code, unused_assignments)]
 
 extern crate portaudio;
@@ -19,17 +18,17 @@ fn main() -> () {
         Err(err) => println!("An error occurred while initializing PortAudio: {}", err.description()),
     }
 
-    println!("PortAudio host count : {}", pa::host::get_api_count() as int);
+    println!("PortAudio host count : {}", pa::host::get_api_count() as isize);
 
     let default_host = pa::host::get_default_api();
-    println!("PortAudio default host : {}", default_host as int);
+    println!("PortAudio default host : {}", default_host as isize);
 
     match pa::host::get_api_info(default_host) {
         None => println!("Couldn't retrieve api info for the default host."),
         Some(info) => println!("PortAudio host name : {}", info.name),
     }
 
-    let type_id = pa::host::api_type_id_to_host_api_index(pa::HostApiTypeId::CoreAudio) as int;
+    let type_id = pa::host::api_type_id_to_host_api_index(pa::HostApiTypeId::CoreAudio) as isize;
     println!("PortAudio type id : {}", type_id);
 
     let def_input = pa::device::get_default_input();
@@ -85,7 +84,7 @@ fn main() -> () {
     }
 
     // We'll use this function to wait for read/write availability.
-    let wait_for_stream = |f: || -> Result<Option<i64>, pa::error::Error>, name: &str| {
+    fn wait_for_stream<F: Fn() -> Result<Option<i64>, pa::error::Error>>(f: F, name: &str) {
         'waiting_for_stream: loop {
             match f() {
                 Ok(None) => (),
@@ -101,10 +100,10 @@ fn main() -> () {
     // Now start the main read/write loop! In this example, we pass the input buffer directly to
     // the output buffer, so watch out for feedback.
     'stream: loop {
-        wait_for_stream(|| stream.get_stream_read_available(), "Read");
+        wait_for_stream(|&:| stream.get_stream_read_available(), "Read");
         match stream.read(FRAMES) {
             Ok(input_samples)  => {
-                wait_for_stream(|| stream.get_stream_write_available(), "Write");
+                wait_for_stream(|&:| stream.get_stream_write_available(), "Write");
                 match stream.write(input_samples, FRAMES) {
                     Ok(()) => (),
                     Err(err) => {

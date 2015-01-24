@@ -4,7 +4,7 @@
 //!
 
 /// Error codes returned by PortAudio functions.
-#[derive(Copy, Clone, PartialEq, PartialOrd, Show, FromPrimitive)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, FromPrimitive)]
 #[repr(C)]
 pub enum Error {
     /// No Error
@@ -67,6 +67,12 @@ pub enum Error {
     IncompatibleStreamHostApi,
     /// Invalid buffer
     BadBufferPtr,
+}
+
+impl ::std::fmt::Display for Error {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
+        self.fmt(f)
+    }
 }
 
 impl ::std::error::Error for Error {
