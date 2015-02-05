@@ -71,7 +71,7 @@ pub enum Error {
 
 impl ::std::fmt::Display for Error {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
-        self.fmt(f)
+        write!(f, "{:?}", self)
     }
 }
 

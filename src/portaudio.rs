@@ -54,6 +54,7 @@ __rust-portaudio__ is build with the rustpkg tool :
 
 #![warn(missing_docs)]
 #![allow(dead_code)]
+#![feature(collections, core, libc, std_misc)]
 
 extern crate libc;
 

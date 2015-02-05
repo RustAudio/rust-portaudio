@@ -52,7 +52,7 @@ pub type Frames = i64;
 
 /// A type used to specify one or more sample formats.
 #[repr(u64)]
-#[derive(Copy, Clone, PartialEq, PartialOrd, Show)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum SampleFormat {
     /// 32 bits float sample format
     Float32 =         ffi::PA_FLOAT_32,
@@ -72,7 +72,7 @@ pub enum SampleFormat {
 
 /// The flags to pass to a stream
 #[repr(u64)]
-#[derive(Copy, Clone, PartialEq, PartialOrd, Show)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum StreamFlags {
     /// No flags
     NoFlag =                                  ffi::PA_NO_FLAG,
@@ -112,7 +112,7 @@ pub enum StreamCallbackResult {
 
 /// Unchanging unique identifiers for each supported host API
 #[repr(i32)]
-#[derive(Copy, Clone, PartialEq, PartialOrd, Show)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum HostApiTypeId {
     /// In development host
     InDevelopment =   ffi::PA_IN_DEVELOPMENT,
@@ -188,7 +188,7 @@ impl HostApiInfo {
 }
 
 /// Structure used to return information about a host error condition.
-#[derive(Clone, PartialEq, PartialOrd, Show)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct HostErrorInfo {
     /// The code of the error
     pub error_code : u32,
@@ -215,7 +215,7 @@ impl HostErrorInfo {
 
 /// A structure providing information and capabilities of PortAudio devices.
 /// Devices may support input, output or both input and output.
-#[derive(Clone, PartialEq, PartialOrd, Show)]
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct DeviceInfo {
     /// The version of the struct
     pub struct_version : i32,
@@ -275,7 +275,7 @@ impl DeviceInfo {
 }
 
 /// Parameters for one direction (input or output) of a stream.
-#[derive(Copy, Clone, PartialEq, PartialOrd, Show)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub struct StreamParameters {
     /// Index of the device
     pub device : DeviceIndex,
@@ -322,7 +322,7 @@ pub struct StreamCallbackTimeInfo {
 }
 
 /// A structure containing unchanging information about an open stream.
-#[derive(Copy, Clone, PartialEq, PartialOrd, Show)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 #[repr(C)]
 pub struct StreamInfo {
     /// Struct version
