@@ -15,3 +15,6 @@ crate-type = ["dylib", "rlib"]
 [[bin]]
 name = "portaudio_example"
 path = "examples/main.rs"
+
+[build-dependencies]
+pkg-config = "*"
