@@ -30,9 +30,11 @@ use std::env;
 use unix_platform as platform;
 
 fn main() {
-    // If pkg-config finds a library on the system, we are done
-    if pkg_config::Config::new().atleast_version("19").find("portaudio-2.0").is_ok() {
-        return;
+    if env::var("PORTAUDIO_ONLY_STATIC").is_none() {
+        // If pkg-config finds a library on the system, we are done
+        if pkg_config::Config::new().atleast_version("19").find("portaudio-2.0").is_ok() {
+            return;
+        }
     }
 
     build();
