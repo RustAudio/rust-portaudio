@@ -17,21 +17,8 @@ Only the blocking API work for the moment.
 
 # Installation
 
-You must install on your computer the Portaudio libraries who is used for the binding.
+__rust-portaudio__ will try to detect portaudio on your system and, failing that (or if given the `PORTAUDIO_ONLY_STATIC` environment variable on the build process), will download and build portaudio statically.
 
-Portaudio is available with package management tools on Linux, or brew on Mac OS.
+__rust-portaudio__ is built using cargo, so just type `cargo build` at the root of the __rust-portaudio__ repository.
 
-You can download it directly from the website : [portaudio](http://www.portaudio.com/download.html)
-
-Then clone the repo and build the library with the following command at the root of the __rust-portaudio__ repository.
-
-__rust-portaudio__ is build using make, so just type `make` at the root of the __rust-portaudio__ repository, this command
-build __rust-portaudio__, the examples, and the documentation.
-
-You can build them separatly to with the dedicated commands:
-
-```Shell
-> make portaudio
-> make test
-> make doc
-```
+You can build the tests and examples with `cargo test`, and the documentation with `cargo doc`.
