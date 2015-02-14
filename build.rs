@@ -18,7 +18,7 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#![feature(io, env, path, fs)]
+#![feature(io, env, path, fs, os)]
 
 extern crate "pkg-config" as pkg_config;
 
@@ -30,7 +30,7 @@ use std::env;
 use unix_platform as platform;
 
 fn main() {
-    if env::var("PORTAUDIO_ONLY_STATIC").is_none() {
+    if env::var("PORTAUDIO_ONLY_STATIC").is_err() {
         // If pkg-config finds a library on the system, we are done
         if pkg_config::Config::new().atleast_version("19").find("portaudio-2.0").is_ok() {
             return;
