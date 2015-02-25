@@ -1,4 +1,5 @@
 #![allow(unreachable_code, unused_assignments)]
+#![feature(core)]
 
 extern crate portaudio;
 
