@@ -27,3 +27,4 @@ watch.sh
 !/examples/*.rs
 !/examples/assets/
 .portaudio
+Cargo.lock

@@ -1,4 +1,3 @@
-#![allow(unreachable_code, unused_assignments)]
 #![feature(core)]
 
 extern crate portaudio;
@@ -9,7 +8,7 @@ use std::error::Error;
 const SAMPLE_RATE: f64 = 44_100.0;
 const FRAMES: u32 = 256;
 
-fn main() -> () {
+fn main() {
 
     println!("PortAudio version : {}", pa::get_version());
     println!("PortAudio version text : {}", pa::get_version_text());
