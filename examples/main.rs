@@ -1,4 +1,3 @@
-#![allow(unreachable_code, unused_assignments)]
 #![feature(core)]
 
 extern crate portaudio;
@@ -9,7 +8,7 @@ use std::error::Error;
 const SAMPLE_RATE: f64 = 44_100.0;
 const FRAMES: u32 = 256;
 
-fn main() -> () {
+fn main() {
 
     println!("PortAudio version : {}", pa::get_version());
     println!("PortAudio version text : {}", pa::get_version_text());
@@ -101,10 +100,10 @@ fn main() -> () {
     // Now start the main read/write loop! In this example, we pass the input buffer directly to
     // the output buffer, so watch out for feedback.
     'stream: loop {
-        wait_for_stream(|&:| stream.get_stream_read_available(), "Read");
+        wait_for_stream(|| stream.get_stream_read_available(), "Read");
         match stream.read(FRAMES) {
             Ok(input_samples)  => {
-                wait_for_stream(|&:| stream.get_stream_write_available(), "Write");
+                wait_for_stream(|| stream.get_stream_write_available(), "Write");
                 match stream.write(input_samples, FRAMES) {
                     Ok(()) => (),
                     Err(err) => {
