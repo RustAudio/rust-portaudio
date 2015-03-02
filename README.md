@@ -8,9 +8,9 @@ These are the bindings and wrappers for Rust.
 
 PortAudio website : http://portaudio.com
 
-Rust-PortAudio use the same license than PortAudio : the MIT license.
+Rust-PortAudio use the same license as PortAudio : the MIT license.
 
-Rust-PortAudio is heavily in development, so there is many bugs.
+Rust-PortAudio is still under heavy development, so there will probably be bugs.
 
 Only the blocking API work for the moment.
 

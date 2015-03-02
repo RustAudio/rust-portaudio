@@ -3,6 +3,7 @@ env:
 notifications:
   email:
     - letang.jeremy@gmail.com
+    - mitchell.nordine@gmail.com
 before_install:
   - sudo apt-get update
 install:
