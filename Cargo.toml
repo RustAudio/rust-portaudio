@@ -5,8 +5,16 @@ version = "0.3.0"
 authors = ["Jeremy Letang <letang.jeremy@gmail.com>"]
 description = "Portaudio binding for Rust"
 license = "MIT"
+build = "build.rs"
 
 [lib]
 
 name = "portaudio"
 crate-type = ["dylib", "rlib"]
+
+[[bin]]
+name = "portaudio_example"
+path = "examples/main.rs"
+
+[build-dependencies]
+pkg-config = "*"
