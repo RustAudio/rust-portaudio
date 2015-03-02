@@ -27,6 +27,7 @@ use std::num::{FromPrimitive};
 use std::vec::{Vec};
 use libc::{c_double, c_void, malloc};
 use libc::types::os::arch::c95::size_t;
+use std::marker::{PhantomData};
 
 use ffi;
 pub use self::error::Error;
@@ -257,7 +258,9 @@ pub struct Stream<I: Sample, O: Sample> {
     c_output : Option<ffi::C_PaStreamParameters>,
     unsafe_buffer : *mut c_void,
     callback_function : Option<CallbackFunction>,
-    num_input_channels : i32
+    num_input_channels : i32,
+    input_sample : PhantomData<I>,
+    output_sample : PhantomData<O>,
 }
 
 impl<I: Sample, O: Sample> Stream<I, O> {
@@ -271,7 +274,9 @@ impl<I: Sample, O: Sample> Stream<I, O> {
             c_output : None,
             unsafe_buffer : ptr::null_mut(),
             callback_function : None,
-            num_input_channels : 0
+            num_input_channels : 0,
+            input_sample : PhantomData,
+            output_sample : PhantomData,
         }
     }
 
