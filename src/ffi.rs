@@ -23,8 +23,7 @@
 
 use pa::error::Error;
 use libc::{c_char, c_double, c_void};
-use std;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 
 use pa::{
     DeviceIndex,
@@ -188,13 +187,16 @@ extern "C" {
 }
 
 /// A function to convert C strings to Rust strings
-pub fn c_str_to_string<'a>(c_str: &'a *const c_char) -> String
-{
-    unsafe {String::from_utf8_lossy(std::ffi::c_str_to_bytes(c_str)).into_owned() }
+pub fn c_str_to_string<'a>(c_str: &'a *const c_char) -> String {
+    unsafe {
+        String::from_utf8_lossy(CStr::from_ptr(*c_str).to_bytes()).into_owned()
+    }
 }
 
 /// A function to convert Rust strings to C strings
-pub fn string_to_c_str(rust_str: &String) -> *const c_char
-{
-    CString::from_slice(rust_str.as_bytes()).as_ptr()
+pub fn string_to_c_str(rust_str: &String) -> *const c_char {
+    match CString::new(rust_str.as_bytes()) {
+        Ok(c_string) => c_string.as_ptr(),
+        Err(err) => panic!(err),
+    }
 }

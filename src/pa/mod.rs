@@ -257,7 +257,9 @@ pub struct Stream<I: Sample, O: Sample> {
     c_output : Option<ffi::C_PaStreamParameters>,
     unsafe_buffer : *mut c_void,
     callback_function : Option<CallbackFunction>,
-    num_input_channels : i32
+    num_input_channels : i32,
+    phantom_data_input : ::std::marker::PhantomData<I>,
+    phantom_data_output : ::std::marker::PhantomData<O>,
 }
 
 impl<I: Sample, O: Sample> Stream<I, O> {
@@ -271,7 +273,9 @@ impl<I: Sample, O: Sample> Stream<I, O> {
             c_output : None,
             unsafe_buffer : ptr::null_mut(),
             callback_function : None,
-            num_input_channels : 0
+            num_input_channels : 0,
+            phantom_data_input : ::std::marker::PhantomData,
+            phantom_data_output : ::std::marker::PhantomData,
         }
     }
 
