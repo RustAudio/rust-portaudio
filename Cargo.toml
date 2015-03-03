@@ -1,11 +1,13 @@
 [package]
 
-name = "rust-portaudio"
-version = "0.3.0"
+name = "portaudio"
+version = "0.3.1"
 authors = ["Jeremy Letang <letang.jeremy@gmail.com>"]
 description = "Portaudio binding for Rust"
 license = "MIT"
 build = "build.rs"
+homepage = "https://github.com/jeremyletang/rust-portaudio"
+repository = "https://github.com/jeremyletang/rust-portaudio.git"
 
 [lib]
 
