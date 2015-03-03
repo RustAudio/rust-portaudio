@@ -12,7 +12,17 @@ Rust-PortAudio use the same license as PortAudio : the MIT license.
 
 Rust-PortAudio is still under heavy development, so there will probably be bugs.
 
-Only the blocking API work for the moment.
+Only the blocking API is exposed at the moment.
+
+
+# Using rust-portaudio.
+
+To use rust-portaudio in your own project, add it to your Cargo.toml dependencies like so:
+
+```
+[dependencies]
+portaudio = "*"
+```
 
 
 # Installation
