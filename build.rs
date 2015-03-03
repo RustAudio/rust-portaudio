@@ -47,6 +47,7 @@ fn build() {
 
     let static_lib = out_dir.join("lib/libportaudio.a");
     if !static_lib.exists() {
+        platform::download();
         platform::build(out_dir);
     }
 
@@ -65,13 +66,14 @@ mod unix_platform {
     pub const PORTAUDIO_TAR: &'static str = "pa_stable_v19_20140130.tgz";
     pub const PORTAUDIO_FOLDER: &'static str = "portaudio";
 
-    pub fn build(out_dir: &Path) {
-        // get portaudio library sources
-        match Command::new("wget").arg(PORTAUDIO_URL).output() {
+    pub fn download() {
+        match Command::new("curl").arg(PORTAUDIO_URL).arg("-O").output() {
             Ok(_) => {},
             Err(e) => panic!("{}", e)
         }
+    }
 
+    pub fn build(out_dir: &Path) {
         // untar portaudio sources
         match Command::new("tar").arg("xvf").arg(PORTAUDIO_TAR).output() {
             Ok(_) => {},
@@ -126,8 +128,16 @@ mod unix_platform {
 #[cfg(target_os = "linux")]
 mod platform {
     use pkg_config;
+    use std::old_io::process::Command;
     use super::unix_platform;
     use std::path::Path;
+
+    pub fn download() {
+        match Command::new("wget").arg(unix_platform::PORTAUDIO_URL).output() {
+            Ok(_) => {},
+            Err(e) => panic!("{}", e)
+        }
+    }
 
     pub fn build(out_dir: &Path) {
         unix_platform::build(out_dir);
@@ -144,6 +154,10 @@ mod platform {
 #[cfg(windows)]
 mod platform {
     use std::path::Path;
+
+    pub fn download(_: &Path) {
+        panic!("Don't know how to build portaudio on Windows yet!");
+    }
 
     pub fn build(_: &Path) {
         panic!("Don't know how to build portaudio on Windows yet!");
