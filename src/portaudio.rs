@@ -22,7 +22,7 @@
 /*!
 # Rust-PortAudio
 
-__Portaudio__ bindings for Rust
+__PortAudio__ bindings for Rust
 
 PortAudio provides a uniform application programming interface (API) across all
 supported platforms.  You can think of the PortAudio library as a wrapper that
@@ -33,22 +33,20 @@ PortAudio supports all the major native audio APIs on each supported platform.
 
 # Installation
 
-You must install on your computer the Portaudio libraries who is used for
-the binding.
+rust-portaudio's build script will check to see if you have already installed
+PortAudio on your system. If not, it will attempt to automatically download and
+install it for you. If this fails, please let us know by posting an issue at [our
+github repository] (https://github.com/jeremyletang/rust-portaudio).
 
-Portaudio is available with package management tools on Linux, or brew on Mac OS.
+If you'd prefer to install it manually, you can download it directly from the website:
+[PortAudio](http://www.portaudio.com/download.html)
 
-You can download it directly from the website :
-[portaudio](http://www.portaudio.com/download.html)
+# Usage
 
-Then clone the repo and build the library with the following command at the root
-of the __rust-portaudio__ repository.
+Add rust-portaudio to your project by adding the dependency to your Cargo.toml as follows:
 
-__rust-portaudio__ is build with the rustpkg tool :
-
-```Shell
-> rustpkg build portaudio
-```
+[dependencies]
+portaudio = "*"
 
 */
 
