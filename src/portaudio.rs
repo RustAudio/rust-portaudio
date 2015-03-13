@@ -52,7 +52,7 @@ portaudio = "*"
 
 #![warn(missing_docs)]
 #![allow(dead_code)]
-#![feature(collections, core, libc, std_misc)]
+#![feature(collections, core, libc)]
 
 extern crate libc;
 
