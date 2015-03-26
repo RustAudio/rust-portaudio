@@ -597,11 +597,10 @@ impl<I: Sample, O: Sample> Stream<I, O> {
     /// * frames_per_buffer - The number of frames in the buffer.
     ///
     /// Return NoError on success, or a Error code if fail.
-    pub fn write<T> (&self, output_buffer: T, frames_per_buffer : u32) -> Result<(), Error>
-    where T: AsSlice<O> {
+    pub fn write(&self, output_buffer: Vec<O>, frames_per_buffer : u32) -> Result<(), Error> {
         match unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream,
-                                output_buffer.as_slice().as_ptr() as *mut c_void,
+                                output_buffer[..].as_ptr() as *mut c_void,
                                 frames_per_buffer)
         } {
             Error::NoError => Ok(()),
