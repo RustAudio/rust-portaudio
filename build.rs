@@ -18,7 +18,7 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#![feature(path_ext, os)]
+#![feature(path_ext)]
 
 extern crate pkg_config;
 
@@ -59,7 +59,7 @@ mod unix_platform {
     use std::process::Command;
     use std::path::Path;
 
-    use std::{env, os};
+    use std::env;
 
     pub const PORTAUDIO_URL: &'static str = "http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz";
     pub const PORTAUDIO_TAR: &'static str = "pa_stable_v19_20140130.tgz";
@@ -94,7 +94,7 @@ mod unix_platform {
             .unwrap();
 
         // then make
-        match Command::new("make").arg(&format!("-j{}", os::num_cpus())).output() {
+        match Command::new("make").output() {
             Ok(_) => {},
             Err(e) => panic!("{}", e)
         }
