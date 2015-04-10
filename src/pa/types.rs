@@ -102,7 +102,7 @@ pub type StreamCallbackFlags = u64;
 #[doc(hidden)]
 pub type CallbackFunction = extern fn(i : f32) -> StreamCallbackResult;
 #[doc(hidden)]
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 #[repr(C)]
 pub enum StreamCallbackResult {
     Continue = 0,
@@ -313,7 +313,7 @@ impl StreamParameters {
 
 
 #[doc(hidden)]
-#[derive(Copy)]
+#[derive(Clone, Copy)]
 #[repr(C)]
 pub struct StreamCallbackTimeInfo {
     pub input_buffer_adc_time : Time,
