@@ -10,7 +10,6 @@ notifications:
 before_install:
     - sudo apt-get update
 install:
-    - curl http://static.rust-lang.org/rustup.sh | sudo sh -
     - sudo apt-get install libportaudio-dev
 script:
     - cargo build --verbose
