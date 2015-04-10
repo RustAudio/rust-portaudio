@@ -1,13 +1,17 @@
 env:
-  - LD_LIBRARY_PATH=/usr/local/lib
+    - LD_LIBRARY_PATH=/usr/local/lib
+language: rust
+rust:
+    - nightly
 notifications:
   email:
     - letang.jeremy@gmail.com
     - mitchell.nordine@gmail.com
 before_install:
-  - sudo apt-get update
+    - sudo apt-get update
 install:
-  - curl http://static.rust-lang.org/rustup.sh | sudo sh -
-  - sudo apt-get install libportaudio-dev
+    - curl http://static.rust-lang.org/rustup.sh | sudo sh -
+    - sudo apt-get install libportaudio-dev
 script:
-  - cargo build
+    - cargo build --verbose
+    - cargo test --verbose
