@@ -4,7 +4,7 @@
 //!
 
 /// Error codes returned by PortAudio functions.
-#[derive(Copy, Clone, PartialEq, PartialOrd, Debug, FromPrimitive)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 #[repr(C)]
 pub enum Error {
     /// No Error
@@ -110,5 +110,52 @@ impl ::std::error::Error for Error {
             Error::BadBufferPtr => "Invalid buffer",
         }
     }
+}
+
+impl ::num::FromPrimitive for Error {
+
+    fn from_i64(n: i64) -> Option<Error> {
+        match n {
+            0       => Some(Error::NoError),
+            -10_000 => Some(Error::NotInitialized),
+            -9_999  => Some(Error::UnanticipatedHostError),
+            -9_998  => Some(Error::InvalidChannelCount),
+            -9_997  => Some(Error::InvalidSampleRate),
+            -9_996  => Some(Error::InvalidDevice),
+            -9_995  => Some(Error::InvalidFlag),
+            -9_994  => Some(Error::SampleFormatNotSupported),
+            -9_993  => Some(Error::BadIODeviceCombination),
+            -9_992  => Some(Error::InsufficientMemory),
+            -9_991  => Some(Error::BufferTooBig),
+            -9_990  => Some(Error::BufferTooSmall),
+            -9_989  => Some(Error::NullCallback),
+            -9_988  => Some(Error::BadStreamPtr),
+            -9_987  => Some(Error::TimedOut),
+            -9_986  => Some(Error::InternalError),
+            -9_985  => Some(Error::DeviceUnavailable),
+            -9_984  => Some(Error::IncompatibleHostApiSpecificStreamInfo),
+            -9_983  => Some(Error::StreamIsStopped),
+            -9_982  => Some(Error::StreamIsNotStopped),
+            -9_981  => Some(Error::InputOverflowed),
+            -9_980  => Some(Error::OutputUnderflowed),
+            -9_979  => Some(Error::HostApiNotFound),
+            -9_978  => Some(Error::InvalidHostApi),
+            -9_977  => Some(Error::CanNotReadFromACallbackStream),
+            -9_976  => Some(Error::CanNotWriteToACallbackStream),
+            -9_975  => Some(Error::CanNotReadFromAnOutputOnlyStream),
+            -9_974  => Some(Error::CanNotWriteToAnInputOnlyStream),
+            -9_973  => Some(Error::IncompatibleStreamHostApi),
+            -9_972  => Some(Error::BadBufferPtr),
+            _       => None,
+        }
+    }
+
+    fn from_u64(n: u64) -> Option<Error> {
+        match n {
+            0 => Some(Error::NoError),
+            _ => None,
+        }
+    }
+
 }
 

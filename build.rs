@@ -18,12 +18,10 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#![feature(path_ext)]
 
 extern crate pkg_config;
 
 use std::path::Path;
-use std::fs::PathExt;
 use std::env;
 
 #[cfg(all(unix, not(target_os = "linux")))]
@@ -46,7 +44,7 @@ fn build() {
     let out_dir = Path::new(&out_dir_str);
 
     let static_lib = out_dir.join("lib/libportaudio.a");
-    if !static_lib.exists() {
+    if let Err(_) = ::std::fs::metadata(static_lib) {
         platform::download();
         platform::build(out_dir);
     }

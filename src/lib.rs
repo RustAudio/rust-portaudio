@@ -52,9 +52,9 @@ portaudio = "*"
 
 #![warn(missing_docs)]
 #![allow(dead_code)]
-#![feature(collections, core, libc)]
 
 extern crate libc;
+extern crate num;
 
 #[cfg(any(target_os="macos", target_os="linux", target_os="win32"))]
 mod c_library {
