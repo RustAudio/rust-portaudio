@@ -1,7 +1,7 @@
 
 extern crate portaudio;
 
-use portaudio::*;
+use portaudio::pa;
 use std::error::Error;
 
 const SAMPLE_RATE: f64 = 44_100.0;

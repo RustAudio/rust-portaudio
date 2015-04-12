@@ -21,12 +21,12 @@
 
 //! The portable PortAudio API.
 
-use std::{ptr, mem};
-use std::mem::{transmute};
-use std::num::{FromPrimitive};
-use std::vec::{Vec};
 use libc::{c_double, c_void, malloc};
 use libc::types::os::arch::c95::size_t;
+use num::FromPrimitive;
+use std::{ptr, mem};
+use std::mem::{transmute};
+use std::vec::{Vec};
 
 use ffi;
 pub use self::error::Error;
@@ -200,7 +200,7 @@ pub fn sleep(m_sec : i32) -> () {
 
 mod private {
 
-    use std::num::{FromPrimitive, ToPrimitive};
+    use num::{FromPrimitive, ToPrimitive};
     use std::ops::{Add, Sub, Mul, Div};
     use super::types::SampleFormat;
 
@@ -562,8 +562,10 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                                frames_per_buffer)
         };
         Ok(unsafe {
-            Vec::from_raw_buf(self.unsafe_buffer as *const I,
-                              (frames_per_buffer as usize) * (self.num_input_channels as usize)) })
+            let len = (frames_per_buffer * self.num_input_channels as u32) as usize;
+            let slice = ::std::slice::from_raw_parts(self.unsafe_buffer as *const I, len);
+            slice.iter().map(|&sample| sample).collect()
+        })
     }
 
     /// Read samples from an input stream.
@@ -581,10 +583,12 @@ impl<I: Sample, O: Sample> Stream<I, O> {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)
         };
         match err {
-            Error::NoError  => Ok(unsafe {
-                Vec::from_raw_buf(self.unsafe_buffer as *const I,
-                        (frames_per_buffer * self.num_input_channels as u32) as usize) }),
-            _               => Err(err)
+            Error::NoError => Ok(unsafe {
+                let len = (frames_per_buffer * self.num_input_channels as u32) as usize;
+                let slice = ::std::slice::from_raw_parts(self.unsafe_buffer as *const I, len);
+                slice.iter().map(|&sample| sample).collect()
+            }),
+            _ => Err(err)
         }
     }
 
