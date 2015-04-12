@@ -3,6 +3,10 @@ env:
 language: rust
 rust:
     - nightly
+    - 1.0.0-beta
+os:
+    - linux
+    - osx
 notifications:
   email:
     - letang.jeremy@gmail.com
