@@ -1,18 +1,15 @@
 rust-portaudio [![Build Status](https://travis-ci.org/jeremyletang/rust-portaudio.png?branch=master)](https://travis-ci.org/jeremyletang/rust-portaudio)
 ==============
 
-__Portaudio__ bindings for Rust
+__Portaudio__ bindings for Rust.
 
-PortAudio is a free, cross-platform, open-source, audio I/O library.
-These are the bindings and wrappers for Rust.
+PortAudio is a free, cross-platform, open-source, audio I/O library. These are the bindings and wrappers for Rust.
 
-PortAudio website : http://portaudio.com
+Visit the PortAudio website [here](http://www.portaudio.com/).
 
 Rust-PortAudio use the same license as PortAudio : the MIT license.
 
-Rust-PortAudio is still under heavy development, so there will probably be bugs.
-
-Only the blocking API is exposed at the moment.
+Rust-PortAudio is still in development, so there may be bugs - please feel free to add an issue or even better, submit a PR!
 
 
 # Using rust-portaudio.
@@ -32,3 +29,4 @@ __rust-portaudio__ will try to detect portaudio on your system and, failing that
 __rust-portaudio__ is built using cargo, so just type `cargo build` at the root of the __rust-portaudio__ repository.
 
 You can build the tests and examples with `cargo test`, and the documentation with `cargo doc`.
+
