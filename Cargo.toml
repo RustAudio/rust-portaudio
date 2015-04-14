@@ -1,10 +1,10 @@
 [package]
 
 name = "portaudio"
-version = "0.3.6"
+version = "0.4.0"
 authors = ["Jeremy Letang <letang.jeremy@gmail.com>",
            "Mitchell Nordine <mitchell.nordine@gmail.com>"]
-description = "Portaudio binding for Rust"
+description = "PortAudio bindings for Rust."
 license = "MIT"
 build = "build.rs"
 homepage = "https://github.com/jeremyletang/rust-portaudio"

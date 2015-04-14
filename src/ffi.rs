@@ -28,7 +28,6 @@ use std::ffi::{CStr, CString};
 use pa::{
     DeviceIndex,
     HostApiIndex,
-    StreamCallbackFlags,
     StreamCallbackTimeInfo,
     StreamInfo,
     Time,
@@ -37,23 +36,32 @@ use pa::{
 
 // Sample format
 pub type SampleFormat = u64;
-pub const PA_FLOAT_32: SampleFormat = 0x00000001;
-pub const PA_INT_32: SampleFormat = 0x00000002;
-// pub const PA_INT_24: SampleFormat = 0x00000004;
-pub const PA_INT_16: SampleFormat = 0x00000008;
-pub const PA_INT_8: SampleFormat = 0x00000010;
-pub const PA_UINT_8: SampleFormat = 0x00000020;
-pub const PA_CUSTOM_FORMAT: SampleFormat = 0x00010000;
-pub const PA_NON_INTERLEAVED: SampleFormat = 0x80000000;
+pub const PA_FLOAT_32        : SampleFormat = 0x00000001;
+pub const PA_INT_32          : SampleFormat = 0x00000002;
+// pub const PA_INT_24       : SampleFormat = 0x00000004;
+pub const PA_INT_16          : SampleFormat = 0x00000008;
+pub const PA_INT_8           : SampleFormat = 0x00000010;
+pub const PA_UINT_8          : SampleFormat = 0x00000020;
+pub const PA_CUSTOM_FORMAT   : SampleFormat = 0x00010000;
+pub const PA_NON_INTERLEAVED : SampleFormat = 0x80000000;
 
 // Stream flags
 pub type StreamFlags = u64;
-pub const PA_NO_FLAG: StreamFlags = 0;
-pub const PA_CLIP_OFF: StreamFlags = 0x00000001;
-pub const PA_DITHER_OFF: StreamFlags = 0x00000002;
-pub const PA_NEVER_DROP_INPUT: StreamFlags = 0x00000004;
-pub const PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK: StreamFlags = 0x00000008;
-pub const PA_PLATFORM_SPECIFIC_FLAGS: StreamFlags = 0xFFFF0000;
+pub const PA_NO_FLAG                                    : StreamFlags = 0;
+pub const PA_CLIP_OFF                                   : StreamFlags = 0x00000001;
+pub const PA_DITHER_OFF                                 : StreamFlags = 0x00000002;
+pub const PA_NEVER_DROP_INPUT                           : StreamFlags = 0x00000004;
+pub const PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK : StreamFlags = 0x00000008;
+pub const PA_PLATFORM_SPECIFIC_FLAGS                    : StreamFlags = 0xFFFF0000;
+
+// Stream callback falgs.
+pub type StreamCallbackFlags = u64;
+pub const INPUT_UNDERFLOW  : StreamCallbackFlags = 0x00000001;
+pub const INPUT_OVERFLOW   : StreamCallbackFlags = 0x00000002;
+pub const OUTPUT_UNDERFLOW : StreamCallbackFlags = 0x00000004;
+pub const OUTPUT_OVERFLOW  : StreamCallbackFlags = 0x00000008;
+pub const PRIMING_OUTPUT   : StreamCallbackFlags = 0x00000010;
+
 
 /// Unchanging unique identifiers for each supported host API
 pub type HostApiTypeId = i32;
@@ -115,6 +123,15 @@ pub struct C_PaHostApiInfo {
     pub default_output_device: i32
 }
 
+pub type C_PaStreamCallbackFn =
+    extern "C" fn(*const c_void,
+                  *mut c_void,
+                  u32,
+                  *const StreamCallbackTimeInfo,
+                  StreamCallbackFlags,
+                  *mut c_void) -> StreamCallbackResult;
+
+
 extern "C" {
 
     /// PortAudio portable API
@@ -143,7 +160,7 @@ extern "C" {
                          sampleRate : c_double,
                          framesPerBuffer : u32,
                          streamFlags : StreamFlags,
-                         streamCallback : Option<extern "C" fn(*const c_void, *mut c_void, u32, *const StreamCallbackTimeInfo, StreamCallbackFlags, *mut c_void) -> StreamCallbackResult>,
+                         streamCallback : Option<C_PaStreamCallbackFn>,
                          userData : *mut c_void)
                          -> Error;
     pub fn Pa_OpenDefaultStream(stream : *mut *mut C_PaStream,
@@ -152,7 +169,7 @@ extern "C" {
                                 sampleFormat : SampleFormat,
                                 sampleRate : c_double,
                                 framesPerBuffer : u32,
-                                streamCallback : Option<extern "C" fn(*const c_void, *mut c_void, u32, *const StreamCallbackTimeInfo, StreamCallbackFlags, *mut c_void) -> StreamCallbackResult>,
+                                streamCallback : Option<C_PaStreamCallbackFn>,
                                 userData : *mut c_void)
                                 -> Error;
     pub fn Pa_CloseStream(stream : *mut C_PaStream) -> Error;

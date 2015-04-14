@@ -52,7 +52,7 @@ pub type Frames = i64;
 
 /// A type used to specify one or more sample formats.
 #[repr(u64)]
-#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Debug)]
 pub enum SampleFormat {
     /// 32 bits float sample format
     Float32 =         ffi::PA_FLOAT_32,
@@ -80,27 +80,62 @@ pub enum StreamFlags {
     ClipOff =                                 ffi::PA_CLIP_OFF,
     /// Disable default dithering.
     DitherOff =                               ffi::PA_DITHER_OFF,
-    /// Flag requests that where possible a full duplex stream will not discard overflowed input samples without calling the stream callback.
+    /// Flag requests that where possible a full duplex stream will not discard overflowed input
+    /// samples without calling the stream callback.
     NeverDropInput =                          ffi::PA_NEVER_DROP_INPUT,
-    /// Call the stream callback to fill initial output buffers, rather than the default behavior of priming the buffers with zeros (silence)
+    /// Call the stream callback to fill initial output buffers, rather than the default behavior
+    /// of priming the buffers with zeros (silence)
     PrimeOutputBuffersUsingStreamCallback =   ffi::PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK,
     /// A mask specifying the platform specific bits.
     PlatformSpecificFlags =                   ffi::PA_PLATFORM_SPECIFIC_FLAGS
 }
 
+/// A rust enum representation of the C_PaStreamCallbackFlag
+#[repr(u64)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
+pub enum StreamCallbackFlags {
+    /// In a stream opened with paFramesPerBufferUnspecified, indicates that input data is all
+    /// silence (zeros) because no real data is available. In a stream opened without 
+    /// `FramesPerBufferUnspecified`, it indicates that one or more zero samples have been
+    /// inserted into the input buffer to compensate for an input underflow.
+    InputUnderflow  = ffi::INPUT_UNDERFLOW,
+    /// In a stream opened with paFramesPerBufferUnspecified, indicates that data prior to the
+    /// first sample of the input buffer was discarded due to an overflow, possibly because the
+    /// stream callback is using too much CPU time. Otherwise indicates that data prior to one or
+    /// more samples in the input buffer was discarded.
+    InputOverflow   = ffi::INPUT_OVERFLOW,
+    /// Indicates that output data (or a gap) was inserted, possibly because the stream callback
+    /// is using too much CPU time.
+    OutputUnderflow = ffi::OUTPUT_UNDERFLOW,
+    /// Indicates that output data will be discarded because no room is available.
+    OutputOverflow  = ffi::OUTPUT_OVERFLOW,
+    /// Some of all of the output data will be used to prime the stream, input data may be zero.
+    PrimingOutput   = ffi::PRIMING_OUTPUT,
+}
 
-#[doc(hidden)]
-pub type StreamCallbackFlags = u64;
-/*
-    pub static InputUnderflow : StreamCallbackFlags = 0x00000001;
-    pub static InputOverflow : StreamCallbackFlags = 0x00000002;
-    pub static OutputUnderflow : StreamCallbackFlags = 0x00000004;
-    pub static OutputOverflow : StreamCallbackFlags = 0x00000008;
-    pub static PrimingOutput : StreamCallbackFlags = 0x00000010;
-*/
+impl StreamCallbackFlags {
+    /// Convert an ffi::StreamCallbackFlags to Option<StreamCallbackFlags>.
+    pub fn from_u64(n: u64) -> Option<StreamCallbackFlags> {
+        match n {
+            ffi::PA_NO_FLAG       => None,
+            ffi::INPUT_UNDERFLOW  => Some(StreamCallbackFlags::InputUnderflow),
+            ffi::INPUT_OVERFLOW   => Some(StreamCallbackFlags::InputOverflow),
+            ffi::OUTPUT_UNDERFLOW => Some(StreamCallbackFlags::OutputUnderflow),
+            ffi::OUTPUT_OVERFLOW  => Some(StreamCallbackFlags::OutputOverflow),
+            ffi::PRIMING_OUTPUT   => Some(StreamCallbackFlags::PrimingOutput),
+            _ => {
+                println!("Unknown StreamCallbackFlags received: {:?}", n);
+                None
+            },
+        }
+    }
+}
 
-#[doc(hidden)]
-pub type CallbackFunction = extern fn(i : f32) -> StreamCallbackResult;
+/// User defined callback function.
+pub type StreamCallbackFn<I, O> =
+    Box<FnMut(&[I], &mut[O], u32, &StreamCallbackTimeInfo, Option<StreamCallbackFlags>)
+            -> StreamCallbackResult>;
+
 #[doc(hidden)]
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -313,7 +348,7 @@ impl StreamParameters {
 
 
 #[doc(hidden)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct StreamCallbackTimeInfo {
     pub input_buffer_adc_time : Time,

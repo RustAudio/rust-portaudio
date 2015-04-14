@@ -1,3 +1,9 @@
+//! 
+//! A demonstration of constructing and using a non-blocking stream.
+//! 
+//! Audio from the default input device is passed directly to the default output device in a duplex
+//! stream, so beware of feedback!
+//!
 
 extern crate portaudio;
 
@@ -66,13 +72,57 @@ fn main() {
         suggested_latency : output_info.default_low_output_latency
     };
 
+    // Construct a stream with input and output sample types of f32.
     let mut stream : pa::Stream<f32, f32> = pa::Stream::new();
 
+    // Once the countdown reaches 0 we'll close the stream.
+    let mut count_down = 3.0;
+
+    // Keep track of the last `current_time` so we can calculate the delta time.
+    let mut maybe_last_time = None;
+
+    // We'll use this channel to send the count_down to the main thread for fun.
+    let (sender, receiver) = ::std::sync::mpsc::channel();
+
+
+    // Construct a custom callback function - in this case we're using a FnMut closure.
+    let callback = Box::new(move |
+        input: &[f32],
+        output: &mut[f32],
+        frames: u32,
+        time_info: &pa::StreamCallbackTimeInfo,
+        _maybe_flags: Option<pa::StreamCallbackFlags>,
+    | -> pa::StreamCallbackResult {
+
+        let current_time = time_info.current_time;
+        let prev_time = maybe_last_time.unwrap_or(current_time);
+        let dt = current_time - prev_time;
+        count_down -= dt;
+        maybe_last_time = Some(current_time);
+
+        assert!(frames == FRAMES);
+        sender.send(count_down).ok();
+
+        // Pass the input straight to the output - BEWARE OF FEEDBACK!
+        for (output_sample, input_sample) in output.iter_mut().zip(input.iter()) {
+            *output_sample = *input_sample;
+        }
+
+        if count_down > 0.0 {
+            pa::StreamCallbackResult::Continue
+        } else {
+            pa::StreamCallbackResult::Complete
+        }
+    });
+
+
+    // Open a non-blocking stream (indicated by giving Some(callback)).
     match stream.open(Some(&input_stream_params),
                       Some(&output_stream_params),
                       SAMPLE_RATE,
                       FRAMES,
-                      pa::StreamFlags::ClipOff) {
+                      pa::StreamFlags::ClipOff,
+                      Some(callback)) {
         Ok(()) => println!("Successfully opened the stream."),
         Err(err) => println!("An error occurred while opening the stream: {}", err.description()),
     }
@@ -82,41 +132,17 @@ fn main() {
         Err(err) => println!("An error occurred while starting the stream: {}", err.description()),
     }
 
-    // We'll use this function to wait for read/write availability.
-    fn wait_for_stream<F: Fn() -> Result<Option<i64>, pa::error::Error>>(f: F, name: &str) {
-        'waiting_for_stream: loop {
-            match f() {
-                Ok(None) => (),
-                Ok(Some(frames)) => {
-                    println!("{} stream available with {} frames.", name, frames);
-                    break 'waiting_for_stream
-                },
-                Err(err) => panic!("An error occurred while waiting for the {} stream: {}", name, err.description()),
-            }
-        }
-    };
 
-    // Now start the main read/write loop! In this example, we pass the input buffer directly to
-    // the output buffer, so watch out for feedback.
-    'stream: loop {
-        wait_for_stream(|| stream.get_stream_read_available(), "Read");
-        match stream.read(FRAMES) {
-            Ok(input_samples)  => {
-                wait_for_stream(|| stream.get_stream_write_available(), "Write");
-                match stream.write(input_samples, FRAMES) {
-                    Ok(()) => (),
-                    Err(err) => {
-                        println!("An error occurred while writing to the output stream: {}", err.description());
-                        break 'stream
-                    },
-                }
-            },
-            Err(err) => {
-                println!("An error occurred while reading from the input stream: {}", err.description());
-                break 'stream
-            }
-        };
+    // Loop while the non-blocking stream is active.
+    while let Ok(true) = stream.is_active() {
+
+        // Do some stuff!
+        while let Ok(count_down) = receiver.try_recv() {
+            println!("count_down: {:?}", count_down);
+        }
+
     }
+
 
     match stream.close() {
         Ok(()) => println!("Successfully closed the stream."),
@@ -131,3 +157,5 @@ fn main() {
     }
 
 }
+
+
