@@ -27,11 +27,10 @@ use num::FromPrimitive;
 use std::{ptr, mem};
 use std::mem::{transmute};
 use std::vec::{Vec};
-
 use ffi;
+
 pub use self::error::Error;
 pub use self::types::{
-    StreamCallbackFn,
     DeviceIndex,
     DeviceInfo,
     Frames,
@@ -40,7 +39,9 @@ pub use self::types::{
     HostApiTypeId,
     HostErrorInfo,
     SampleFormat,
+    StreamAvailable,
     StreamCallbackFlags,
+    StreamCallbackFn,
     StreamCallbackTimeInfo,
     StreamCallbackResult,
     StreamFlags,
@@ -629,50 +630,48 @@ impl<I: Sample, O: Sample> Stream<I, O> {
         }
     }
 
-    /// Retrieve the number of frames that can be read from the stream without
-    /// waiting.
+    /// Retrieve the number of frames that can be read from the stream without waiting.
     ///
-    /// Returns a non-negative value representing the maximum number of frames
-    /// that can be read from the stream without blocking or busy waiting or,
-    /// a ErrorCode (which are always negative) if PortAudio is not initialized
-    /// or an error is encountered.
-    pub fn get_stream_read_available(&self) -> Result<Option<Frames>, Error> {
+    /// Returns a Result with either:
+    /// - An Ok variant with a `StreamAvailable` enum describing either:
+    ///     - The number of frames available to be read from the stream (without blocking or busy
+    ///       waiting) or
+    ///     - Flags indicating whether or not there has been input overflow or output underflow.
+    /// - An Err variant in the case PortAudio is not initialized or some error is encountered.
+    ///
+    /// See the blocking.rs example for a usage example.
+    pub fn get_stream_read_available(&self) -> Result<StreamAvailable, Error> {
         match unsafe { ffi::Pa_GetStreamReadAvailable(self.c_pa_stream) } {
-            0          => Ok(None),
-            n if n > 0 => Ok(Some(n)),
-            n          => Err(FromPrimitive::from_i64(n).expect("Undefined error code.")),
+            n if n >= 0 => Ok(StreamAvailable::Frames(n)),
+            n           => match FromPrimitive::from_i64(n) {
+                Some(Error::InputOverflowed) => Ok(StreamAvailable::InputOverflowed),
+                Some(Error::OutputUnderflowed) => Ok(StreamAvailable::OutputUnderflowed),
+                Some(err) => Err(err),
+                _ => panic!("Undefined error code: {:?}", n),
+            },
         }
     }
 
-    /// Retrieve the number of frames that can be written to the stream without
-    /// waiting.
+    /// Retrieve the number of frames that can be written to the stream without waiting.
     ///
-    /// Return a non-negative value representing the maximum number of frames that
-    /// can be written to the stream without blocking or busy waiting or,
-    /// a ErrorCode (which are always negative) if PortAudio is not initialized
-    /// or an error is encountered.
-    pub fn get_stream_write_available(&self) -> Result<Option<Frames>, Error> {
+    /// Returns a Result with either:
+    /// - An Ok variant with a `StreamAvailable` enum describing either:
+    ///     - The number of frames available to be written to the stream (without blocking or busy
+    ///       waiting) or
+    ///     - Flags indicating whether or not there has been input overflow or output underflow.
+    /// - An Err variant in the case PortAudio is not initialized or some error is encountered.
+    ///
+    /// See the blocking.rs example for a usage example.
+    pub fn get_stream_write_available(&self) -> Result<StreamAvailable, Error> {
         match unsafe { ffi::Pa_GetStreamWriteAvailable(self.c_pa_stream) } {
-            0          => Ok(None),
-            n if n > 0 => Ok(Some(n)),
-            n          => Err(FromPrimitive::from_i64(n).expect("Undefined error code.")),
+            n if n >= 0 => Ok(StreamAvailable::Frames(n)),
+            n           => match FromPrimitive::from_i64(n) {
+                Some(Error::InputOverflowed) => Ok(StreamAvailable::InputOverflowed),
+                Some(Error::OutputUnderflowed) => Ok(StreamAvailable::OutputUnderflowed),
+                Some(err) => Err(err),
+                _ => panic!("Undefined error code: {:?}", n),
+            },
         }
-    }
-
-    #[doc(hidden)]
-    // Temporary OSX Fixe : Return always PaInputOverflowed
-    #[cfg(target_os="macos")]
-    pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<I>, Error> {
-        unsafe {
-            ffi::Pa_ReadStream(self.c_pa_stream,
-                               self.unsafe_buffer,
-                               frames_per_buffer)
-        };
-        Ok(unsafe {
-            let len = (frames_per_buffer * self.num_input_channels as u32) as usize;
-            let slice = ::std::slice::from_raw_parts(self.unsafe_buffer as *const I, len);
-            slice.iter().map(|&sample| sample).collect()
-        })
     }
 
     /// Read samples from an input stream.
@@ -684,7 +683,6 @@ impl<I: Sample, O: Sample> Stream<I, O> {
     ///
     /// Return Ok(~[S]), a buffer containing the sample of the format S.
     /// If fail return a Error code.
-    #[cfg(any(target_os="win32", target_os="linux"))]
     pub fn read(&self, frames_per_buffer: u32) -> Result<Vec<I>, Error> {
         let err = unsafe {
             ffi::Pa_ReadStream(self.c_pa_stream, self.unsafe_buffer, frames_per_buffer)

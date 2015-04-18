@@ -90,13 +90,17 @@ fn main() {
     }
 
     // We'll use this function to wait for read/write availability.
-    fn wait_for_stream<F: Fn() -> Result<Option<i64>, pa::error::Error>>(f: F, name: &str) {
+    fn wait_for_stream<F: Fn() -> Result<pa::StreamAvailable, pa::error::Error>>(f: F, name: &str) {
         'waiting_for_stream: loop {
             match f() {
-                Ok(None) => (),
-                Ok(Some(frames)) => {
-                    println!("{} stream available with {} frames.", name, frames);
-                    break 'waiting_for_stream
+                Ok(available) => match available {
+                    pa::StreamAvailable::Frames(0) => (),
+                    pa::StreamAvailable::Frames(frames) => {
+                        println!("{} stream available with {} frames.", name, frames);
+                        break 'waiting_for_stream
+                    },
+                    pa::StreamAvailable::InputOverflowed => println!("Input stream has overflowed"),
+                    pa::StreamAvailable::OutputUnderflowed => println!("Output stream has underflowed"),
                 },
                 Err(err) => panic!("An error occurred while waiting for the {} stream: {}", name, err.description()),
             }
