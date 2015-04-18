@@ -49,7 +49,7 @@ pub enum Error {
     StreamIsNotStopped,
     /// The input stream has overflowed
     InputOverflowed,
-    /// The output has overflowed
+    /// The output has underflowed
     OutputUnderflowed,
     /// The host API is not found by Portaudio
     HostApiNotFound,
@@ -99,7 +99,7 @@ impl ::std::error::Error for Error {
             Error::StreamIsStopped => "The stream is stopped",
             Error::StreamIsNotStopped => "The stream is not stopped",
             Error::InputOverflowed => "The input stream has overflowed",
-            Error::OutputUnderflowed => "The output stream has overflowed",
+            Error::OutputUnderflowed => "The output stream has underflowed",
             Error::HostApiNotFound => "The host api is not found by Portaudio",
             Error::InvalidHostApi => "The host API is invalid",
             Error::CanNotReadFromACallbackStream => "Portaudio cannot read from the callback stream",

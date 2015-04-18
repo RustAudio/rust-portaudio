@@ -90,6 +90,18 @@ pub enum StreamFlags {
     PlatformSpecificFlags =                   ffi::PA_PLATFORM_SPECIFIC_FLAGS
 }
 
+/// Describes stream availability and the number for frames available for reading/writing if there
+/// is any.
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub enum StreamAvailable {
+    /// The number of frames available for reading.
+    Frames(i64),
+    /// The input stream has overflowed.
+    InputOverflowed,
+    /// The output stream has underflowed.
+    OutputUnderflowed,
+}
+
 /// A rust enum representation of the C_PaStreamCallbackFlag
 #[repr(u64)]
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
