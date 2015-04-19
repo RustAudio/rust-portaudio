@@ -1,4 +1,4 @@
-//! 
+//!
 //! A demonstration of constructing and using a blocking stream.
 //!
 //! Audio from the default input device is passed directly to the default output device in a duplex
@@ -116,6 +116,12 @@ fn main() {
                 wait_for_stream(|| stream.get_stream_write_available(), "Write");
                 match stream.write(input_samples, FRAMES) {
                     Ok(()) => (),
+                    Err(pa::Error::OutputUnderflowed) => {
+                        println!("Output stream has underflowed");
+                    },
+                    Err(pa::Error::InputOverflowed) => {
+                        println!("Input stream has overflowed");
+                    },
                     Err(err) => {
                         println!("An error occurred while writing to the output stream: {}", err.description());
                         break 'stream
