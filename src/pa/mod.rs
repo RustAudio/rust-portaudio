@@ -48,7 +48,6 @@ pub use self::types::{
     StreamInfo,
     StreamParameters,
     Time,
-    WriteFlags,
     PA_NO_DEVICE,
     PA_USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION,
 };
@@ -706,16 +705,14 @@ impl<I: Sample, O: Sample> Stream<I, O> {
     /// * output_buffer - The buffer contains samples in the format specified by S.
     /// * frames_per_buffer - The number of frames in the buffer.
     ///
-    /// Return NoError on success, or a Error code if fail.
-    pub fn write(&self, output_buffer: Vec<O>, frames_per_buffer : u32) -> Result<Option<WriteFlags>, Error> {
+    /// Returns Ok(()) on success and an Err(Error) variant on failure.
+    pub fn write(&self, output_buffer: Vec<O>, frames_per_buffer : u32) -> Result<(), Error> {
         match unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream,
                                 output_buffer[..].as_ptr() as *mut c_void,
                                 frames_per_buffer)
         } {
-            Error::NoError => Ok(None),
-            Error::OutputUnderflowed => Ok(Some(WriteFlags::OutputUnderflowed)),
-            Error::InputOverflowed => Ok(Some(WriteFlags::InputOverflowed)),
+            Error::NoError => Ok(()),
             err => Err(err),
         }
     }
