@@ -9,8 +9,10 @@ extern crate portaudio;
 
 use portaudio::pa;
 use std::error::Error;
+use std::mem::replace;
 
 const SAMPLE_RATE: f64 = 44_100.0;
+const CHANNELS: u32 = 2;
 const FRAMES: u32 = 256;
 
 fn main() {
@@ -51,7 +53,7 @@ fn main() {
     // Construct the input stream parameters.
     let input_stream_params = pa::StreamParameters {
         device : def_input,
-        channel_count : 2,
+        channel_count : CHANNELS as i32,
         sample_format : pa::SampleFormat::Float32,
         suggested_latency : input_info.default_low_input_latency
     };
@@ -67,7 +69,7 @@ fn main() {
     // Construct the output stream parameters.
     let output_stream_params = pa::StreamParameters {
         device : def_output,
-        channel_count : 2,
+        channel_count : CHANNELS as i32,
         sample_format : pa::SampleFormat::Float32,
         suggested_latency : output_info.default_low_output_latency
     };
@@ -96,11 +98,7 @@ fn main() {
         'waiting_for_stream: loop {
             match f() {
                 Ok(available) => match available {
-                    pa::StreamAvailable::Frames(0) => (),
-                    pa::StreamAvailable::Frames(frames) => {
-                        println!("{} stream available with {} frames.", name, frames);
-                        return frames as u32;
-                    },
+                    pa::StreamAvailable::Frames(frames) => return frames as u32,
                     pa::StreamAvailable::InputOverflowed => println!("Input stream has overflowed"),
                     pa::StreamAvailable::OutputUnderflowed => println!("Output stream has underflowed"),
                 },
@@ -109,26 +107,58 @@ fn main() {
         }
     };
 
+    let mut buffer = Vec::with_capacity((FRAMES * CHANNELS) as usize);
+
     // Now start the main read/write loop! In this example, we pass the input buffer directly to
     // the output buffer, so watch out for feedback.
     'stream: loop {
-        let frames = wait_for_stream(|| stream.get_stream_read_available(), "Read");
-        match stream.read(frames) {
-            Ok(input_samples)  => {
-                let frames = wait_for_stream(|| stream.get_stream_write_available(), "Write");
-                match stream.write(input_samples, frames) {
-                    Ok(_) => (),
-                    Err(err) => {
-                        println!("An error occurred while writing to the output stream: {}", err.description());
-                        break 'stream
-                    },
-                }
-            },
-            Err(err) => {
-                println!("An error occurred while reading from the input stream: {}", err.description());
-                break 'stream
+
+        // How many frames are available on the input stream?
+        let in_frames = wait_for_stream(|| stream.get_stream_read_available(), "Read");
+
+        // If there are frames available, let's take them and add them to our buffer.
+        if in_frames > 0 {
+            match stream.read(in_frames) {
+                Ok(input_samples) => {
+                    buffer.extend(input_samples.into_iter());
+                    println!("Read {:?} frames from the input stream.", in_frames);
+                },
+                Err(err) => {
+                    println!("An error occurred while reading from the input stream: {}", err.description());
+                    break 'stream
+                },
             }
-        };
+        }
+
+        // How many frames are available for writing on the output stream?
+        let out_frames = wait_for_stream(|| stream.get_stream_write_available(), "Write");
+
+        // How many frames do we have so far?
+        let buffer_frames = (buffer.len() / CHANNELS as usize) as u32;
+
+        // If there are frames available for writing and we have some to write, then write!
+        if out_frames > 0 && buffer_frames > 0 {
+            // If we have more than enough frames for writing, take them from the start of the buffer.
+            let (write_buffer, write_frames) = if buffer_frames >= out_frames {
+                let out_samples = (out_frames * CHANNELS as u32) as usize;
+                let remaining_buffer = buffer[out_samples..].iter().map(|&sample| sample).collect();
+                let write_buffer = replace(&mut buffer, remaining_buffer);
+                (write_buffer, out_frames)
+            }
+            // Otherwise if we have less, just take what we can for now.
+            else {
+                let write_buffer = replace(&mut buffer, Vec::with_capacity((FRAMES * CHANNELS) as usize));
+                (write_buffer, buffer_frames)
+            };
+            match stream.write(write_buffer, write_frames) {
+                Ok(_) => println!("Wrote {:?} frames to the output stream.", out_frames),
+                Err(err) => {
+                    println!("An error occurred while writing to the output stream: {}", err.description());
+                    break 'stream
+                },
+            }
+        }
+
     }
 
     match stream.close() {
