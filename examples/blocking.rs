@@ -143,6 +143,7 @@ fn main() {
             let (write_buffer, write_frames) = if buffer_frames >= out_frames {
                 let out_samples = (out_frames * CHANNELS as u32) as usize;
                 let remaining_buffer = buffer[out_samples..].iter().map(|&sample| sample).collect();
+                buffer.truncate(out_samples);
                 let write_buffer = replace(&mut buffer, remaining_buffer);
                 (write_buffer, out_frames)
             }
