@@ -107,6 +107,7 @@ fn main() {
         }
     };
 
+    // We'll use this buffer to transfer samples from the input stream to the output stream.
     let mut buffer = Vec::with_capacity((FRAMES * CHANNELS) as usize);
 
     // Now start the main read/write loop! In this example, we pass the input buffer directly to
