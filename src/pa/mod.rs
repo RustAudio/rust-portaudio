@@ -706,8 +706,10 @@ impl<I: Sample, O: Sample> Stream<I, O> {
     /// * output_buffer - The buffer contains samples in the format specified by S.
     /// * frames_per_buffer - The number of frames in the buffer.
     ///
-    /// Return NoError on success, or a Error code if fail.
-    pub fn write(&self, output_buffer: Vec<O>, frames_per_buffer : u32) -> Result<Option<WriteFlags>, Error> {
+    /// Returns an Option<WriteFlags> on success and an Error variant on failure.
+    pub fn write(&self,
+                 output_buffer: Vec<O>,
+                 frames_per_buffer : u32) -> Result<Option<WriteFlags>, Error> {
         match unsafe {
             ffi::Pa_WriteStream(self.c_pa_stream,
                                 output_buffer[..].as_ptr() as *mut c_void,

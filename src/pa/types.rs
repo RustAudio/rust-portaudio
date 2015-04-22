@@ -90,8 +90,8 @@ pub enum StreamFlags {
     PlatformSpecificFlags =                   ffi::PA_PLATFORM_SPECIFIC_FLAGS
 }
 
-#[derive(Copy, Clone, PartialEq, Debug)]
 /// The flags returned after writing to a stream
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum WriteFlags {
     /// The output stream has underflowed.
     OutputUnderflowed,

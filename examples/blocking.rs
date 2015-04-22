@@ -90,14 +90,16 @@ fn main() {
     }
 
     // We'll use this function to wait for read/write availability.
-    fn wait_for_stream<F: Fn() -> Result<pa::StreamAvailable, pa::error::Error>>(f: F, name: &str) {
+    fn wait_for_stream<F: Fn() -> Result<pa::StreamAvailable, pa::error::Error>>(f: F, name: &str)
+        -> u32
+    {
         'waiting_for_stream: loop {
             match f() {
                 Ok(available) => match available {
                     pa::StreamAvailable::Frames(0) => (),
                     pa::StreamAvailable::Frames(frames) => {
                         println!("{} stream available with {} frames.", name, frames);
-                        break 'waiting_for_stream
+                        return frames as u32;
                     },
                     pa::StreamAvailable::InputOverflowed => println!("Input stream has overflowed"),
                     pa::StreamAvailable::OutputUnderflowed => println!("Output stream has underflowed"),
@@ -110,11 +112,11 @@ fn main() {
     // Now start the main read/write loop! In this example, we pass the input buffer directly to
     // the output buffer, so watch out for feedback.
     'stream: loop {
-        wait_for_stream(|| stream.get_stream_read_available(), "Read");
-        match stream.read(FRAMES) {
+        let frames = wait_for_stream(|| stream.get_stream_read_available(), "Read");
+        match stream.read(frames) {
             Ok(input_samples)  => {
-                wait_for_stream(|| stream.get_stream_write_available(), "Write");
-                match stream.write(input_samples, FRAMES) {
+                let frames = wait_for_stream(|| stream.get_stream_write_available(), "Write");
+                match stream.write(input_samples, frames) {
                     Ok(_) => (),
                     Err(err) => {
                         println!("An error occurred while writing to the output stream: {}", err.description());
