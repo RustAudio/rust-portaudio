@@ -90,6 +90,15 @@ pub enum StreamFlags {
     PlatformSpecificFlags =                   ffi::PA_PLATFORM_SPECIFIC_FLAGS
 }
 
+#[derive(Copy, Clone, PartialEq, Debug)]
+/// The flags returned after writing to a stream
+pub enum WriteFlags {
+    /// The output stream has underflowed.
+    OutputUnderflowed,
+    /// The input stream has overflowed.
+    InputOverflowed
+}
+
 /// Describes stream availability and the number for frames available for reading/writing if there
 /// is any.
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -107,7 +116,7 @@ pub enum StreamAvailable {
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum StreamCallbackFlags {
     /// In a stream opened with paFramesPerBufferUnspecified, indicates that input data is all
-    /// silence (zeros) because no real data is available. In a stream opened without 
+    /// silence (zeros) because no real data is available. In a stream opened without
     /// `FramesPerBufferUnspecified`, it indicates that one or more zero samples have been
     /// inserted into the input buffer to compensate for an input underflow.
     InputUnderflow  = ffi::INPUT_UNDERFLOW,
