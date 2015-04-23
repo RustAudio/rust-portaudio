@@ -40,10 +40,12 @@ pub use self::types::{
     HostErrorInfo,
     SampleFormat,
     StreamAvailable,
+    stream_callback_flags,
     StreamCallbackFlags,
     StreamCallbackFn,
     StreamCallbackTimeInfo,
     StreamCallbackResult,
+    stream_flags,
     StreamFlags,
     StreamInfo,
     StreamParameters,
@@ -350,12 +352,13 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                     let input_len = (num_input_channels * frame_count) as usize;
                     let output_len = (num_output_channels * frame_count) as usize;
                     let time_info: &StreamCallbackTimeInfo = unsafe { &*time_info };
-                    let maybe_flags = StreamCallbackFlags::from_u64(flags);
+                    let flags = StreamCallbackFlags::from_bits(flags)
+                        .expect("Unknown StreamCallbackFlags");
                     let (input, output): (&[I], &mut[O]) = unsafe {
                         (from_raw_parts(input_buffer_ptr, input_len),
                          from_raw_parts_mut(output_buffer_ptr, output_len))
                     };
-                    callback(input, output, frame_count, time_info, maybe_flags)
+                    callback(input, output, frame_count, time_info, flags)
                 });
                 let mut user_callback = Box::new(UserCallback { f: user_callback_fn_wrapper });
                 let user_callback_ptr: *mut UserCallback = &mut *user_callback;
@@ -379,7 +382,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                                              &(self.c_output.unwrap()),
                                              sample_rate as c_double,
                                              frames_per_buffer,
-                                             stream_flags as u64,
+                                             stream_flags.bits(),
                                              maybe_callback,
                                              user_callback_ptr);
                 match err {
@@ -393,7 +396,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                                              ptr::null(),
                                              sample_rate as c_double,
                                              frames_per_buffer,
-                                             stream_flags as u64,
+                                             stream_flags.bits(),
                                              maybe_callback,
                                              user_callback_ptr);
                 match err {
@@ -407,7 +410,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                                              &(self.c_output.unwrap()),
                                              sample_rate as c_double,
                                              frames_per_buffer,
-                                             stream_flags as u64,
+                                             stream_flags.bits(),
                                              maybe_callback,
                                              user_callback_ptr);
                 match err {
@@ -486,12 +489,13 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                     let input_len = (num_input_channels as u32 * frame_count) as usize;
                     let output_len = (num_output_channels as u32 * frame_count) as usize;
                     let time_info: &StreamCallbackTimeInfo = unsafe { &*time_info };
-                    let maybe_flags = StreamCallbackFlags::from_u64(flags);
+                    let flags = StreamCallbackFlags::from_bits(flags)
+                        .expect("Unknown StreamCallbackFlags");
                     let (input, output): (&[I], &mut[O]) = unsafe {
                         (from_raw_parts(input_buffer_ptr, input_len),
                          from_raw_parts_mut(output_buffer_ptr, output_len))
                     };
-                    callback(input, output, frame_count, time_info, maybe_flags)
+                    callback(input, output, frame_count, time_info, flags)
                 });
                 let mut user_callback = Box::new(UserCallback { f: user_callback_fn_wrapper });
                 let user_callback_ptr: *mut UserCallback = &mut *user_callback;

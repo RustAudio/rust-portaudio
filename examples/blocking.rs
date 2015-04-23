@@ -80,7 +80,7 @@ fn main() {
                       Some(&output_stream_params),
                       SAMPLE_RATE,
                       FRAMES,
-                      pa::StreamFlags::ClipOff,
+                      pa::StreamFlags::empty(),
                       None) {
         Ok(()) => println!("Successfully opened the stream."),
         Err(err) => println!("An error occurred while opening the stream: {}", err.description()),
