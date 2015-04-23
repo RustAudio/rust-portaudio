@@ -19,5 +19,6 @@ crate-type = ["dylib", "rlib"]
 pkg-config = "*"
 
 [dependencies]
+bitflags = "*"
 libc = "*"
 num = "*"

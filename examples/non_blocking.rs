@@ -91,7 +91,7 @@ fn main() {
         output: &mut[f32],
         frames: u32,
         time_info: &pa::StreamCallbackTimeInfo,
-        _maybe_flags: Option<pa::StreamCallbackFlags>,
+        _flags: pa::StreamCallbackFlags,
     | -> pa::StreamCallbackResult {
 
         let current_time = time_info.current_time;
@@ -121,7 +121,7 @@ fn main() {
                       Some(&output_stream_params),
                       SAMPLE_RATE,
                       FRAMES,
-                      pa::StreamFlags::ClipOff,
+                      pa::StreamFlags::empty(),
                       Some(callback)) {
         Ok(()) => println!("Successfully opened the stream."),
         Err(err) => println!("An error occurred while opening the stream: {}", err.description()),
