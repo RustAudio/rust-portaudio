@@ -62,8 +62,7 @@ pub fn get_default_output() -> DeviceIndex {
     }
 }
 
-/// Retrieve a pointer to a PaDeviceInfo structure containing information about
-/// the specified device.
+/// Retrieve a DeviceInfo structure containing information about the specified device.
 ///
 /// # Arguments
 /// * device - A valid device index in the range 0 to (Pa_GetDeviceCount()-1)
