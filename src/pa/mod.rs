@@ -50,8 +50,9 @@ pub use self::types::{
     StreamInfo,
     StreamParameters,
     Time,
-    PA_NO_DEVICE,
-    PA_USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION,
+    FRAMES_PER_BUFFER_UNSPECIFIED,
+    NO_DEVICE,
+    USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION,
 };
 
 pub mod error;

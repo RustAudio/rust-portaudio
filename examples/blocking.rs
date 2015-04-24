@@ -35,9 +35,6 @@ fn main() {
         Some(info) => println!("PortAudio host name : {}", info.name),
     }
 
-    let type_id = pa::host::api_type_id_to_host_api_index(pa::HostApiTypeId::CoreAudio) as isize;
-    println!("PortAudio type id : {}", type_id);
-
     let def_input = pa::device::get_default_input();
     let input_info = match pa::device::get_info(def_input) {
         Ok(info) => info,

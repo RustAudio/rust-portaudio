@@ -37,11 +37,16 @@ pub type DeviceIndex = i32;
 
 /// A special DeviceIndex value indicating that no device is available,
 /// or should be used.
-pub const PA_NO_DEVICE: DeviceIndex = -1;
+pub const NO_DEVICE: DeviceIndex = -1;
 
 /// A special DeviceIndex value indicating that the device(s) to be used are
 /// specified in the host api specific stream info structure.
-pub const PA_USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION: DeviceIndex = -2;
+pub const USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION: DeviceIndex = -2;
+
+/// The special value may be used to request that the stream callback will receive an optimal (and
+/// possibly varying) number of frames based on host requirements and the requested latency
+/// settings.
+pub const FRAMES_PER_BUFFER_UNSPECIFIED: u32 = 0;
 
 /// The type used to enumerate to host APIs at runtime.
 /// Values of this type range from 0 to (pa::get_host_api_count()-1).
@@ -108,7 +113,7 @@ pub mod stream_flags {
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum StreamAvailable {
     /// The number of frames available for reading.
-    Frames(i64),
+    Frames(Frames),
     /// The input stream has overflowed.
     InputOverflowed,
     /// The output stream has underflowed.
@@ -276,7 +281,7 @@ impl HostErrorInfo {
 pub struct DeviceInfo {
     /// The version of the struct
     pub struct_version : i32,
-    /// The name of the devie
+    /// The name of the device
     pub name : String,
     /// Host API identifier
     pub host_api : HostApiIndex,
