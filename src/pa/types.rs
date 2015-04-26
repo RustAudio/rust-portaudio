@@ -163,6 +163,7 @@ pub mod stream_callback_flags {
         /// Some of all of the output data will be used to prime the stream, input data may be
         /// zero.
         flags StreamCallbackFlags: u64 {
+            const NO_FLAG          = ffi::PA_NO_FLAG,
             const INPUT_UNDERFLOW  = ffi::INPUT_UNDERFLOW,
             const INPUT_OVERFLOW   = ffi::INPUT_OVERFLOW,
             const OUTPUT_UNDERFLOW = ffi::OUTPUT_UNDERFLOW,
@@ -174,6 +175,7 @@ pub mod stream_callback_flags {
     impl ::std::fmt::Debug for StreamCallbackFlags {
         fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
             write!(f, "{:?}", match self.bits() {
+                ffi::PA_NO_FLAG       => "NO_FLAG",
                 ffi::INPUT_UNDERFLOW  => "INPUT_UNDERFLOW",
                 ffi::INPUT_OVERFLOW   => "INPUT_OVERFLOW",
                 ffi::OUTPUT_UNDERFLOW => "OUTPUT_UNDERFLOW",
