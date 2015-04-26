@@ -71,6 +71,11 @@ fn main() {
         suggested_latency : output_info.default_low_output_latency
     };
 
+    // Check that the stream format is supported.
+    if let Err(err) = pa::is_format_supported(&input_stream_params, &output_stream_params, SAMPLE_RATE) {
+        panic!("The given stream format is unsupported: {:?}", err.description());
+    }
+
     let mut stream : pa::Stream<f32, f32> = pa::Stream::new();
 
     match stream.open(Some(&input_stream_params),

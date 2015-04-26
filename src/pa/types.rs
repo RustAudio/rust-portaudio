@@ -106,6 +106,20 @@ pub mod stream_flags {
             const PA_PLATFORM_SPECIFIC_FLAGS =                    ffi::PA_PLATFORM_SPECIFIC_FLAGS,
         }
     }
+
+    impl ::std::fmt::Debug for StreamFlags {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+            write!(f, "{:?}", match self.bits() {
+                ffi::PA_NO_FLAG                                    => "NO_FLAG",
+                ffi::PA_CLIP_OFF                                   => "CLIP_OFF",
+                ffi::PA_DITHER_OFF                                 => "DITHER_OFF",
+                ffi::PA_NEVER_DROP_INPUT                           => "NEVER_DROP_INPUT",
+                ffi::PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK => "PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK",
+                ffi::PA_PLATFORM_SPECIFIC_FLAGS                    => "PLATFORM_SPECIFIC_FLAGS",
+                _                                                  => "<Unknown StreamFlags>",
+            })
+        }
+    }
 }
 
 /// Describes stream availability and the number for frames available for reading/writing if there
@@ -154,6 +168,19 @@ pub mod stream_callback_flags {
             const OUTPUT_UNDERFLOW = ffi::OUTPUT_UNDERFLOW,
             const OUTPUT_OVERFLOW  = ffi::OUTPUT_OVERFLOW,
             const PRIMING_OUTPUT   = ffi::PRIMING_OUTPUT,
+        }
+    }
+
+    impl ::std::fmt::Debug for StreamCallbackFlags {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+            write!(f, "{:?}", match self.bits() {
+                ffi::INPUT_UNDERFLOW  => "INPUT_UNDERFLOW",
+                ffi::INPUT_OVERFLOW   => "INPUT_OVERFLOW",
+                ffi::OUTPUT_UNDERFLOW => "OUTPUT_UNDERFLOW",
+                ffi::OUTPUT_OVERFLOW  => "OUTPUT_OVERFLOW",
+                ffi::PRIMING_OUTPUT   => "PRIMING_INPUT",
+                _                     => "<Unknown StreamCallbackFlags>",
+            })
         }
     }
 }
