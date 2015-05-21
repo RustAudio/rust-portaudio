@@ -3,7 +3,7 @@ env:
 language: rust
 rust:
     - nightly
-    - 1.0.0-beta
+    - stable
 os:
     - linux
     - osx
