@@ -21,10 +21,7 @@
 
 //! Device management
 
-use pa::{
-    DeviceIndex,
-    DeviceInfo
-};
+use pa::{DeviceIndex, DeviceInfo};
 use pa::error::Error;
 use ffi;
 

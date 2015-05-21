@@ -192,12 +192,15 @@ pub type StreamCallbackFn<I, O> =
     Box<FnMut(&[I], &mut[O], u32, &StreamCallbackTimeInfo, StreamCallbackFlags)
             -> StreamCallbackResult>;
 
-#[doc(hidden)]
+/// The result of the StreamCallbackFn.
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub enum StreamCallbackResult {
+    /// Continue the stream.
     Continue = 0,
+    /// The stream has completed.
     Complete = 1,
+    /// Abort the stream.
     Abort = 2
 }
 
