@@ -13,7 +13,7 @@ repository = "https://github.com/jeremyletang/rust-portaudio.git"
 [lib]
 
 name = "portaudio"
-crate-type = ["dylib", "rlib"]
+crate-type = ["rlib"]
 
 [build-dependencies]
 pkg-config = "*"
