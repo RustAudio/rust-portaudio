@@ -22,7 +22,7 @@
 #![allow(dead_code, non_camel_case_types)]
 
 use pa::error::Error;
-use libc::{c_char, c_double, c_void};
+use libc::{c_char, c_double, c_ulong, c_void};
 use std::ffi::{CStr, CString};
 
 use pa::{
@@ -126,7 +126,7 @@ pub struct C_PaHostApiInfo {
 pub type C_PaStreamCallbackFn =
     extern "C" fn(*const c_void,
                   *mut c_void,
-                  u32,
+                  c_ulong,
                   *const StreamCallbackTimeInfo,
                   StreamCallbackFlags,
                   *mut c_void) -> StreamCallbackResult;
