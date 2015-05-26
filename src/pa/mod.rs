@@ -164,16 +164,22 @@ pub fn get_last_host_error_info() -> HostErrorInfo {
 /// Return 0 if the format is supported, and an error code indicating why the
 /// format is not supported otherwise. The constant PaFormatIsSupported is
 /// provided to compare with the return value for success.
-pub fn is_format_supported(input_parameters: &StreamParameters,
-                           output_parameters: &StreamParameters,
+pub fn is_format_supported(maybe_input_parameters: Option<&StreamParameters>,
+                           maybe_output_parameters: Option<&StreamParameters>,
                            sample_rate : f64) -> Result<(), Error> {
-    let c_input = input_parameters.unwrap();
-    let c_output = output_parameters.unwrap();
-    match unsafe {
-        ffi::Pa_IsFormatSupported(&c_input, &c_output, sample_rate as c_double)
-    } {
-        Error::NoError => Ok(()),
-        err => Err(err),
+    let c_input = maybe_input_parameters.map(StreamParameters::unwrap).as_ref().map(|input| input as *const _);
+    let c_output = maybe_output_parameters.map(StreamParameters::unwrap).as_ref().map(|output| output as *const _);
+    if c_input.is_none() && c_output.is_none() {
+        Err(Error::InvalidDevice)
+    } else {
+        unsafe {
+            match ffi::Pa_IsFormatSupported(c_input.unwrap_or(ptr::null()),
+                                            c_output.unwrap_or(ptr::null()),
+                                            sample_rate as c_double) {
+                Error::NoError => Ok(()),
+                err => Err(err),
+            }
+        }
     }
 }
 
