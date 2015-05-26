@@ -373,52 +373,27 @@ impl<I: Sample, O: Sample> Stream<I, O> {
             Some(stream_callback_proc)
         };
 
-        unsafe {
-            if self.c_input.is_some() &&
-               self.c_output.is_some() {
-                let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
-                                             &(self.c_input.unwrap()),
-                                             &(self.c_output.unwrap()),
-                                             sample_rate as c_double,
-                                             frames_per_buffer,
-                                             stream_flags.bits(),
-                                             maybe_callback,
-                                             user_callback_ptr);
-                match err {
+        // If no input or output params where given, return an error.
+        if self.c_input.is_none() && self.c_output.is_none() {
+            return Err(Error::BadStreamPtr);
+        }
+
+        // Otherwise, open the PortAudio stream.
+        else {
+            unsafe {
+                match ffi::Pa_OpenStream(
+                    &mut self.c_pa_stream,
+                    self.c_input.as_ref().map(|input| input as *const _).unwrap_or(ptr::null()),
+                    self.c_output.as_ref().map(|output| output as *const _).unwrap_or(ptr::null()),
+                    sample_rate as c_double,
+                    frames_per_buffer,
+                    stream_flags.bits(),
+                    maybe_callback,
+                    user_callback_ptr,
+                ) {
                     Error::NoError => Ok(()),
-                    _ => Err(err),
+                    err => Err(err),
                 }
-            }
-            else if self.c_input.is_some() {
-                let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
-                                             &(self.c_input.unwrap()),
-                                             ptr::null(),
-                                             sample_rate as c_double,
-                                             frames_per_buffer,
-                                             stream_flags.bits(),
-                                             maybe_callback,
-                                             user_callback_ptr);
-                match err {
-                    Error::NoError => Ok(()),
-                    _ => Err(err),
-                }
-            }
-            else if self.c_output.is_some() {
-                let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
-                                             ptr::null(),
-                                             &(self.c_output.unwrap()),
-                                             sample_rate as c_double,
-                                             frames_per_buffer,
-                                             stream_flags.bits(),
-                                             maybe_callback,
-                                             user_callback_ptr);
-                match err {
-                    Error::NoError => Ok(()),
-                    _ => Err(err),
-                }
-            }
-            else {
-                Err(Error::BadStreamPtr)
             }
         }
     }
