@@ -21,7 +21,7 @@
 
 //! The portable PortAudio API.
 
-use libc::{c_double, c_void, malloc};
+use libc::{c_double, c_ulong, c_void, malloc};
 use libc::types::os::arch::c95::size_t;
 use num::FromPrimitive;
 use std::{ptr, mem};
@@ -341,15 +341,15 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                 let user_callback_fn_wrapper = Box::new(move |
                     input: *const c_void,
                     output: *mut c_void,
-                    frame_count: u32,
+                    frame_count: c_ulong,
                     time_info: *const StreamCallbackTimeInfo,
                     flags: ffi::StreamCallbackFlags
                 | -> StreamCallbackResult {
                     use std::slice::{from_raw_parts, from_raw_parts_mut};
                     let input_buffer_ptr: *const I = input as *const _;
                     let output_buffer_ptr: *mut O = output as *mut _;
-                    let input_len = (num_input_channels * frame_count) as usize;
-                    let output_len = (num_output_channels * frame_count) as usize;
+                    let input_len = num_input_channels as usize * frame_count as usize;
+                    let output_len = num_output_channels as usize * frame_count as usize;
                     let time_info: &StreamCallbackTimeInfo = unsafe { &*time_info };
                     let flags = StreamCallbackFlags::from_bits(flags)
                         .expect("Unknown StreamCallbackFlags");
@@ -357,7 +357,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                         (from_raw_parts(input_buffer_ptr, input_len),
                          from_raw_parts_mut(output_buffer_ptr, output_len))
                     };
-                    callback(input, output, frame_count, time_info, flags)
+                    callback(input, output, frame_count as u32, time_info, flags)
                 });
                 let mut user_callback = Box::new(UserCallback { f: user_callback_fn_wrapper });
                 let user_callback_ptr: *mut UserCallback = &mut *user_callback;
@@ -373,52 +373,27 @@ impl<I: Sample, O: Sample> Stream<I, O> {
             Some(stream_callback_proc)
         };
 
-        unsafe {
-            if self.c_input.is_some() &&
-               self.c_output.is_some() {
-                let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
-                                             &(self.c_input.unwrap()),
-                                             &(self.c_output.unwrap()),
-                                             sample_rate as c_double,
-                                             frames_per_buffer,
-                                             stream_flags.bits(),
-                                             maybe_callback,
-                                             user_callback_ptr);
-                match err {
+        // If no input or output params where given, return an error.
+        if self.c_input.is_none() && self.c_output.is_none() {
+            return Err(Error::BadStreamPtr);
+        }
+
+        // Otherwise, open the PortAudio stream.
+        else {
+            unsafe {
+                match ffi::Pa_OpenStream(
+                    &mut self.c_pa_stream,
+                    self.c_input.as_ref().map(|input| input as *const _).unwrap_or(ptr::null()),
+                    self.c_output.as_ref().map(|output| output as *const _).unwrap_or(ptr::null()),
+                    sample_rate as c_double,
+                    frames_per_buffer,
+                    stream_flags.bits(),
+                    maybe_callback,
+                    user_callback_ptr,
+                ) {
                     Error::NoError => Ok(()),
-                    _ => Err(err),
+                    err => Err(err),
                 }
-            }
-            else if self.c_input.is_some() {
-                let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
-                                             &(self.c_input.unwrap()),
-                                             ptr::null(),
-                                             sample_rate as c_double,
-                                             frames_per_buffer,
-                                             stream_flags.bits(),
-                                             maybe_callback,
-                                             user_callback_ptr);
-                match err {
-                    Error::NoError => Ok(()),
-                    _ => Err(err),
-                }
-            }
-            else if self.c_output.is_some() {
-                let err = ffi::Pa_OpenStream(&mut self.c_pa_stream,
-                                             ptr::null(),
-                                             &(self.c_output.unwrap()),
-                                             sample_rate as c_double,
-                                             frames_per_buffer,
-                                             stream_flags.bits(),
-                                             maybe_callback,
-                                             user_callback_ptr);
-                match err {
-                    Error::NoError => Ok(()),
-                    _ => Err(err),
-                }
-            }
-            else {
-                Err(Error::BadStreamPtr)
             }
         }
     }
@@ -478,15 +453,15 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                 let user_callback_fn_wrapper = Box::new(move |
                     input: *const c_void,
                     output: *mut c_void,
-                    frame_count: u32,
+                    frame_count: c_ulong,
                     time_info: *const StreamCallbackTimeInfo,
                     flags: ffi::StreamCallbackFlags
                 | -> StreamCallbackResult {
                     use std::slice::{from_raw_parts, from_raw_parts_mut};
                     let input_buffer_ptr: *const I = input as *const _;
                     let output_buffer_ptr: *mut O = output as *mut _;
-                    let input_len = (num_input_channels as u32 * frame_count) as usize;
-                    let output_len = (num_output_channels as u32 * frame_count) as usize;
+                    let input_len = num_input_channels as usize * frame_count as usize;
+                    let output_len = num_output_channels as usize * frame_count as usize;
                     let time_info: &StreamCallbackTimeInfo = unsafe { &*time_info };
                     let flags = StreamCallbackFlags::from_bits(flags)
                         .expect("Unknown StreamCallbackFlags");
@@ -494,7 +469,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                         (from_raw_parts(input_buffer_ptr, input_len),
                          from_raw_parts_mut(output_buffer_ptr, output_len))
                     };
-                    callback(input, output, frame_count, time_info, flags)
+                    callback(input, output, frame_count as u32, time_info, flags)
                 });
                 let mut user_callback = Box::new(UserCallback { f: user_callback_fn_wrapper });
                 let user_callback_ptr: *mut UserCallback = &mut *user_callback;
@@ -739,6 +714,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
 /// An internal type, to be passed as the user_data parameter in Pa_OpenStream if a user callback
 /// was given. A pointer to the UserCallback (*mut c_void) will then be passed to the callback_proc
 /// each time it is called.
+#[repr(C)]
 struct UserCallback {
     f: StreamCallbackFnWrapper,
 }
@@ -747,7 +723,7 @@ struct UserCallback {
 /// passed as user data via the UserCallback struct.
 type StreamCallbackFnWrapper = Box<FnMut(*const c_void,
                                          *mut c_void,
-                                         u32,
+                                         c_ulong,
                                          *const StreamCallbackTimeInfo,
                                          ffi::StreamCallbackFlags) -> StreamCallbackResult>;
 
@@ -755,7 +731,7 @@ type StreamCallbackFnWrapper = Box<FnMut(*const c_void,
 /// upon opening the stream (`Stream::open`).
 extern "C" fn stream_callback_proc(input: *const c_void,
                                    output: *mut c_void,
-                                   frame_count: u32,
+                                   frame_count: c_ulong,
                                    time_info: *const StreamCallbackTimeInfo,
                                    flags: ffi::StreamCallbackFlags,
                                    user_callback: *mut c_void) -> StreamCallbackResult {
