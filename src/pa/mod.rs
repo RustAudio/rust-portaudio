@@ -345,6 +345,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                     time_info: *const StreamCallbackTimeInfo,
                     flags: ffi::StreamCallbackFlags
                 | -> StreamCallbackResult {
+
                     use std::slice::{from_raw_parts, from_raw_parts_mut};
                     let input_buffer_ptr: *const I = input as *const _;
                     let output_buffer_ptr: *mut O = output as *mut _;
@@ -360,7 +361,9 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                     callback(input, output, frame_count as u32, time_info, flags)
                 });
                 let mut user_callback = Box::new(UserCallback { f: user_callback_fn_wrapper });
-                let user_callback_ptr: *mut UserCallback = &mut *user_callback;
+                let user_callback_ptr: *mut UserCallback = unsafe {
+                    ::std::mem::transmute(user_callback)
+                };
                 user_callback_ptr as *mut c_void
             },
             None => ptr::null_mut(),
