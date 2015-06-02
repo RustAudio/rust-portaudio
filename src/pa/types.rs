@@ -107,7 +107,7 @@ pub mod stream_flags {
         }
     }
 
-    impl ::std::fmt::Debug for StreamFlags {
+    impl ::std::fmt::Display for StreamFlags {
         fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
             write!(f, "{:?}", match self.bits() {
                 ffi::PA_NO_FLAG                                    => "NO_FLAG",
@@ -172,7 +172,7 @@ pub mod stream_callback_flags {
         }
     }
 
-    impl ::std::fmt::Debug for StreamCallbackFlags {
+    impl ::std::fmt::Display for StreamCallbackFlags {
         fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
             write!(f, "{:?}", match self.bits() {
                 ffi::PA_NO_FLAG       => "NO_FLAG",
