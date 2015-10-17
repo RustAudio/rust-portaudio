@@ -268,6 +268,7 @@ pub struct Stream<I: Sample, O: Sample> {
     num_input_channels : i32,
     phantom_data_input : ::std::marker::PhantomData<I>,
     phantom_data_output : ::std::marker::PhantomData<O>,
+    maybe_callback: Option<*mut UserCallback>,
 }
 
 impl<I: Sample, O: Sample> Stream<I, O> {
@@ -284,6 +285,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
             num_input_channels : 0,
             phantom_data_input : ::std::marker::PhantomData,
             phantom_data_output : ::std::marker::PhantomData,
+            maybe_callback: None,
         }
     }
 
@@ -369,6 +371,8 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                 let user_callback_ptr: *mut UserCallback = unsafe {
                     ::std::mem::transmute(user_callback)
                 };
+                self.free_callback();
+                self.maybe_callback = Some(user_callback_ptr);
                 user_callback_ptr as *mut c_void
             },
             None => ptr::null_mut(),
@@ -483,6 +487,8 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                 let user_callback_ptr: *mut UserCallback = unsafe {
                     ::std::mem::transmute(user_callback)
                 };
+                self.free_callback();
+                self.maybe_callback = Some(user_callback_ptr);
                 user_callback_ptr as *mut c_void
             },
             None => ptr::null_mut(),
@@ -716,6 +722,23 @@ impl<I: Sample, O: Sample> Stream<I, O> {
     #[doc(hidden)]
     pub fn get_c_pa_stream(&self) -> *mut ffi::C_PaStream {
         self.c_pa_stream
+    }
+
+    /// Here, we transfer ownership of the callback back to the current scope so that it is
+    /// dropped and cleaned up. We need this to clean up the Boxed callback that we passed to
+    /// the C PortAudio code.
+    fn free_callback(&mut self) {
+        if let Some(callback) = self.maybe_callback {
+            let _: Box<UserCallback> = unsafe { mem::transmute(callback) };
+        }
+    }
+
+}
+
+
+impl<I: Sample, O: Sample> Drop for Stream<I, O> {
+    fn drop(&mut self) {
+        self.free_callback();
     }
 }
 
