@@ -323,7 +323,10 @@ impl<I: Sample, O: Sample> Stream<I, O> {
         frames_per_buffer: u32,
         stream_flags: StreamFlags,
         maybe_user_callback_fn: Option<StreamCallbackFn<I, O>>,
-    ) -> Result<(), Error> {
+    ) -> Result<(), Error>
+        where I: 'static,
+              O: 'static,
+    {
         if let Some(input_parameters) = maybe_input_parameters {
             self.c_input = Some(input_parameters.unwrap());
             self.num_input_channels = input_parameters.channel_count;
@@ -447,7 +450,10 @@ impl<I: Sample, O: Sample> Stream<I, O> {
         num_output_channels: i32,
         sample_format: SampleFormat,
         maybe_user_callback_fn: Option<StreamCallbackFn<I, O>>
-    ) -> Result<(), Error> {
+    ) -> Result<(), Error>
+        where I: 'static,
+              O: 'static,
+    {
 
         if num_input_channels > 0 {
             self.c_input = None;
