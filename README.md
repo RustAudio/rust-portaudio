@@ -16,7 +16,7 @@ Rust-PortAudio is still in development, so there may be bugs - please feel free 
 
 To use rust-portaudio in your own project, add it to your Cargo.toml dependencies like so:
 
-```
+```toml
 [dependencies]
 portaudio = "*"
 ```

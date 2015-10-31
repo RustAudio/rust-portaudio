@@ -87,22 +87,20 @@ pub mod stream_flags {
         ///
         /// See the [bitflags repo](https://github.com/rust-lang/bitflags/blob/master/src/lib.rs)
         /// for examples of composing flags together.
-        ///
-        /// NO_FLAG: No flags
-        /// CLIP_OFF: Disable default clipping of out of range samples.
-        /// DITHER_OFF: Disable default dithering.
-        /// NEVER_DROP_INPUT: Flag requests that where possible a full duplex stream will not
-        /// discard overflowed input samples without calling the stream callback.
-        /// PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK: Call the stream callback to fill
-        /// initial output buffers, rather than the default behavior of priming the buffers with
-        /// zeros (silence)
-        /// PA_PLATFORM_SPECIFIC_FLAGS: A mask specifying the platform specific bits.
         flags StreamFlags: u64 {
+            /// No flags.
             const NO_FLAG =                                       ffi::PA_NO_FLAG,
+            /// Disable default clipping of out of range samples.
             const CLIP_OFF =                                      ffi::PA_CLIP_OFF,
+            /// Disable default dithering.
             const DITHER_OFF =                                    ffi::PA_DITHER_OFF,
+            /// Flag requests that where possible a full duplex stream will not discard overflowed
+            /// input samples without calling the stream callback.
             const NEVER_DROP_INPUT =                              ffi::PA_NEVER_DROP_INPUT,
+            /// Call the stream callback to fill initial output buffers, rather than the default
+            /// behavior of priming the buffers with zeros (silence)
             const PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK = ffi::PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK,
+            /// A mask specifying the platform specific bits.
             const PA_PLATFORM_SPECIFIC_FLAGS =                    ffi::PA_PLATFORM_SPECIFIC_FLAGS,
         }
     }
@@ -139,35 +137,26 @@ pub mod stream_callback_flags {
     use ffi;
     bitflags! {
         /// Flag bit constants for the status flags passed to the stream's callback function.
-        ///
-        /// INPUT_UNDERFLOW:
-        /// In a stream opened with paFramesPerBufferUnspecified, indicates that input data is all
-        /// silence (zeros) because no real data is available. In a stream opened without
-        /// `FramesPerBufferUnspecified`, it indicates that one or more zero samples have been
-        /// inserted into the input buffer to compensate for an input underflow.
-        ///
-        /// INPUT_OVERFLOW:
-        /// In a stream opened with paFramesPerBufferUnspecified, indicates that data prior to the
-        /// first sample of the input buffer was discarded due to an overflow, possibly because the
-        /// stream callback is using too much CPU time. Otherwise indicates that data prior to one
-        /// or more samples in the input buffer was discarded.
-        ///
-        /// OUTPUT_UNDERFLOW:
-        /// Indicates that output data (or a gap) was inserted, possibly because the stream
-        /// callback is using too much CPU time.
-        ///
-        /// OUTPUT_OVERFLOW:
-        /// Indicates that output data will be discarded because no room is available.
-        ///
-        /// PRIMING_OUTPUT:
-        /// Some of all of the output data will be used to prime the stream, input data may be
-        /// zero.
         flags StreamCallbackFlags: u64 {
+            /// No flags.
             const NO_FLAG          = ffi::PA_NO_FLAG,
+            /// In a stream opened with paFramesPerBufferUnspecified, indicates that input data is
+            /// all silence (zeros) because no real data is available. In a stream opened without
+            /// `FramesPerBufferUnspecified`, it indicates that one or more zero samples have been
+            /// inserted into the input buffer to compensate for an input underflow.
             const INPUT_UNDERFLOW  = ffi::INPUT_UNDERFLOW,
+            /// In a stream opened with paFramesPerBufferUnspecified, indicates that data prior to
+            /// the first sample of the input buffer was discarded due to an overflow, possibly
+            /// because the stream callback is using too much CPU time. Otherwise indicates that
+            /// data prior to one or more samples in the input buffer was discarded.
             const INPUT_OVERFLOW   = ffi::INPUT_OVERFLOW,
+            /// Indicates that output data (or a gap) was inserted, possibly because the stream
+            /// callback is using too much CPU time.
             const OUTPUT_UNDERFLOW = ffi::OUTPUT_UNDERFLOW,
+            /// Indicates that output data will be discarded because no room is available.
             const OUTPUT_OVERFLOW  = ffi::OUTPUT_OVERFLOW,
+            /// Some of all of the output data will be used to prime the stream, input data may be
+            /// zero.
             const PRIMING_OUTPUT   = ffi::PRIMING_OUTPUT,
         }
     }
