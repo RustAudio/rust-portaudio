@@ -371,9 +371,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                     callback(input, output, frame_count as u32, time_info, flags)
                 });
                 let user_callback = Box::new(UserCallback { f: user_callback_fn_wrapper });
-                let user_callback_ptr: *mut UserCallback = unsafe {
-                    ::std::mem::transmute(user_callback)
-                };
+                let user_callback_ptr = Box::into_raw(user_callback) as *mut UserCallback;
                 self.free_callback();
                 self.maybe_callback = Some(user_callback_ptr);
                 user_callback_ptr as *mut c_void
@@ -490,9 +488,7 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                     callback(input, output, frame_count as u32, time_info, flags)
                 });
                 let user_callback = Box::new(UserCallback { f: user_callback_fn_wrapper });
-                let user_callback_ptr: *mut UserCallback = unsafe {
-                    ::std::mem::transmute(user_callback)
-                };
+                let user_callback_ptr = Box::into_raw(user_callback) as *mut UserCallback;
                 self.free_callback();
                 self.maybe_callback = Some(user_callback_ptr);
                 user_callback_ptr as *mut c_void
