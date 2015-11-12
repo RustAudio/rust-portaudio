@@ -1,6 +1,6 @@
-//! 
+//!
 //! A demonstration of constructing and using a non-blocking stream.
-//! 
+//!
 //! Audio from the default input device is passed directly to the default output device in a duplex
 //! stream, so beware of feedback!
 //!
@@ -88,7 +88,7 @@ fn main() {
 
 
     // Construct a custom callback function - in this case we're using a FnMut closure.
-    let callback = Box::new(move |
+    let callback = move |
         input: &[f32],
         output: &mut[f32],
         frames: u32,
@@ -115,16 +115,16 @@ fn main() {
         } else {
             pa::StreamCallbackResult::Complete
         }
-    });
+    };
 
 
     // Open a non-blocking stream (indicated by giving Some(callback)).
-    match stream.open(Some(&input_stream_params),
-                      Some(&output_stream_params),
-                      SAMPLE_RATE,
-                      FRAMES,
-                      pa::StreamFlags::empty(),
-                      Some(callback)) {
+    match stream.open_non_blocking(Some(&input_stream_params),
+                                   Some(&output_stream_params),
+                                   SAMPLE_RATE,
+                                   FRAMES,
+                                   pa::StreamFlags::empty(),
+                                   callback) {
         Ok(()) => println!("Successfully opened the stream."),
         Err(err) => println!("An error occurred while opening the stream: {}", err.description()),
     }
@@ -159,5 +159,3 @@ fn main() {
     }
 
 }
-
-

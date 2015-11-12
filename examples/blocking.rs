@@ -78,12 +78,11 @@ fn main() {
 
     let mut stream : pa::Stream<f32, f32> = pa::Stream::new();
 
-    match stream.open(Some(&input_stream_params),
-                      Some(&output_stream_params),
-                      SAMPLE_RATE,
-                      FRAMES,
-                      pa::StreamFlags::empty(),
-                      None) {
+    match stream.open_blocking(Some(&input_stream_params),
+                               Some(&output_stream_params),
+                               SAMPLE_RATE,
+                               FRAMES,
+                               pa::StreamFlags::empty()) {
         Ok(()) => println!("Successfully opened the stream."),
         Err(err) => println!("An error occurred while opening the stream: {}", err.description()),
     }
