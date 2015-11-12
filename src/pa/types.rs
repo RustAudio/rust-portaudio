@@ -176,11 +176,6 @@ pub mod stream_callback_flags {
     }
 }
 
-/// User defined callback function.
-pub type StreamCallbackFn<I, O> =
-    Box<FnMut(&[I], &mut[O], u32, &StreamCallbackTimeInfo, StreamCallbackFlags)
-            -> StreamCallbackResult>;
-
 /// The result of the StreamCallbackFn.
 #[derive(Copy, Clone)]
 #[repr(C)]

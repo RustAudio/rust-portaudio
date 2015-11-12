@@ -42,7 +42,6 @@ pub use self::types::{
     StreamAvailable,
     stream_callback_flags,
     StreamCallbackFlags,
-    StreamCallbackFn,
     StreamCallbackTimeInfo,
     StreamCallbackResult,
     stream_flags,
@@ -289,43 +288,15 @@ impl<I: Sample, O: Sample> Stream<I, O> {
         }
     }
 
-    /// Opens a stream for either input, output or both.
+    /// Sets input and output parameters
     ///
-    /// # Arguments
-    /// * input_parameters - A structure that describes the input parameters used
-    /// by the opened stream.
-    /// * output_parameters - A structure that describes the output parameters
-    /// used by the opened stream.
-    /// * sample_rate - The desired sample_rate. For full-duplex streams it is the
-    /// sample rate for both input and output
-    /// * frames_per_buffer - The number of frames passed to the stream callback
-    /// function.
-    /// * stream_flags - Flags which modify the behavior of the streaming process.
-    /// This parameter may contain a combination of flags ORed together. Some
-    /// flags may only be relevant to certain buffer formats.
-    /// * maybe_user_callback_fn - An optional client supplied callback function.
-    /// It is responsible for processing and filling input and output buffers in a non-blocking
-    /// manner. If this parameter is `None`, the stream will be opened in "blocking read/write"
-    /// mode. In blocking mode, the client can receive sample data using the `Stream::read` and
-    /// write sample data using `Stream::write`. The number of samples that may be read or written
-    /// without blocking is returned by `Stream::get_stream_read_available` and
-    /// `Stream::get_stream_write_available` respectively.
-    /// NOTE: The callback currently assumes that the samples are interleaved - handling of
-    /// non-interleaved samples is not yet supported.
-    ///
-    /// Upon success returns NoError and the stream is inactive (stopped).
-    /// If fails, a non-zero error code is returned.
-    pub fn open(
+    /// Returns `Error::BadStreamPtr` if both input and output are not provided
+    fn set_parameters(
         &mut self,
         maybe_input_parameters: Option<&StreamParameters>,
         maybe_output_parameters: Option<&StreamParameters>,
-        sample_rate: f64,
         frames_per_buffer: u32,
-        stream_flags: StreamFlags,
-        maybe_user_callback_fn: Option<StreamCallbackFn<I, O>>,
     ) -> Result<(), Error>
-        where I: 'static,
-              O: 'static,
     {
         if let Some(input_parameters) = maybe_input_parameters {
             self.c_input = Some(input_parameters.unwrap());
@@ -339,75 +310,253 @@ impl<I: Sample, O: Sample> Stream<I, O> {
             self.c_output = Some(output_parameters.unwrap());
         }
 
-        // Here we wrap the callback in a `UserCallback` struct so that it can be passed as the
-        // `user_data` for portaudio's stream callback, where we will call it.
-        let user_callback_ptr = match maybe_user_callback_fn {
-            Some(mut callback) => {
-                let num_input_channels = self.num_input_channels as u32;
-                let num_output_channels = match maybe_output_parameters {
-                    Some(output_parameters) => output_parameters.channel_count as u32,
-                    None => 0,
-                };
-                let user_callback_fn_wrapper = Box::new(move |
-                    input: *const c_void,
-                    output: *mut c_void,
-                    frame_count: c_ulong,
-                    time_info: *const StreamCallbackTimeInfo,
-                    flags: ffi::StreamCallbackFlags
-                | -> StreamCallbackResult {
-
-                    use std::slice::{from_raw_parts, from_raw_parts_mut};
-                    let input_buffer_ptr: *const I = input as *const _;
-                    let output_buffer_ptr: *mut O = output as *mut _;
-                    let input_len = num_input_channels as usize * frame_count as usize;
-                    let output_len = num_output_channels as usize * frame_count as usize;
-                    let time_info: &StreamCallbackTimeInfo = unsafe { &*time_info };
-                    let flags = StreamCallbackFlags::from_bits(flags)
-                        .expect("Unknown StreamCallbackFlags");
-                    let (input, output): (&[I], &mut[O]) = unsafe {
-                        (from_raw_parts(input_buffer_ptr, input_len),
-                         from_raw_parts_mut(output_buffer_ptr, output_len))
-                    };
-                    callback(input, output, frame_count as u32, time_info, flags)
-                });
-                let user_callback = Box::new(UserCallback { f: user_callback_fn_wrapper });
-                let user_callback_ptr = Box::into_raw(user_callback) as *mut UserCallback;
-                self.free_callback();
-                self.maybe_callback = Some(user_callback_ptr);
-                user_callback_ptr as *mut c_void
-            },
-            None => ptr::null_mut(),
-        };
-
-        // If a user_callback_fn was given, set the callback_proc.
-        let maybe_callback: Option<ffi::C_PaStreamCallbackFn> = if user_callback_ptr.is_null() {
-            None
-        } else {
-            Some(stream_callback_proc)
-        };
-
         // If no input or output params where given, return an error.
         if self.c_input.is_none() && self.c_output.is_none() {
-            return Err(Error::BadStreamPtr);
+            Err(Error::BadStreamPtr)
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Opens a blocking stream for either input, output or both.
+    ///
+    /// The stream will be opened in "blocking read/write"
+    /// mode. The client can receive sample data using the `Stream::read` and
+    /// write sample data using `Stream::write`.
+    ///
+    /// # Arguments
+    /// * input_parameters - A structure that describes the input parameters used
+    /// by the opened stream.
+    /// * output_parameters - A structure that describes the output parameters
+    /// used by the opened stream.
+    /// * sample_rate - The desired sample_rate. For full-duplex streams it is the
+    /// sample rate for both input and output
+    /// * frames_per_buffer - The number of frames passed to the stream callback
+    /// function.
+    /// * stream_flags - Flags which modify the behavior of the streaming process.
+    /// This parameter may contain a combination of flags ORed together. Some
+    /// flags may only be relevant to certain buffer formats.
+    /// NOTE: The callback currently assumes that the samples are interleaved - handling of
+    /// non-interleaved samples is not yet supported.
+    ///
+    /// Upon success returns NoError and the stream is inactive (stopped).
+    /// If fails, a non-zero error code is returned.
+    pub fn open_blocking(
+        &mut self,
+        maybe_input_parameters: Option<&StreamParameters>,
+        maybe_output_parameters: Option<&StreamParameters>,
+        sample_rate: f64,
+        frames_per_buffer: u32,
+        stream_flags: StreamFlags,
+    ) -> Result<(), Error>
+        where I: 'static,
+              O: 'static,
+    {
+        try!(self.set_parameters(maybe_input_parameters,
+            maybe_output_parameters, frames_per_buffer));
+
+        unsafe {
+            match ffi::Pa_OpenStream(
+                &mut self.c_pa_stream,
+                self.c_input.as_ref().map(|input| input as *const _).unwrap_or(ptr::null()),
+                self.c_output.as_ref().map(|output| output as *const _).unwrap_or(ptr::null()),
+                sample_rate as c_double,
+                frames_per_buffer,
+                stream_flags.bits(),
+                None,
+                ptr::null_mut(),
+            ) {
+                Error::NoError => Ok(()),
+                err => Err(err),
+            }
+        }
+    }
+
+    /// Opens a non-blocking stream for either input, output or both.
+    ///
+    /// # Arguments
+    /// * input_parameters - A structure that describes the input parameters used
+    /// by the opened stream.
+    /// * output_parameters - A structure that describes the output parameters
+    /// used by the opened stream.
+    /// * sample_rate - The desired sample_rate. For full-duplex streams it is the
+    /// sample rate for both input and output
+    /// * frames_per_buffer - The number of frames passed to the stream callback
+    /// function.
+    /// * stream_flags - Flags which modify the behavior of the streaming process.
+    /// This parameter may contain a combination of flags ORed together. Some
+    /// flags may only be relevant to certain buffer formats.
+    /// * user_callback_fn - A client supplied callback function.
+    /// It is responsible for processing and filling input and output buffers in a non-blocking
+    /// manner. The number of samples that may be read or written
+    /// without blocking is returned by `Stream::get_stream_read_available` and
+    /// `Stream::get_stream_write_available` respectively.
+    /// NOTE: The callback currently assumes that the samples are interleaved - handling of
+    /// non-interleaved samples is not yet supported.
+    ///
+    /// Upon success returns NoError and the stream is inactive (stopped).
+    /// If fails, a non-zero error code is returned.
+    pub fn open_non_blocking<F>(
+        &mut self,
+        maybe_input_parameters: Option<&StreamParameters>,
+        maybe_output_parameters: Option<&StreamParameters>,
+        sample_rate: f64,
+        frames_per_buffer: u32,
+        stream_flags: StreamFlags,
+        mut user_callback_fn: F,
+    ) -> Result<(), Error>
+        where I: 'static,
+              O: 'static,
+              F: 'static + FnMut(&[I], &mut[O], u32, &StreamCallbackTimeInfo,
+                                 StreamCallbackFlags) -> StreamCallbackResult,
+    {
+
+        try!(self.set_parameters(maybe_input_parameters,
+            maybe_output_parameters, frames_per_buffer));
+
+        // Here we wrap the callback in a `UserCallback` struct so that it can be passed as the
+        // `user_data` for portaudio's stream callback, where we will call it.
+        let num_input_channels = self.num_input_channels as u32;
+        let num_output_channels = maybe_output_parameters
+            .map(|output_parameters| output_parameters.channel_count as u32)
+            .unwrap_or(0);
+
+        let user_callback_fn_wrapper = Box::new(move |
+            input: *const c_void,
+            output: *mut c_void,
+            frame_count: c_ulong,
+            time_info: *const StreamCallbackTimeInfo,
+            flags: ffi::StreamCallbackFlags
+        | -> StreamCallbackResult {
+
+            use std::slice::{from_raw_parts, from_raw_parts_mut};
+            let input_buffer_ptr: *const I = input as *const _;
+            let output_buffer_ptr: *mut O = output as *mut _;
+            let input_len = num_input_channels as usize * frame_count as usize;
+            let output_len = num_output_channels as usize * frame_count as usize;
+            let time_info: &StreamCallbackTimeInfo = unsafe { &*time_info };
+            let flags = StreamCallbackFlags::from_bits(flags)
+                .expect("Unknown StreamCallbackFlags");
+            let (input, output): (&[I], &mut[O]) = unsafe {
+                (from_raw_parts(input_buffer_ptr, input_len),
+                 from_raw_parts_mut(output_buffer_ptr, output_len))
+            };
+            user_callback_fn(input, output, frame_count as u32, time_info, flags)
+        });
+        let user_callback = Box::new(UserCallback { f: user_callback_fn_wrapper });
+        let user_callback_ptr = Box::into_raw(user_callback) as *mut UserCallback;
+        self.free_callback();
+        self.maybe_callback = Some(user_callback_ptr);
+
+        // open the PortAudio stream.
+        unsafe {
+            match ffi::Pa_OpenStream(
+                &mut self.c_pa_stream,
+                self.c_input.as_ref().map(|input| input as *const _).unwrap_or(ptr::null()),
+                self.c_output.as_ref().map(|output| output as *const _).unwrap_or(ptr::null()),
+                sample_rate as c_double,
+                frames_per_buffer,
+                stream_flags.bits(),
+                Some(stream_callback_proc),
+                user_callback_ptr as *mut c_void,
+            ) {
+                Error::NoError => Ok(()),
+                err => Err(err),
+            }
+        }
+    }
+
+    /// A simplified version of open() that opens the default input and/or output
+    /// devices.
+    ///
+    /// # Arguments
+    /// * sample_rate - The desired sample_rate. For full-duplex streams it is
+    /// the sample rate for both input and output
+    /// * frames_per_buffer - The number of frames passed to the stream callback
+    /// function
+    /// * num_input_channels - The number of channels of sound that will be
+    /// supplied to the stream callback or returned by Pa_ReadStream. It can range
+    /// from 1 to the value of maxInputChannels in the DeviceInfo record for the
+    /// default input device. If 0 the stream is opened as an output-only stream.
+    /// * num_output_channels - The number of channels of sound to be delivered to
+    /// the stream callback or passed to Pa_WriteStream. It can range from 1 to
+    /// the value of maxOutputChannels in the DeviceInfo record for the default
+    /// output device. If 0 the stream is opened as an output-only stream.
+    /// * sample_format - The sample_format for the input and output buffers.
+    /// * user_callback_fn - A client supplied callback function.
+    /// It is responsible for processing and filling input and output buffers in a non-blocking
+    /// manner. The number of samples that may be read or written
+    /// without blocking is returned by `Stream::get_stream_read_available` and
+    /// `Stream::get_stream_write_available` respectively.
+    /// NOTE: The callback currently assumes that the samples are interleaved - handling of
+    /// non-interleaved samples is not yet supported.
+    ///
+    /// Upon success returns NoError and the stream is inactive (stopped).
+    /// If fails, a non-zero error code is returned.
+    pub fn open_default_non_blocking<F>(
+        &mut self,
+        sample_rate: f64,
+        frames_per_buffer: u32,
+        num_input_channels: i32,
+        num_output_channels: i32,
+        sample_format: SampleFormat,
+        mut user_callback_fn: F,
+    ) -> Result<(), Error>
+        where I: 'static,
+              O: 'static,
+              F: 'static + FnMut(&[I], &mut[O], u32, &StreamCallbackTimeInfo,
+                                 StreamCallbackFlags) -> StreamCallbackResult,
+    {
+
+        if num_input_channels > 0 {
+            self.c_input = None;
+            self.num_input_channels = num_input_channels;
+            self.unsafe_buffer = unsafe {
+                malloc(mem::size_of::<I>() as size_t *
+                       frames_per_buffer as size_t *
+                       num_input_channels as size_t) as *mut c_void };
         }
 
-        // Otherwise, open the PortAudio stream.
-        else {
-            unsafe {
-                match ffi::Pa_OpenStream(
-                    &mut self.c_pa_stream,
-                    self.c_input.as_ref().map(|input| input as *const _).unwrap_or(ptr::null()),
-                    self.c_output.as_ref().map(|output| output as *const _).unwrap_or(ptr::null()),
-                    sample_rate as c_double,
-                    frames_per_buffer,
-                    stream_flags.bits(),
-                    maybe_callback,
-                    user_callback_ptr,
-                ) {
-                    Error::NoError => Ok(()),
-                    err => Err(err),
-                }
-            }
+        // Here we wrap the callback in a `UserCallback` struct so that it can be passed as the
+        // `user_data` for portaudio's stream callback, where we will call it.
+        let user_callback_fn_wrapper = Box::new(move |
+            input: *const c_void,
+            output: *mut c_void,
+            frame_count: c_ulong,
+            time_info: *const StreamCallbackTimeInfo,
+            flags: ffi::StreamCallbackFlags
+        | -> StreamCallbackResult {
+            use std::slice::{from_raw_parts, from_raw_parts_mut};
+            let input_buffer_ptr: *const I = input as *const _;
+            let output_buffer_ptr: *mut O = output as *mut _;
+            let input_len = num_input_channels as usize * frame_count as usize;
+            let output_len = num_output_channels as usize * frame_count as usize;
+            let time_info: &StreamCallbackTimeInfo = unsafe { &*time_info };
+            let flags = StreamCallbackFlags::from_bits(flags)
+                .expect("Unknown StreamCallbackFlags");
+            let (input, output): (&[I], &mut[O]) = unsafe {
+                (from_raw_parts(input_buffer_ptr, input_len),
+                 from_raw_parts_mut(output_buffer_ptr, output_len))
+            };
+            user_callback_fn(input, output, frame_count as u32, time_info, flags)
+        });
+        let user_callback = Box::new(UserCallback { f: user_callback_fn_wrapper });
+        let user_callback_ptr = Box::into_raw(user_callback) as *mut UserCallback;
+        self.free_callback();
+        self.maybe_callback = Some(user_callback_ptr);
+
+        match unsafe {
+           ffi::Pa_OpenDefaultStream(&mut self.c_pa_stream,
+                                     num_input_channels,
+                                     num_output_channels,
+                                     sample_format as u64,
+                                     sample_rate as c_double,
+                                     frames_per_buffer,
+                                     Some(stream_callback_proc),
+                                     user_callback_ptr as *mut c_void)
+        } {
+            Error::NoError => Ok(()),
+            err => Err(err),
         }
     }
 
@@ -440,14 +589,13 @@ impl<I: Sample, O: Sample> Stream<I, O> {
     ///
     /// Upon success returns NoError and the stream is inactive (stopped).
     /// If fails, a non-zero error code is returned.
-    pub fn open_default(
+    pub fn open_default_blocking(
         &mut self,
         sample_rate: f64,
         frames_per_buffer: u32,
         num_input_channels: i32,
         num_output_channels: i32,
-        sample_format: SampleFormat,
-        maybe_user_callback_fn: Option<StreamCallbackFn<I, O>>
+        sample_format: SampleFormat
     ) -> Result<(), Error>
         where I: 'static,
               O: 'static,
@@ -462,47 +610,6 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                        num_input_channels as size_t) as *mut c_void };
         }
 
-        // Here we wrap the callback in a `UserCallback` struct so that it can be passed as the
-        // `user_data` for portaudio's stream callback, where we will call it.
-        let user_callback_ptr = match maybe_user_callback_fn {
-            Some(mut callback) => {
-                let user_callback_fn_wrapper = Box::new(move |
-                    input: *const c_void,
-                    output: *mut c_void,
-                    frame_count: c_ulong,
-                    time_info: *const StreamCallbackTimeInfo,
-                    flags: ffi::StreamCallbackFlags
-                | -> StreamCallbackResult {
-                    use std::slice::{from_raw_parts, from_raw_parts_mut};
-                    let input_buffer_ptr: *const I = input as *const _;
-                    let output_buffer_ptr: *mut O = output as *mut _;
-                    let input_len = num_input_channels as usize * frame_count as usize;
-                    let output_len = num_output_channels as usize * frame_count as usize;
-                    let time_info: &StreamCallbackTimeInfo = unsafe { &*time_info };
-                    let flags = StreamCallbackFlags::from_bits(flags)
-                        .expect("Unknown StreamCallbackFlags");
-                    let (input, output): (&[I], &mut[O]) = unsafe {
-                        (from_raw_parts(input_buffer_ptr, input_len),
-                         from_raw_parts_mut(output_buffer_ptr, output_len))
-                    };
-                    callback(input, output, frame_count as u32, time_info, flags)
-                });
-                let user_callback = Box::new(UserCallback { f: user_callback_fn_wrapper });
-                let user_callback_ptr = Box::into_raw(user_callback) as *mut UserCallback;
-                self.free_callback();
-                self.maybe_callback = Some(user_callback_ptr);
-                user_callback_ptr as *mut c_void
-            },
-            None => ptr::null_mut(),
-        };
-
-        // If a user_callback_fn was given, set the callback_proc.
-        let maybe_callback: Option<ffi::C_PaStreamCallbackFn> = if user_callback_ptr.is_null() {
-            None
-        } else {
-            Some(stream_callback_proc)
-        };
-
         match unsafe {
            ffi::Pa_OpenDefaultStream(&mut self.c_pa_stream,
                                      num_input_channels,
@@ -510,8 +617,8 @@ impl<I: Sample, O: Sample> Stream<I, O> {
                                      sample_format as u64,
                                      sample_rate as c_double,
                                      frames_per_buffer,
-                                     maybe_callback,
-                                     user_callback_ptr)
+                                     None,
+                                     ptr::null_mut())
         } {
             Error::NoError => Ok(()),
             err => Err(err),
