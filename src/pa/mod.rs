@@ -131,18 +131,6 @@ pub fn get_version_text() -> String {
     }
 }
 
-/// Translate the supplied PortAudio error code into a human readable message.
-///
-/// # Arguments
-/// * error_code - The error code
-///
-/// Return the error as a string.
-pub fn get_error_text(error_code: Error) -> String {
-    unsafe {
-        ffi::c_str_to_string(&ffi::Pa_GetErrorText(error_code))
-    }
-}
-
 // /// Library initialization function - call this before using PortAudio.
 // /// This function initializes internal data structures and prepares underlying
 // /// host APIs for use. With the exception of get_version(), get_version_text(),
