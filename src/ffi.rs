@@ -152,7 +152,7 @@ extern "C" {
     pub fn Pa_GetDefaultOutputDevice() -> DeviceIndex;
     pub fn Pa_GetDeviceInfo(device : DeviceIndex) -> *const C_PaDeviceInfo;
     pub fn Pa_IsFormatSupported(input_parameters : *const C_PaStreamParameters, outputParameters : *const C_PaStreamParameters, sampleRate : c_double) -> Error;
-    pub fn Pa_GetSampleSize(format : SampleFormat) -> Error;
+    pub fn Pa_GetSampleSize(format : SampleFormat) -> i32;
     pub fn Pa_Sleep(msec : i32) -> ();
     pub fn Pa_OpenStream(stream : *mut *mut C_PaStream,
                          inputParameters : *const C_PaStreamParameters,
