@@ -17,7 +17,6 @@ use super::types::{
     SampleFormat,
     StreamAvailable,
     StreamCallbackFlags,
-    StreamCallbackFn,
     StreamCallbackTimeInfo,
     StreamCallbackResult,
     StreamFlags,
