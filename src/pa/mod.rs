@@ -21,9 +21,10 @@
 
 //! The portable PortAudio API.
 
+use ffi;
 use libc::c_double;
 use std::ptr;
-use ffi;
+use std::marker::PhantomData;
 
 pub use self::error::Error;
 pub use self::stream::Stream;
@@ -57,6 +58,65 @@ pub mod host;
 pub mod stream;
 mod types;
 
+
+/// A type-safe wrapper around the PortAudio API.
+///
+/// We use a type here instead of pure functions in order to ensure correct intialisation and
+/// termination of the underlying PortAudio instance.
+#[derive(Debug)]
+pub struct PortAudio {
+    /// This is solely used for checking whether or not the PortAudio API has already been
+    /// terminated manually (via the `PortAudio::terminate` method) when `Drop::drop` is called.
+    is_terminated: bool,
+}
+
+
+impl PortAudio {
+
+    /// Construct a **PortAudio** instance.
+    ///
+    /// This calls PortAudio's `Pa_Initialize` function which initializes internal data structures
+    /// and prepares underlying host APIs for use.
+    ///
+    /// Using the C API, a user would normally have to call `Pa_Terminate` when shutting down
+    /// PortAudio, however this **PortAudio** type will automatically take care of this when
+    /// `Drop`ped.
+    ///
+    /// It is safe to simultaneously construct more than one **PortAudio** instance, however this
+    /// is rarely necessary.
+    pub fn new() -> Result<Self, Error> {
+        unsafe {
+            match ffi::Pa_Initialize() {
+                Error::NoError => Ok(PortAudio { is_terminated: false }),
+                err => Err(err),
+            }
+        }
+    }
+
+    /// Takes ownership of `self` and terminates the PortAudio API using `Pa_Terminate`.
+    ///
+    /// This function deallocates all resources allocated by PortAudio since it was constructed.
+    ///
+    /// **Calling this method is optional**. It is only necessary if you require handling any
+    /// PortAudio termination errors. Otherwise, `Pa_Terminate` will be called and all necessary
+    /// cleanup will occur automatically when this **PortAudio** instance is **Drop**ped.
+    pub fn terminate(mut self) -> Result<(), Error> {
+        self.is_terminated = true;
+        terminate()
+    }
+
+}
+
+
+impl Drop for PortAudio {
+    fn drop(&mut self) {
+        if !self.is_terminated {
+            terminate();
+        }
+    }
+}
+
+
 /// Retrieve the release number of the currently running PortAudio build.
 pub fn get_version() -> i32 {
     unsafe {
@@ -83,25 +143,25 @@ pub fn get_error_text(error_code: Error) -> String {
     }
 }
 
-/// Library initialization function - call this before using PortAudio.
-/// This function initializes internal data structures and prepares underlying
-/// host APIs for use. With the exception of get_version(), get_version_text(),
-/// and get_error_text(), this function MUST be called before using any other
-/// PortAudio API functions.
-///
-/// Note that if initialize() returns an error code, Pa_Terminate() should NOT be
-/// called.
-///
-/// Return NoError if successful, otherwise an error code indicating the cause
-/// of failure.
-pub fn initialize() -> Result<(), Error> {
-    unsafe {
-        match ffi::Pa_Initialize() {
-            Error::NoError => Ok(()),
-            err => Err(err),
-        }
-    }
-}
+// /// Library initialization function - call this before using PortAudio.
+// /// This function initializes internal data structures and prepares underlying
+// /// host APIs for use. With the exception of get_version(), get_version_text(),
+// /// and get_error_text(), this function MUST be called before using any other
+// /// PortAudio API functions.
+// ///
+// /// Note that if initialize() returns an error code, Pa_Terminate() should NOT be
+// /// called.
+// ///
+// /// Return NoError if successful, otherwise an error code indicating the cause
+// /// of failure.
+// fn initialize() -> Result<(), Error> {
+//     unsafe {
+//         match ffi::Pa_Initialize() {
+//             Error::NoError => Ok(()),
+//             err => Err(err),
+//         }
+//     }
+// }
 
 /// Library termination function - call this when finished using PortAudio.
 /// This function deallocates all resources allocated by PortAudio since it was
@@ -114,9 +174,12 @@ pub fn initialize() -> Result<(), Error> {
 /// Failure to do so may result in serious resource leaks, such as audio devices
 /// not being available until the next reboot.
 ///
+/// **Note:** The above resource management is automatically handled by the
+/// **PortAudio** type.
+///
 /// Return NoError if successful, otherwise an error code indicating the cause
 /// of failure.
-pub fn terminate() -> Result<(), Error> {
+fn terminate() -> Result<(), Error> {
     unsafe {
         match ffi::Pa_Terminate() {
             Error::NoError => Ok(()),
