@@ -26,19 +26,19 @@ use libc::{c_char, c_double, c_ulong, c_void};
 use std::ffi::{CStr, CString};
 
 use pa::{
-    DeviceIndex,
-    HostApiIndex,
-    StreamCallbackTimeInfo,
     StreamInfo,
     Time,
     StreamCallbackResult
 };
 
+pub type DeviceIndex = i32;
+pub type HostApiIndex = i32;
+
 // Sample format
 pub type SampleFormat = u64;
 pub const PA_FLOAT_32        : SampleFormat = 0x00000001;
 pub const PA_INT_32          : SampleFormat = 0x00000002;
-// pub const PA_INT_24       : SampleFormat = 0x00000004;
+pub const PA_INT_24          : SampleFormat = 0x00000004;
 pub const PA_INT_16          : SampleFormat = 0x00000008;
 pub const PA_INT_8           : SampleFormat = 0x00000010;
 pub const PA_UINT_8          : SampleFormat = 0x00000020;
@@ -79,6 +79,18 @@ pub const PA_WDMKS: HostApiTypeId = 11;
 pub const PA_JACK: HostApiTypeId = 12;
 pub const PA_WASAPI: HostApiTypeId = 13;
 pub const PA_AUDIO_SCIENCE_HPI: HostApiTypeId = 14;
+
+
+
+#[doc(hidden)]
+#[derive(Clone, Copy, Debug)]
+#[repr(C)]
+pub struct C_PaStreamCallbackTimeInfo {
+    pub input_buffer_adc_time: Time,
+    pub current_time: Time,
+    pub output_buffer_dac_time: Time
+}
+
 
 pub type C_PaStream = c_void;
 
@@ -127,7 +139,7 @@ pub type C_PaStreamCallbackFn =
     extern "C" fn(*const c_void,
                   *mut c_void,
                   c_ulong,
-                  *const StreamCallbackTimeInfo,
+                  *const C_PaStreamCallbackTimeInfo,
                   StreamCallbackFlags,
                   *mut c_void) -> StreamCallbackResult;
 
@@ -174,16 +186,16 @@ extern "C" {
                                 -> Error;
     pub fn Pa_CloseStream(stream : *mut C_PaStream) -> Error;
     //pub fn Pa_SetStreamFinishedCallback (stream : *PaStream, PaStreamFinishedCallback *streamFinishedCallback) -> Error;
-    pub fn Pa_StartStream(stream : *mut C_PaStream) -> Error;
-    pub fn Pa_StopStream(stream : *mut C_PaStream) -> Error;
-    pub fn Pa_AbortStream(stream : *mut C_PaStream) -> Error;
-    pub fn Pa_IsStreamStopped(stream : *mut C_PaStream) -> Error;
+    pub fn Pa_StartStream(stream : *mut C_PaStream) -> i32;
+    pub fn Pa_StopStream(stream : *mut C_PaStream) -> i32;
+    pub fn Pa_AbortStream(stream : *mut C_PaStream) -> i32;
+    pub fn Pa_IsStreamStopped(stream : *mut C_PaStream) -> i32;
     pub fn Pa_IsStreamActive(stream : *mut C_PaStream) -> i32;
     pub fn Pa_GetStreamInfo(stream : *mut C_PaStream) -> *const StreamInfo;
     pub fn Pa_GetStreamTime(stream : *mut C_PaStream) -> Time;
     pub fn Pa_GetStreamCpuLoad(stream : *mut C_PaStream) -> c_double;
-    pub fn Pa_ReadStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> Error;
-    pub fn Pa_WriteStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> Error;
+    pub fn Pa_ReadStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> i32;
+    pub fn Pa_WriteStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> i32;
     pub fn Pa_GetStreamReadAvailable(stream : *mut C_PaStream) -> i64;
     pub fn Pa_GetStreamWriteAvailable(stream : *mut C_PaStream) -> i64;
 
