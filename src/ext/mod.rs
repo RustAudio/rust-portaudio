@@ -21,7 +21,7 @@
 
 //! Portaudio platform specific extensions.
 
-#[cfg(any(target_os="macos"))]
-pub mod mac_core;
+//#[cfg(any(target_os="macos"))]
+//pub mod mac_core;
 
 // pub mod asio;

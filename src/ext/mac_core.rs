@@ -72,9 +72,8 @@ pub trait MacCore {
 
 
 impl<'a, M, F> MacCore for Stream<'a, M, F> {
-    fn get_stream_input_device(&self) -> DeviceIndex {
-        unsafe {
-            ffi::PaMacCore_GetStreamInputDevice(self.unsafe_pa_stream()).into()
+    fn get_stream_input_device(&self) -> Result<DeviceIndex, Error> {
+        match unsafe { ffi::PaMacCore_GetStreamInputDevice(self.unsafe_pa_stream()) } {
         }
     }
     fn get_stream_output_device(&self) -> DeviceIndex {
