@@ -151,10 +151,7 @@ impl ::num::FromPrimitive for Error {
     }
 
     fn from_u64(n: u64) -> Option<Error> {
-        match n {
-            0 => Some(Error::NoError),
-            _ => None,
-        }
+        ::num::FromPrimitive::from_i64(n as i64)
     }
 
 }
