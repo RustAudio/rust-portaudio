@@ -34,7 +34,7 @@ pub trait Mode {}
 /// [**PortAudio::open_non_blocking_stream**](../struct.PortAudio.html#method.open_blocking_stream)
 /// methods.
 pub trait Settings {
-    /// The **Flow** of the **Stream** (**Input**, **Out** or **Duplex**).
+    /// The **Flow** of the **Stream** (**Input**, **Output** or **Duplex**).
     type Flow;
     /// Construct the **Stream**'s **Flow** alongside the rest of its settings.
     fn into_flow_and_settings(self) -> (Self::Flow, f64, u32, Flags);
@@ -65,6 +65,27 @@ pub trait Flow {
                          out_channels: i32) -> Self::CallbackArgs;
 }
 
+/// **Streams** that can be read by the user.
+pub trait Reader: Flow {
+    /// The sample format for the readable buffer.
+    type Sample;
+    /// Borrow the readable **Buffer**.
+    fn readable_buffer(blocking: &Blocking<<Self as Flow>::Buffer>) -> &Buffer;
+    /// The number of channels in the readable **Buffer**.
+    fn channel_count(&self) -> i32;
+}
+
+/// **Streams** that can be written to by the user for output to some DAC.
+pub trait Writer: Flow {
+    /// The sample format for the writable buffer.
+    type Sample;
+    /// Mutably borrow the the writable **Buffer**.
+    fn writable_buffer(blocking: &mut Blocking<<Self as Flow>::Buffer>) -> &mut Buffer;
+    /// The number of channels in the writable **Buffer**.
+    fn channel_count(&self) -> i32;
+}
+
+
 /// An alias for the boxed Callback function type.
 type CallbackFn = FnMut(*const libc::c_void,
                         *mut libc::c_void,
@@ -76,36 +97,6 @@ type CallbackFn = FnMut(*const libc::c_void,
 struct CallbackFnWrapper {
     f: Box<CallbackFn>,
 }
-
-// /// An internal type, to be passed as the user_data parameter in Pa_OpenStream if a user callback
-// /// was given. A pointer to the UserCallback (*mut c_void) will then be passed to the callback_proc
-// /// each time it is called.
-// #[repr(C)]
-// struct UserCallback {
-//     f: StreamCallbackFnWrapper,
-// }
-// 
-// /// Used to translate the generic user StreamCallbackFn into a non-generic closure so that it can be
-// /// passed as user data via the UserCallback struct.
-// type StreamCallbackFnWrapper = Box<FnMut(*const c_void,
-//                                          *mut c_void,
-//                                          c_ulong,
-//                                          *const CallbackTimeInfo,
-//                                          ffi::StreamCallbackFlags) -> CallbackResult>;
-// 
-// /// A callback procedure to be used by portaudio in the case that a user_callback has been given
-// /// upon opening the stream (`Stream::open`).
-// extern "C" fn stream_callback_proc(input: *const c_void,
-//                                    output: *mut c_void,
-//                                    frame_count: c_ulong,
-//                                    time_info: *const CallbackTimeInfo,
-//                                    flags: ffi::StreamCallbackFlags,
-//                                    user_callback: *mut c_void) -> CallbackResult {
-//     let callback: *mut UserCallback = user_callback as *mut _;
-//     unsafe {
-//         ((*callback).f)(input, output, frame_count, time_info, flags)
-//     }
-// }
 
 
 /// Timing information for the buffer passed to the input stream callback.
@@ -145,6 +136,7 @@ pub struct DuplexCallbackTimeInfo {
     /// The time when the first sample of the output buffer will output the DAC.
     pub out_buffer_dac: Time,
 }
+
 
 /// Arguments given to a **NonBlocking** **Input** **Stream**'s **CallbackFn**.
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -190,6 +182,7 @@ pub struct DuplexCallbackArgs<'a, I: 'a, O: 'a> {
     pub time: DuplexCallbackTimeInfo,
 }
 
+
 /// A **Stream** **Mode** representing a blocking stream.
 ///
 /// Unlike the **NonBlocking** stream, PortAudio requires that we manually manage the audio data
@@ -234,45 +227,6 @@ pub struct Parameters<S> {
     pub is_interleaved: bool,
     /// Sample format of the audio data provided to/by the device.
     sample_format: PhantomData<S>,
-}
-
-impl<S> Parameters<S> {
-
-    /// Construct a new **Parameters**.
-    pub fn new(device: DeviceIndex,
-               channel_count: i32,
-               is_interleaved: bool,
-               suggested_latency: Time) -> Self
-    {
-        Self::new_internal(device.into(), channel_count, is_interleaved, suggested_latency)
-    }
-
-    /// The same as **Parameters::new**, but the device(s) to be used are specified in the host
-    /// api specific stream info structure.
-    ///
-    /// **NOTE:** This has not yet been tested.
-    pub fn host_api_specific_device(channel_count: i32,
-                                    is_interleaved: bool,
-                                    suggested_latency: Time) -> Self
-    {
-        let kind = DeviceKind::UseHostApiSpecificDeviceSpecification;
-        Self::new_internal(kind, channel_count, is_interleaved, suggested_latency)
-    }
-
-    fn new_internal(device_kind: DeviceKind,
-                    channel_count: i32,
-                    is_interleaved: bool,
-                    suggested_latency: Time) -> Self
-    {
-        Parameters {
-            device: device_kind,
-            channel_count: channel_count,
-            is_interleaved: is_interleaved,
-            suggested_latency: suggested_latency,
-            sample_format: PhantomData,
-        }
-    }
-
 }
 
 
@@ -324,7 +278,7 @@ pub struct Input<I> {
 }
 
 /// A type of **Flow** that describes an output-only **Stream**.
-pub struct Out<O> {
+pub struct Output<O> {
     params: Parameters<O>,
 }
 
@@ -332,6 +286,46 @@ pub struct Out<O> {
 pub struct Duplex<I, O> {
     in_params: Parameters<I>,
     out_params: Parameters<O>,
+}
+
+
+impl<S> Parameters<S> {
+
+    /// Construct a new **Parameters**.
+    pub fn new(device: DeviceIndex,
+               channel_count: i32,
+               is_interleaved: bool,
+               suggested_latency: Time) -> Self
+    {
+        Self::new_internal(device.into(), channel_count, is_interleaved, suggested_latency)
+    }
+
+    /// The same as **Parameters::new**, but the device(s) to be used are specified in the host
+    /// api specific stream info structure.
+    ///
+    /// **NOTE:** This has not yet been tested.
+    pub fn host_api_specific_device(channel_count: i32,
+                                    is_interleaved: bool,
+                                    suggested_latency: Time) -> Self
+    {
+        let kind = DeviceKind::UseHostApiSpecificDeviceSpecification;
+        Self::new_internal(kind, channel_count, is_interleaved, suggested_latency)
+    }
+
+    fn new_internal(device_kind: DeviceKind,
+                    channel_count: i32,
+                    is_interleaved: bool,
+                    suggested_latency: Time) -> Self
+    {
+        Parameters {
+            device: device_kind,
+            channel_count: channel_count,
+            is_interleaved: is_interleaved,
+            suggested_latency: suggested_latency,
+            sample_format: PhantomData,
+        }
+    }
+
 }
 
 
@@ -385,7 +379,7 @@ impl<I> Flow for Input<I>
     }
 }
 
-impl<O> Flow for Out<O>
+impl<O> Flow for Output<O>
     where O: Sample + 'static,
 {
     type Buffer = Buffer;
@@ -497,6 +491,57 @@ impl<I, O> Flow for Duplex<I, O>
 }
 
 
+impl<I> Reader for Input<I>
+    where I: Sample + 'static,
+{
+    type Sample = I;
+    fn readable_buffer(blocking: &Blocking<<Input<I> as Flow>::Buffer>) -> &Buffer {
+        &blocking.buffer
+    }
+    fn channel_count(&self) -> i32 {
+        self.params.channel_count
+    }
+}
+
+impl<I, O> Reader for Duplex<I, O>
+    where I: Sample + 'static,
+          O: Sample + 'static,
+{
+    type Sample = I;
+    fn readable_buffer(blocking: &Blocking<<Duplex<I, O> as Flow>::Buffer>) -> &Buffer {
+        &blocking.buffer.0
+    }
+    fn channel_count(&self) -> i32 {
+        self.in_params.channel_count
+    }
+}
+
+impl<O> Writer for Output<O>
+    where O: Sample + 'static,
+{
+    type Sample = O;
+    fn writable_buffer(blocking: &mut Blocking<<Output<O> as Flow>::Buffer>) -> &mut Buffer {
+        &mut blocking.buffer
+    }
+    fn channel_count(&self) -> i32 {
+        self.params.channel_count
+    }
+}
+
+impl<I, O> Writer for Duplex<I, O>
+    where I: Sample + 'static,
+          O: Sample + 'static,
+{
+    type Sample = O;
+    fn writable_buffer(blocking: &mut Blocking<<Duplex<I, O> as Flow>::Buffer>) -> &mut Buffer {
+        &mut blocking.buffer.1
+    }
+    fn channel_count(&self) -> i32 {
+        self.out_params.channel_count
+    }
+}
+
+
 /// The buffer used to transfer audio data between the input and output streams.
 pub struct Buffer {
     data: *mut libc::c_void,
@@ -602,7 +647,7 @@ pub mod callback_flags {
 
 
 /// The result of the StreamCallbackFn.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 #[repr(C)]
 pub enum CallbackResult {
     /// Continue the stream.
@@ -708,10 +753,10 @@ impl<I> Settings for InputSettings<I> {
 }
 
 impl<O> Settings for OutSettings<O> {
-    type Flow = Out<O>;
+    type Flow = Output<O>;
     fn into_flow_and_settings(self) -> (Self::Flow, f64, u32, Flags) {
         let OutSettings { params, sample_rate, frames_per_buffer, flags } = self;
-        let flow = Out { params: params };
+        let flow = Output { params: params };
         (flow, sample_rate, frames_per_buffer, flags)
     }
 }
@@ -767,7 +812,6 @@ impl Drop for Buffer {
         unsafe {
             libc::free(self.data)
         }
-        println!("Dropped buffer");
     }
 }
 
@@ -1005,9 +1049,8 @@ impl<'a, F> Stream<'a, Blocking<F::Buffer>, F>
 
 }
 
-impl<'a, I, O> Stream<'a, Blocking<<Duplex<I, O> as Flow>::Buffer>, Duplex<I, O>>
-    where I: Sample + 'static,
-          O: Sample + 'static,
+impl<'a, F> Stream<'a, Blocking<F::Buffer>, F>
+    where F: Flow + Reader,
 {
 
     /// Retrieve the number of frames that can be read from the stream without waiting.
@@ -1032,6 +1075,39 @@ impl<'a, I, O> Stream<'a, Blocking<<Duplex<I, O> as Flow>::Buffer>, Duplex<I, O>
         }
     }
 
+    /// Read samples from an input stream.
+    ///
+    /// The function doesn't return until the entire buffer has been filled - this may involve
+    /// waiting for the operating system to supply the data.
+    ///
+    /// # Arguments
+    /// * frames - The number of frames in the buffer.
+    ///
+    /// Returns an interleaved slice containing the read audio data.
+    ///
+    /// Returns an `Error` if some error occurred.
+    ///
+    /// TODO: Research and document exactly what errors can occur.
+    pub fn read<'b>(&'b self, frames: u32) -> Result<&'b [F::Sample], Error> {
+        let buffer = F::readable_buffer(&self.mode);
+        let err = unsafe {
+            ffi::Pa_ReadStream(self.pa_stream, buffer.data, frames)
+        };
+        match err {
+            0 => unsafe {
+                let channel_count = Reader::channel_count(&self.flow);
+                Ok(buffer.slice(frames, channel_count))
+            },
+            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
+        }
+    }
+
+}
+
+impl<'a, F> Stream<'a, Blocking<F::Buffer>, F>
+    where F: Flow + Writer,
+{
+
     /// Retrieve the number of frames that can be written to the stream without waiting.
     ///
     /// Returns a Result with either:
@@ -1054,32 +1130,6 @@ impl<'a, I, O> Stream<'a, Blocking<<Duplex<I, O> as Flow>::Buffer>, Duplex<I, O>
         }
     }
 
-    /// Read samples from an input stream.
-    ///
-    /// The function doesn't return until the entire buffer has been filled - this may involve
-    /// waiting for the operating system to supply the data.
-    ///
-    /// # Arguments
-    /// * frames - The number of frames in the buffer.
-    ///
-    /// Returns an interleaved slice containing the read audio data.
-    ///
-    /// Returns an `Error` if some error occurred.
-    ///
-    /// TODO: Look into and document exactly what errors can occur.
-    pub fn read<'b>(&'b self, frames: u32) -> Result<&'b [I], Error> {
-        let err = unsafe {
-            ffi::Pa_ReadStream(self.pa_stream, self.mode.buffer.0.data, frames)
-        };
-        match err {
-            0 => unsafe {
-                let in_buffer = &self.mode.buffer.0;
-                Ok(in_buffer.slice(frames, self.flow.in_params.channel_count))
-            },
-            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
-        }
-    }
-
     /// Write samples to an output stream.
     ///
     /// This function doesn't return until the entire buffer has been consumed
@@ -1091,19 +1141,20 @@ impl<'a, I, O> Stream<'a, Blocking<<Duplex<I, O> as Flow>::Buffer>, Duplex<I, O>
     /// * write_fn - The buffer contains samples in the format specified by S.
     ///
     /// Returns Ok(()) on success and an Err(Error) variant on failure.
-    pub fn write<F>(&mut self, frames: u32, write_fn: F) -> Result<(), Error>
-        where F: for<'b> FnOnce(&'b mut [O]),
+    pub fn write<WF>(&mut self, frames: u32, write_fn: WF) -> Result<(), Error>
+        where WF: for<'b> FnOnce(&'b mut [F::Sample]),
     {
+        let pa_stream = self.pa_stream;
+        let channels = Writer::channel_count(&self.flow);
+        let out_buffer = F::writable_buffer(&mut self.mode);
         let written_slice = {
-            let channels = self.flow.out_params.channel_count;
-            let out_buffer = &mut self.mode.buffer.1;
             let slice = unsafe { out_buffer.slice_mut(frames, channels) };
             write_fn(slice);
             slice
         };
         let result = unsafe {
             let written_slice_ptr = written_slice.as_ptr() as *mut libc::c_void;
-            ffi::Pa_WriteStream(self.pa_stream, written_slice_ptr, frames)
+            ffi::Pa_WriteStream(pa_stream, written_slice_ptr, frames)
         };
         match result {
             0 => Ok(()),
