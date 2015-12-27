@@ -70,7 +70,7 @@ pub trait Reader: Flow {
     /// The sample format for the readable buffer.
     type Sample;
     /// Borrow the readable **Buffer**.
-    fn readable_buffer(blocking: &Blocking<<Self as Flow>::Buffer>) -> &Buffer;
+    fn readable_buffer(blocking: &Blocking<Self::Buffer>) -> &Buffer;
     /// The number of channels in the readable **Buffer**.
     fn channel_count(&self) -> i32;
 }
@@ -80,7 +80,7 @@ pub trait Writer: Flow {
     /// The sample format for the writable buffer.
     type Sample;
     /// Mutably borrow the the writable **Buffer**.
-    fn writable_buffer(blocking: &mut Blocking<<Self as Flow>::Buffer>) -> &mut Buffer;
+    fn writable_buffer(blocking: &mut Blocking<Self::Buffer>) -> &mut Buffer;
     /// The number of channels in the writable **Buffer**.
     fn channel_count(&self) -> i32;
 }
