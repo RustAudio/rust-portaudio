@@ -23,25 +23,40 @@
 
 #![allow(dead_code)]
 
-use std::ptr;
-use std::mem::{transmute};
-
-pub use self::stream_flags::StreamFlags;
-pub use self::stream_callback_flags::StreamCallbackFlags;
-
 use ffi;
 
-/// The type used to refer to audio devices. Values of this type usually range
-/// from 0 to (pa::get_device_count()-1)
-pub type DeviceIndex = i32;
+pub use self::sample_format_flags::SampleFormatFlags;
 
-/// A special DeviceIndex value indicating that no device is available,
-/// or should be used.
-pub const NO_DEVICE: DeviceIndex = -1;
+/// The type used to refer to audio devices.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum DeviceIndex {
+    /// No device is available, or should be used.
+    NoDevice,
+    /// The device(s) to be used are specified in the host api specific stream info structure.
+    UseHostApiSpecificDeviceSpecification,
+    /// Values of this type usually range from 0 to (pa::get_device_count()-1)
+    Device(u16),
+}
 
-/// A special DeviceIndex value indicating that the device(s) to be used are
-/// specified in the host api specific stream info structure.
-pub const USE_HOST_API_SPECIFIC_DEVICE_SPECIFICATION: DeviceIndex = -2;
+impl From<ffi::DeviceIndex> for DeviceIndex {
+    fn from(idx: ffi::DeviceIndex) -> DeviceIndex {
+        match idx {
+            -1 => DeviceIndex::NoDevice,
+            -2 => DeviceIndex::UseHostApiSpecificDeviceSpecification,
+            idx => DeviceIndex::Device(idx as u16),
+        }
+    }
+}
+
+impl From<DeviceIndex> for ffi::DeviceIndex {
+    fn from(idx: DeviceIndex) -> ffi::DeviceIndex {
+        match idx {
+            DeviceIndex::NoDevice => -1,
+            DeviceIndex::UseHostApiSpecificDeviceSpecification => -2,
+            DeviceIndex::Device(idx) => idx as ffi::DeviceIndex,
+        }
+    }
+}
 
 /// The special value may be used to request that the stream callback will receive an optimal (and
 /// possibly varying) number of frames based on host requirements and the requested latency
@@ -50,7 +65,7 @@ pub const FRAMES_PER_BUFFER_UNSPECIFIED: u32 = 0;
 
 /// The type used to enumerate to host APIs at runtime.
 /// Values of this type range from 0 to (pa::get_host_api_count()-1).
-pub type HostApiIndex = i32;
+pub type HostApiIndex = u16;
 
 /// The type used to represent monotonic time in seconds.
 pub type Time = f64;
@@ -58,135 +73,166 @@ pub type Time = f64;
 /// An type alias used to represent a given number of frames.
 pub type Frames = i64;
 
-/// A type used to specify one or more sample formats.
-#[repr(u64)]
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Debug)]
+/// A type used to dynamically represent the various standard sample formats (usually) supported by
+/// all PortAudio implementations.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum SampleFormat {
-    /// 32 bits float sample format
-    Float32 =         ffi::PA_FLOAT_32,
-    /// 32 bits int sample format
-    Int32 =           ffi::PA_INT_32,
-    /// 16 bits int sample format
-    Int16 =           ffi::PA_INT_16,
-    /// 8 bits int sample format
-    Int8 =            ffi::PA_INT_8,
-    /// 8 bits unsigned int sample format
-    UInt8 =           ffi::PA_UINT_8,
-    /// Custom sample format
-    CustomFormat =    ffi::PA_CUSTOM_FORMAT,
-    /// Non interleaved sample format
-    NonInterleaved =  ffi::PA_NON_INTERLEAVED
+    /// Uses -1.0 and +1.0 as the minimum and maximum respectively.
+    F32,
+    /// 32-bit signed integer sample representation.
+    I32,
+    /// 24-bit signed integer sample representation.
+    ///
+    /// TODO: Should work out how to support this properly.
+    I24,
+    /// 16-bit signed integer sample representation.
+    I16,
+    /// 8-bit signed integer sample representation.
+    I8,
+    /// An unsigned 8 bit format where 128 is considered "ground"
+    U8,
+    /// Some custom sample format.
+    ///
+    /// TODO: Need to work out how to support this properly. I was unable to find any official
+    /// info.
+    ///
+    /// The following e-mail by Bencina (2004) touches on the topic of custom formats:
+    ///
+    /// > "It is theoretically possible to pass "custom" data formats to PortAudio using the
+    /// paCustomFormat SampleFormat flag. I think the general idea is that when this bit is set,
+    /// the low word of the sample format byte is device specific. I know of no implementation that
+    /// has ever used this feature so it has not been extensively developed. That said, much of
+    /// PortAudio (V19 at least) assumes a frame based sample format, accomodating a block based
+    /// format such as mpeg would probably require bypassing some of the internal infrastructure
+    /// (such as the block adapter in pa_process). PortAudio has been designed for linear, frame
+    /// based i/o, so it would be up to you to propose/suggest ways in which to accomodate your
+    /// requirements." - http://music.columbia.edu/pipermail/portaudio/2004-February/003237.html
+    Custom,
+    /// This variant is used when none of the above variants can be inferred from a given
+    /// set of **SampleFormatFlags** via the `SampleFormat::from_flags` function.
+    Unknown,
 }
 
-pub mod stream_flags {
-    //! A type safe wrapper around PortAudio's stream flags.
+impl SampleFormat {
+
+    /// Inspects the given **SampleFormatFlags** for the format.
+    ///
+    /// Returns `Some(SampleFormat)` if a matching format is found.
+    ///
+    /// Returns `None` if no matching format is found.
+    pub fn from_flags(flags: SampleFormatFlags) -> Self {
+        if flags.contains(sample_format_flags::FLOAT_32) {
+            SampleFormat::F32
+        } else if flags.contains(sample_format_flags::INT_32) {
+            SampleFormat::I32
+        } else if flags.contains(sample_format_flags::INT_24) {
+            SampleFormat::I24
+        } else if flags.contains(sample_format_flags::INT_16) {
+            SampleFormat::I16
+        } else if flags.contains(sample_format_flags::INT_8) {
+            SampleFormat::I8
+        } else if flags.contains(sample_format_flags::UINT_8) {
+            SampleFormat::U8
+        } else if flags.contains(sample_format_flags::CUSTOM_FORMAT) {
+            SampleFormat::Custom
+        } else {
+            SampleFormat::Unknown
+        }
+    }
+
+    /// Converts `self` into the respective **SampleFormatFlags**.
+    pub fn flags(self) -> SampleFormatFlags {
+        match self {
+            SampleFormat::F32 => sample_format_flags::FLOAT_32,
+            SampleFormat::I32 => sample_format_flags::INT_32,
+            SampleFormat::I24 => sample_format_flags::INT_24,
+            SampleFormat::I16 => sample_format_flags::INT_16,
+            SampleFormat::I8 => sample_format_flags::INT_8,
+            SampleFormat::U8 => sample_format_flags::UINT_8,
+            SampleFormat::Custom => sample_format_flags::CUSTOM_FORMAT,
+            SampleFormat::Unknown => SampleFormatFlags::empty(),
+        }
+    }
+
+    /// Returns the size of the **SampleFormat** in bytes.
+    ///
+    /// Returns `0` if the **SampleFormat** is **Custom** or **Unknown**.
+    pub fn size_in_bytes(&self) -> u8 {
+        match *self {
+            SampleFormat::F32 | SampleFormat::I32 => 4,
+            SampleFormat::I24 => 3,
+            SampleFormat::I16 => 2,
+            SampleFormat::I8 | SampleFormat::U8 => 1,
+            SampleFormat::Custom | SampleFormat::Unknown => 0,
+        }
+    }
+
+}
+
+pub mod sample_format_flags {
+    //! A type safe wrapper around PortAudio's `PaSampleFormat` flags.
     use ffi;
     bitflags! {
-        /// Flags used to control the behaviour of a stream. They are passed as parameters to
-        /// Stream::open or Stream::open_default. Multiple flags may be used together.
+        /// A type used to specify one or more sample formats. Each value indicates a possible
+        /// format for sound data passed to and from the stream callback, Pa_ReadStream and
+        /// Pa_WriteStream.
         ///
-        /// See the [bitflags repo](https://github.com/rust-lang/bitflags/blob/master/src/lib.rs)
-        /// for examples of composing flags together.
-        flags StreamFlags: u64 {
-            /// No flags.
-            const NO_FLAG =                                       ffi::PA_NO_FLAG,
-            /// Disable default clipping of out of range samples.
-            const CLIP_OFF =                                      ffi::PA_CLIP_OFF,
-            /// Disable default dithering.
-            const DITHER_OFF =                                    ffi::PA_DITHER_OFF,
-            /// Flag requests that where possible a full duplex stream will not discard overflowed
-            /// input samples without calling the stream callback.
-            const NEVER_DROP_INPUT =                              ffi::PA_NEVER_DROP_INPUT,
-            /// Call the stream callback to fill initial output buffers, rather than the default
-            /// behavior of priming the buffers with zeros (silence)
-            const PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK = ffi::PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK,
-            /// A mask specifying the platform specific bits.
-            const PA_PLATFORM_SPECIFIC_FLAGS =                    ffi::PA_PLATFORM_SPECIFIC_FLAGS,
+        /// The standard formats paFloat32, paInt16, paInt32, paInt24, paInt8 and aUInt8 are
+        /// usually implemented by all implementations.
+        ///
+        /// The floating point representation (FLOAT_32) uses +1.0 and -1.0 as the maximum and
+        /// minimum respectively.
+        ///
+        /// UINT_8 is an unsigned 8 bit format where 128 is considered "ground"
+        ///
+        /// The paNonInterleaved flag indicates that audio data is passed as an array of pointers
+        /// to separate buffers, one buffer for each channel. Usually, when this flag is not used,
+        /// audio data is passed as a single buffer with all channels interleaved.
+        flags SampleFormatFlags: u64 {
+            /// 32 bits float sample format
+            const FLOAT_32 = ffi::PA_FLOAT_32,
+            /// 32 bits int sample format
+            const INT_32 = ffi::PA_INT_32,
+            /// Packed 24 bits int sample format
+            const INT_24 = ffi::PA_INT_24,
+            /// 16 bits int sample format
+            const INT_16 = ffi::PA_INT_16,
+            /// 8 bits int sample format
+            const INT_8 = ffi::PA_INT_8,
+            /// 8 bits unsigned int sample format
+            const UINT_8 = ffi::PA_UINT_8,
+            /// Custom sample format
+            const CUSTOM_FORMAT = ffi::PA_CUSTOM_FORMAT,
+            /// Non interleaved sample format
+            const NON_INTERLEAVED = ffi::PA_NON_INTERLEAVED,
         }
     }
 
-    impl ::std::fmt::Display for StreamFlags {
+    impl From<ffi::SampleFormat> for SampleFormatFlags {
+        fn from(format: ffi::SampleFormat) -> Self {
+            SampleFormatFlags::from_bits(format)
+                .unwrap_or_else(|| SampleFormatFlags::empty())
+        }
+    }
+
+    impl ::std::fmt::Display for SampleFormatFlags {
         fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
             write!(f, "{:?}", match self.bits() {
-                ffi::PA_NO_FLAG                                    => "NO_FLAG",
-                ffi::PA_CLIP_OFF                                   => "CLIP_OFF",
-                ffi::PA_DITHER_OFF                                 => "DITHER_OFF",
-                ffi::PA_NEVER_DROP_INPUT                           => "NEVER_DROP_INPUT",
-                ffi::PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK => "PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK",
-                ffi::PA_PLATFORM_SPECIFIC_FLAGS                    => "PLATFORM_SPECIFIC_FLAGS",
-                _                                                  => "<Unknown StreamFlags>",
+                ffi::PA_FLOAT_32 => "FLOAT_32",
+                ffi::PA_INT_32 => "INT_32",
+                //ffi::PA_INT_24 => "INT_24",
+                ffi::PA_INT_16 => "INT_16",
+                ffi::PA_INT_8 => "INT_8",
+                ffi::PA_UINT_8 => "UINT_8",
+                ffi::PA_CUSTOM_FORMAT => "CUSTOM_FORMAT",
+                ffi::PA_NON_INTERLEAVED => "NON_INTERLEAVED",
+                _   => "<Unknown SampleFormatFlags>",
             })
         }
     }
 }
 
-/// Describes stream availability and the number for frames available for reading/writing if there
-/// is any.
-#[derive(Copy, Clone, PartialEq, Debug)]
-pub enum StreamAvailable {
-    /// The number of frames available for reading.
-    Frames(Frames),
-    /// The input stream has overflowed.
-    InputOverflowed,
-    /// The output stream has underflowed.
-    OutputUnderflowed,
-}
 
-pub mod stream_callback_flags {
-    //! A type safe wrapper around PortAudio's stream callback flags.
-    use ffi;
-    bitflags! {
-        /// Flag bit constants for the status flags passed to the stream's callback function.
-        flags StreamCallbackFlags: u64 {
-            /// No flags.
-            const NO_FLAG          = ffi::PA_NO_FLAG,
-            /// In a stream opened with paFramesPerBufferUnspecified, indicates that input data is
-            /// all silence (zeros) because no real data is available. In a stream opened without
-            /// `FramesPerBufferUnspecified`, it indicates that one or more zero samples have been
-            /// inserted into the input buffer to compensate for an input underflow.
-            const INPUT_UNDERFLOW  = ffi::INPUT_UNDERFLOW,
-            /// In a stream opened with paFramesPerBufferUnspecified, indicates that data prior to
-            /// the first sample of the input buffer was discarded due to an overflow, possibly
-            /// because the stream callback is using too much CPU time. Otherwise indicates that
-            /// data prior to one or more samples in the input buffer was discarded.
-            const INPUT_OVERFLOW   = ffi::INPUT_OVERFLOW,
-            /// Indicates that output data (or a gap) was inserted, possibly because the stream
-            /// callback is using too much CPU time.
-            const OUTPUT_UNDERFLOW = ffi::OUTPUT_UNDERFLOW,
-            /// Indicates that output data will be discarded because no room is available.
-            const OUTPUT_OVERFLOW  = ffi::OUTPUT_OVERFLOW,
-            /// Some of all of the output data will be used to prime the stream, input data may be
-            /// zero.
-            const PRIMING_OUTPUT   = ffi::PRIMING_OUTPUT,
-        }
-    }
-
-    impl ::std::fmt::Display for StreamCallbackFlags {
-        fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-            write!(f, "{:?}", match self.bits() {
-                ffi::PA_NO_FLAG       => "NO_FLAG",
-                ffi::INPUT_UNDERFLOW  => "INPUT_UNDERFLOW",
-                ffi::INPUT_OVERFLOW   => "INPUT_OVERFLOW",
-                ffi::OUTPUT_UNDERFLOW => "OUTPUT_UNDERFLOW",
-                ffi::OUTPUT_OVERFLOW  => "OUTPUT_OVERFLOW",
-                ffi::PRIMING_OUTPUT   => "PRIMING_INPUT",
-                _                     => "<Unknown StreamCallbackFlags>",
-            })
-        }
-    }
-}
-
-/// The result of the StreamCallbackFn.
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub enum StreamCallbackResult {
-    /// Continue the stream.
-    Continue = 0,
-    /// The stream has completed.
-    Complete = 1,
-    /// Abort the stream.
-    Abort = 2
-}
 
 /// Unchanging unique identifiers for each supported host API
 #[repr(i32)]
@@ -222,20 +268,44 @@ pub enum HostApiTypeId {
     AudioScienceHPI = ffi::PA_AUDIO_SCIENCE_HPI
 }
 
+impl HostApiTypeId {
+    /// Convert the given ffi::HostApiTypeId to a HostApiTypeId.
+    pub fn from_c_id(c_id: ffi::HostApiTypeId) -> Option<Self> {
+        use self::HostApiTypeId::*;
+        Some(match c_id {
+            ffi::PA_IN_DEVELOPMENT => InDevelopment,
+            ffi::PA_DIRECT_SOUND => DirectSound,
+            ffi::PA_MME => MME,
+            ffi::PA_ASIO => ASIO,
+            ffi::PA_SOUND_MANAGER => SoundManager,
+            ffi::PA_CORE_AUDIO => CoreAudio,
+            ffi::PA_OSS => OSS,
+            ffi::PA_AL => AL,
+            ffi::PA_BE_OS => BeOS,
+            ffi::PA_WDMKS => WDMKS,
+            ffi::PA_JACK => JACK,
+            ffi::PA_WASAPI => WASAPI,
+            ffi::PA_AUDIO_SCIENCE_HPI => AudioScienceHPI,
+            _ => return None,
+        })
+    }
+}
+
 /// A structure containing information about a particular host API.
+#[derive(Clone, Debug, PartialEq)]
 pub struct HostApiInfo{
     /// The version of the struct
-    pub struct_version : i32,
+    pub struct_version: i32,
     /// The type of the current host
-    pub host_type : HostApiTypeId,
+    pub host_type: HostApiTypeId,
     /// The name of the host
-    pub name : String,
+    pub name: String,
     /// The total count of device in the host
-    pub device_count : i32,
+    pub device_count: i32,
     /// The index to the default input device
-    pub default_input_device : DeviceIndex,
+    pub default_input_device: DeviceIndex,
     /// The index to the default output device
-    pub default_output_device : DeviceIndex
+    pub default_output_device: DeviceIndex
 }
 
 #[doc(hidden)]
@@ -243,24 +313,25 @@ impl HostApiInfo {
     pub fn wrap(c_info : *const ffi::C_PaHostApiInfo) -> HostApiInfo {
         unsafe {
             HostApiInfo {
-                struct_version : (*c_info).struct_version,
-                host_type : transmute(((*c_info).host_type)),
-                name : ffi::c_str_to_string(&(*c_info).name),
-                device_count : (*c_info).device_count,
-                default_input_device : (*c_info).default_input_device,
-                default_output_device : (*c_info).default_output_device
+                struct_version: (*c_info).struct_version,
+                host_type: HostApiTypeId::from_c_id((*c_info).host_type)
+                    .expect("No matching HostApiTypeId"),
+                name: ffi::c_str_to_string(&(*c_info).name),
+                device_count: (*c_info).device_count,
+                default_input_device: (*c_info).default_input_device.into(),
+                default_output_device: (*c_info).default_output_device.into(),
             }
         }
     }
 
     pub fn unwrap(&self) -> ffi::C_PaHostApiInfo {
         ffi::C_PaHostApiInfo {
-            struct_version : self.struct_version as i32,
-            host_type : self.host_type as i32,
-            name : ffi::string_to_c_str(&self.name),
-            device_count : self.device_count as i32,
-            default_input_device : self.default_input_device as i32,
-            default_output_device : self.default_output_device as i32
+            struct_version: self.struct_version as i32,
+            host_type: self.host_type as i32,
+            name: ffi::string_to_c_str(&self.name),
+            device_count: self.device_count as i32,
+            default_input_device: self.default_input_device.into(),
+            default_output_device: self.default_output_device.into(),
         }
     }
 }
@@ -296,25 +367,25 @@ impl HostErrorInfo {
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct DeviceInfo {
     /// The version of the struct
-    pub struct_version : i32,
+    pub struct_version: i32,
     /// The name of the device
-    pub name : String,
+    pub name: String,
     /// Host API identifier
-    pub host_api : HostApiIndex,
+    pub host_api: HostApiIndex,
     /// Maximal number of input channels for this device
-    pub max_input_channels : i32,
+    pub max_input_channels: i32,
     /// maximal number of output channel for this device
-    pub max_output_channels : i32,
+    pub max_output_channels: i32,
     /// The default low latency for input with this device
-    pub default_low_input_latency : Time,
+    pub default_low_input_latency: Time,
     /// The default low latency for output with this device
-    pub default_low_output_latency : Time,
+    pub default_low_output_latency: Time,
     /// The default high latency for input with this device
-    pub default_high_input_latency : Time,
+    pub default_high_input_latency: Time,
     /// The default high latency for output with this device
-    pub default_high_output_latency : Time,
+    pub default_high_output_latency: Time,
     /// The default sample rate for this device
-    pub default_sample_rate : f64
+    pub default_sample_rate: f64
 }
 
 #[doc(hidden)]
@@ -322,93 +393,32 @@ impl DeviceInfo {
     pub fn wrap(c_info : *const ffi::C_PaDeviceInfo) -> DeviceInfo {
         unsafe {
             DeviceInfo {
-                struct_version : (*c_info).struct_version,
-                name : ffi::c_str_to_string(&(*c_info).name),
-                host_api : (*c_info).host_api,
-                max_input_channels : (*c_info).max_input_channels,
-                max_output_channels : (*c_info).max_output_channels,
-                default_low_input_latency : (*c_info).default_low_input_latency,
-                default_low_output_latency : (*c_info).default_low_output_latency,
-                default_high_input_latency : (*c_info).default_high_input_latency,
-                default_high_output_latency : (*c_info).default_high_output_latency,
-                default_sample_rate : (*c_info).default_sample_rate
+                struct_version: (*c_info).struct_version,
+                name: ffi::c_str_to_string(&(*c_info).name),
+                host_api: (*c_info).host_api as u16,
+                max_input_channels: (*c_info).max_input_channels,
+                max_output_channels: (*c_info).max_output_channels,
+                default_low_input_latency: (*c_info).default_low_input_latency,
+                default_low_output_latency: (*c_info).default_low_output_latency,
+                default_high_input_latency: (*c_info).default_high_input_latency,
+                default_high_output_latency: (*c_info).default_high_output_latency,
+                default_sample_rate: (*c_info).default_sample_rate
             }
         }
     }
 
     pub fn unwrap(&self) -> ffi::C_PaDeviceInfo {
         ffi::C_PaDeviceInfo {
-            struct_version : self.struct_version as i32,
-            name : ffi::string_to_c_str(&self.name),
-            host_api : self.host_api,
-            max_input_channels : self.max_input_channels as i32,
-            max_output_channels : self.max_output_channels as i32,
-            default_low_input_latency : self.default_low_input_latency,
-            default_low_output_latency : self.default_low_output_latency,
-            default_high_input_latency : self.default_high_input_latency,
-            default_high_output_latency : self.default_high_output_latency,
-            default_sample_rate : self.default_sample_rate
+            struct_version: self.struct_version as i32,
+            name: ffi::string_to_c_str(&self.name),
+            host_api: self.host_api as i32,
+            max_input_channels: self.max_input_channels as i32,
+            max_output_channels: self.max_output_channels as i32,
+            default_low_input_latency: self.default_low_input_latency,
+            default_low_output_latency: self.default_low_output_latency,
+            default_high_input_latency: self.default_high_input_latency,
+            default_high_output_latency: self.default_high_output_latency,
+            default_sample_rate: self.default_sample_rate
         }
     }
-}
-
-/// Parameters for one direction (input or output) of a stream.
-#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
-pub struct StreamParameters {
-    /// Index of the device
-    pub device : DeviceIndex,
-    /// The number of channels for this device
-    pub channel_count : i32,
-    /// Sample format of the device
-    pub sample_format : SampleFormat,
-    /// The suggested latency for this device
-    pub suggested_latency : Time,
-}
-
-#[doc(hidden)]
-impl StreamParameters {
-    pub fn wrap(c_parameters : *mut ffi::C_PaStreamParameters) -> StreamParameters {
-        unsafe {
-            StreamParameters {
-                device : (*c_parameters).device,
-                channel_count : (*c_parameters).channel_count,
-                sample_format : transmute((*c_parameters).sample_format),
-                suggested_latency : (*c_parameters).suggested_latency
-            }
-        }
-    }
-
-    pub fn unwrap(&self) -> ffi::C_PaStreamParameters {
-        ffi::C_PaStreamParameters {
-            device : self.device,
-            channel_count : self.channel_count as i32,
-            sample_format : self.sample_format as ffi::SampleFormat,
-            suggested_latency : self.suggested_latency,
-            host_api_specific_stream_info : ptr::null_mut()
-        }
-    }
-}
-
-
-#[doc(hidden)]
-#[derive(Clone, Copy, Debug)]
-#[repr(C)]
-pub struct StreamCallbackTimeInfo {
-    pub input_buffer_adc_time : Time,
-    pub current_time : Time,
-    pub output_buffer_dac_time : Time
-}
-
-/// A structure containing unchanging information about an open stream.
-#[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
-#[repr(C)]
-pub struct StreamInfo {
-    /// Struct version
-    pub struct_version : i32,
-    /// The input latency for this open stream
-    pub input_latency : Time,
-    /// The output latency for this open stream
-    pub output_latency : Time,
-    /// The sample rate for this open stream
-    pub sample_rate : f64
 }
