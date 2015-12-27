@@ -13,6 +13,7 @@ use ffi;
 use super::error::Error;
 use super::Sample;
 use super::types::{
+    DeviceKind,
     DeviceIndex,
     SampleFormat,
     sample_format_flags,
@@ -218,8 +219,8 @@ pub struct Stream<'a, M, F> {
 /// Parameters for one direction (input or output) of a stream.
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Parameters<S> {
-    /// Index of the device
-    pub device: DeviceIndex,
+    /// Index of the device to be used, or a variant indicating to use the host-specific API.
+    pub device: DeviceKind,
     /// The number of channels for this device
     pub channel_count: i32,
     /// The suggested latency for this device
@@ -236,20 +237,42 @@ pub struct Parameters<S> {
 }
 
 impl<S> Parameters<S> {
+
     /// Construct a new **Parameters**.
     pub fn new(device: DeviceIndex,
                channel_count: i32,
                is_interleaved: bool,
                suggested_latency: Time) -> Self
     {
+        Self::new_internal(device.into(), channel_count, is_interleaved, suggested_latency)
+    }
+
+    /// The same as **Parameters::new**, but the device(s) to be used are specified in the host
+    /// api specific stream info structure.
+    ///
+    /// **NOTE:** This has not yet been tested.
+    pub fn host_api_specific_device(channel_count: i32,
+                                    is_interleaved: bool,
+                                    suggested_latency: Time) -> Self
+    {
+        let kind = DeviceKind::UseHostApiSpecificDeviceSpecification;
+        Self::new_internal(kind, channel_count, is_interleaved, suggested_latency)
+    }
+
+    fn new_internal(device_kind: DeviceKind,
+                    channel_count: i32,
+                    is_interleaved: bool,
+                    suggested_latency: Time) -> Self
+    {
         Parameters {
-            device: device,
+            device: device_kind,
             channel_count: channel_count,
             is_interleaved: is_interleaved,
             suggested_latency: suggested_latency,
             sample_format: PhantomData,
         }
     }
+
 }
 
 
@@ -624,13 +647,14 @@ impl<B> Mode for Blocking<B> {}
 impl Mode for NonBlocking {}
 
 
-impl<S> Parameters<S>
-    where S: Sample,
-{
+impl<S: Sample> Parameters<S> {
 
     /// Converts the given `C_PaStreamParameters` into their respective **Parameters**.
     ///
-    /// Returns `None` if the `sample_format` differs to that of the 
+    /// Returns `None` if the `sample_format` differs to that of the **S** **Sample** parameter.
+    ///
+    /// Returns `None` if the `device` index is neither a valid index or a
+    /// `UseHostApiSpecificDeviceSpecification` flag.
     pub fn from_c_params(c_params: ffi::C_PaStreamParameters) -> Option<Self> {
         let sample_format_flags: SampleFormatFlags = c_params.sample_format.into();
         let is_interleaved = !sample_format_flags.contains(sample_format_flags::NON_INTERLEAVED);
@@ -638,8 +662,13 @@ impl<S> Parameters<S>
         if S::sample_format() != c_sample_format {
             return None;
         }
+        let device = match c_params.device {
+            n if n >= 0 => DeviceIndex(n as u32).into(),
+            -1 => DeviceKind::UseHostApiSpecificDeviceSpecification,
+            _ => return None,
+        };
         Some(Parameters {
-            device: c_params.device.into(),
+            device: device,
             channel_count: c_params.channel_count,
             suggested_latency: c_params.suggested_latency,
             is_interleaved: is_interleaved,
