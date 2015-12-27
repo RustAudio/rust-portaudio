@@ -27,13 +27,13 @@ fn run() -> Result<(), pa::Error> {
 
     println!("PortAudio");
     println!("version: {}", pa.version());
-    println!("version text: {}", pa.version_text());
+    println!("version text: {:?}", pa.version_text());
     println!("host count: {}", try!(pa.host_api_count()));
 
     let default_host = try!(pa.default_host_api());
     println!("default host: {:#?}", pa.host_api_info(default_host));
 
-    let def_input = pa.default_input_device();
+    let def_input = try!(pa.default_input_device());
     let input_info = try!(pa.device_info(def_input));
     println!("Default input device info: {:#?}", &input_info);
 
@@ -41,7 +41,7 @@ fn run() -> Result<(), pa::Error> {
     let latency = input_info.default_low_input_latency;
     let input_params = pa::StreamParameters::<f32>::new(def_input, CHANNELS, INTERLEAVED, latency);
 
-    let def_output = pa.default_output_device();
+    let def_output = try!(pa.default_output_device());
     let output_info = try!(pa.device_info(def_output));
     println!("Default output device info: {:#?}", &output_info);
 
