@@ -1,14 +1,12 @@
-//!
 //! A demonstration of constructing and using a non-blocking stream.
 //!
 //! Audio from the default input device is passed directly to the default output device in a duplex
 //! stream, so beware of feedback!
-//!
 
 extern crate portaudio;
 
-use portaudio::pa;
-use std::error::Error;
+use portaudio as pa;
+
 
 const SAMPLE_RATE: f64 = 44_100.0;
 const FRAMES: u32 = 256;

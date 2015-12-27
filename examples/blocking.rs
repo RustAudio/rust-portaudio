@@ -1,15 +1,13 @@
-//!
 //! A demonstration of constructing and using a blocking stream.
 //!
 //! Audio from the default input device is passed directly to the default output device in a duplex
 //! stream, so beware of feedback!
-//!
 
 extern crate portaudio;
 
-use portaudio::pa;
-use std::error::Error;
+use portaudio as pa;
 use std::collections::VecDeque;
+
 
 const SAMPLE_RATE: f64 = 44_100.0;
 const CHANNELS: i32 = 2;
@@ -79,7 +77,7 @@ fn run() -> Result<(), pa::Error> {
                     pa::StreamAvailable::InputOverflowed => println!("Input stream has overflowed"),
                     pa::StreamAvailable::OutputUnderflowed => println!("Output stream has underflowed"),
                 },
-                Err(err) => panic!("An error occurred while waiting for the {} stream: {}", name, err.description()),
+                Err(err) => panic!("An error occurred while waiting for the {} stream: {}", name, err),
             }
         }
     };

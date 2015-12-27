@@ -21,14 +21,10 @@
 
 #![allow(dead_code, non_camel_case_types)]
 
-use pa::error::Error;
+use {StreamInfo, Time, StreamCallbackResult};
+use error::Error;
 use libc::{c_char, c_double, c_ulong, c_void};
 
-use pa::{
-    StreamInfo,
-    Time,
-    StreamCallbackResult
-};
 
 pub type DeviceIndex = i32;
 pub type HostApiIndex = i32;
