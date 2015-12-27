@@ -117,19 +117,38 @@ impl PortAudio {
 
     /// Retrieve a textual description of the current PortAudio build.
     ///
-    /// FIXME: This should return a `&'static str`, not a `String`.
-    pub fn version_text(&self) -> String {
+    /// Returns a `Utf8Error` if the C `*const char` can't be converted into a &'static str.
+    pub fn version_text(&self) -> Result<&'static str, ::std::str::Utf8Error> {
         version_text()
     }
 
-    /// Retrieve the number of available devices. The number of available devices may be zero.
+    /// Produces an iterator yielding the **DeviceIndex** for each device along with their
+    /// respective **DeviceInfo**s.
+    pub fn devices(&self) -> Result<Devices, Error> {
+        Ok(Devices {
+            total: try!(self.device_count()),
+            next: 0,
+            port_audio: self,
+        })
+    }
+
+    /// Retrieve the number of available devices.
     ///
-    /// **Note:** The only error documented by PortAudio that may occur calling this method is
+    /// The number of available devices may be zero.
+    ///
+    /// Returns an `Error` if PortAudio encounters some error.
+    ///
+    /// **NOTE:** The only error documented by PortAudio that may occur calling this method is
     /// caused by PortAudio not being initialised, however this should not be possible with our
     /// type-safe **PortAudio** API.
-    pub fn device_count(&self) -> DeviceIndex {
-        unsafe {
-            ffi::Pa_GetDeviceCount().into()
+    pub fn device_count(&self) -> Result<u32, Error> {
+        match unsafe { ffi::Pa_GetDeviceCount() } {
+            n if n >= 0 => Ok(n as u32),
+            // NOTE: The docs for this error (NO_DEVICE) specify that this simply indicates that
+            // there are no devices available or that no available devices should be used. Thus, we
+            // will simply translate this to a count of `0`.
+            -1 => Ok(0),
+            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
         }
     }
 
@@ -138,10 +157,13 @@ impl PortAudio {
     ///
     /// Returns the default output device index for the default host API.
     ///
-    /// Returns `None` if no default input device is available or an error was encountered.
-    pub fn default_input_device(&self) -> DeviceIndex {
-        unsafe {
-            ffi::Pa_GetDefaultInputDevice().into()
+    /// Returns `Error` if no default input device is available or an error was encountered.
+    ///
+    /// **TODO:** Investigate exactly what errors may occur as the PA docs aren't clear on this.
+    pub fn default_input_device(&self) -> Result<DeviceIndex, Error> {
+        match unsafe { ffi::Pa_GetDefaultInputDevice() } {
+            idx if idx >= 0 => Ok(DeviceIndex(idx as u32)),
+            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
         }
     }
 
@@ -150,18 +172,21 @@ impl PortAudio {
     ///
     /// Returns the default input device index for the default host API.
     ///
-    /// Returns `None` if no default input device is available or an error was encountered.
-    pub fn default_output_device(&self) -> DeviceIndex {
-        unsafe {
-            ffi::Pa_GetDefaultOutputDevice().into()
+    /// Returns `Error` if no default input device is available or an error was encountered.
+    ///
+    /// **TODO:** Investigate exactly what errors may occur as the PA docs aren't clear on this.
+    pub fn default_output_device(&self) -> Result<DeviceIndex, Error> {
+        match unsafe { ffi::Pa_GetDefaultOutputDevice() } {
+            idx if idx >= 0 => Ok(DeviceIndex(idx as u32)),
+            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
         }
     }
 
     /// Retrieve a **DeviceInfo** structure containing information about the specified device.
     ///
-    /// Returns Ok(DeviceInfo) if successful.
+    /// Returns `Ok(DeviceInfo)` if successful.
     ///
-    /// Returns Err(Error::InvalidDevice) if the device parameter is out of range.
+    /// Returns `Err(Error::InvalidDevice)` if the device parameter is out of range.
     ///
     /// # Arguments
     ///
@@ -172,7 +197,17 @@ impl PortAudio {
             Err(Error::InvalidDevice)
         }
         else {
-            Ok(DeviceInfo::wrap(c_info))
+            Ok(DeviceInfo::from_c_info(unsafe { *c_info }))
+        }
+    }
+
+    /// Produces an iterator yielding the **HostApiIndex** of each available API along with their
+    /// respective **HostApiInfo**s.
+    pub fn host_apis(&self) -> HostApis {
+        HostApis {
+            total: self.host_api_count().unwrap_or(0),
+            next: 0,
+            port_audio: self,
         }
     }
 
@@ -211,14 +246,15 @@ impl PortAudio {
     ///
     /// - host_api - A valid host API index ranging from 0 to (Pa_GetHostApiCount()-1)
     ///
-    /// Return `Some(PaHostApiInfo)` describing a specific host API. If the `host_api` parameter is
-    /// out of range or an error is encountered, the function returns `None`.
-    pub fn host_api_info(&self, host_api: HostApiIndex) -> Option<HostApiInfo> {
+    /// Return `Some(PaHostApiInfo)` describing a specific host API.
+    ///
+    /// Returns `None` if the `host_api` parameter is out of range or an error is encountered.
+    pub fn host_api_info<'a>(&'a self, host_api: HostApiIndex) -> Option<HostApiInfo<'a>> {
         let c_host_info = unsafe { ffi::Pa_GetHostApiInfo(host_api as ffi::HostApiIndex) };
         if c_host_info.is_null() {
             None
         } else {
-            Some(HostApiInfo::wrap(c_host_info))
+            HostApiInfo::from_c_info(unsafe { *c_host_info })
         }
     }
 
@@ -232,7 +268,9 @@ impl PortAudio {
     /// an error is encountered.
     ///
     /// TODO: Determine exactly what errors might occur (PA docs aren't clear on this).
-    pub fn host_api_type_id_to_host_api_index(type_id: HostApiTypeId) -> Result<HostApiIndex, Error> {
+    pub fn host_api_type_id_to_host_api_index(&self, type_id: HostApiTypeId)
+        -> Result<HostApiIndex, Error>
+    {
         unsafe {
             result_from_host_api_index(ffi::Pa_HostApiTypeIdToHostApiIndex(type_id as i32))
         }
@@ -253,10 +291,17 @@ impl PortAudio {
     /// or an `Error` if an error is encountered.
     ///
     /// TODO: Determine exactly what errors might occur (PA docs aren't clear on this).
-    pub fn api_device_index_to_device_index(host_api: HostApiIndex,
-                                            host_api_device_index: i32) -> DeviceIndex {
-        unsafe {
-            ffi::Pa_HostApiDeviceIndexToDeviceIndex(host_api as i32, host_api_device_index).into()
+    pub fn api_device_index_to_device_index(&self,
+                                            host_api: HostApiIndex,
+                                            host_api_device_index: i32)
+                                            -> Result<DeviceIndex, Error>
+    {
+        let result = unsafe {
+            ffi::Pa_HostApiDeviceIndexToDeviceIndex(host_api as i32, host_api_device_index)
+        };
+        match result {
+            idx if idx >= 0 => Ok(DeviceIndex(idx as u32)),
+            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
         }
     }
 
@@ -351,9 +396,9 @@ impl PortAudio {
     /// Return a pointer to an immutable structure constraining information about the host error.
     /// The values in this structure will only be valid if a PortAudio function or method has
     /// previously returned the UnanticipatedHostError error code.
-    pub fn last_host_error_info(&self) -> HostErrorInfo {
+    pub fn last_host_error_info<'a>(&'a self) -> HostErrorInfo<'a> {
         let c_error = unsafe { ffi::Pa_GetLastHostErrorInfo() };
-        HostErrorInfo::wrap(c_error)
+        HostErrorInfo::from_c_error_info(unsafe { *c_error })
     }
 
 }
@@ -378,9 +423,9 @@ pub fn version() -> i32 {
 /// Retrieve a textual description of the current PortAudio build.
 ///
 /// FIXME: This should return a `&'static str`, not a `String`.
-pub fn version_text() -> String {
+pub fn version_text() -> Result<&'static str, ::std::str::Utf8Error> {
     unsafe {
-        ffi::c_str_to_string(&ffi::Pa_GetVersionText())
+        ffi::c_str_to_str(ffi::Pa_GetVersionText())
     }
 }
 
@@ -450,6 +495,53 @@ fn is_format_supported(maybe_input_parameters: Option<ffi::C_PaStreamParameters>
 }
 
 
+/// An iterator yielding the **DeviceIndex** for each available device along with their respective
+/// **DeviceInfo**s.
+pub struct Devices<'a> {
+    total: u32,
+    next: u32,
+    port_audio: &'a PortAudio,
+}
+
+
+/// An iterator yielding the **HostApiIndex** for each available API along with their respective
+/// **HostApiInfo**s.
+#[derive(Clone, Debug)]
+pub struct HostApis<'a> {
+    total: HostApiIndex,
+    next: HostApiIndex,
+    port_audio: &'a PortAudio,
+}
+
+
+impl<'a> Iterator for Devices<'a> {
+    type Item = Result<(DeviceIndex, DeviceInfo<'a>), Error>;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.next < self.total {
+            let idx = DeviceIndex(self.next);
+            self.next += 1;
+            return Some(self.port_audio.device_info(idx).map(|info| (idx, info)));
+        }
+        None
+    }
+}
+
+
+impl<'a> Iterator for HostApis<'a> {
+    type Item = (HostApiIndex, HostApiInfo<'a>);
+    fn next(&mut self) -> Option<Self::Item> {
+        while self.next < self.total {
+            let idx = self.next;
+            self.next += 1;
+            if let Some(info) = self.port_audio.host_api_info(idx) {
+                return Some((idx, info));
+            }
+        }
+        None
+    }
+}
+
+
 fn result_from_host_api_index(idx: ffi::HostApiIndex) -> Result<HostApiIndex, Error> {
     match idx {
         idx if idx >= 0 => Ok(idx as u16),
@@ -471,45 +563,8 @@ pub fn get_sample_size(format: SampleFormat) -> Result<u8, Error> {
     }
 }
 
-// /// Library initialization function - call this before using PortAudio.
-// /// This function initializes internal data structures and prepares underlying
-// /// host APIs for use. With the exception of get_version(), get_version_text(),
-// /// and get_error_text(), this function MUST be called before using any other
-// /// PortAudio API functions.
-// ///
-// /// Note that if initialize() returns an error code, Pa_Terminate() should NOT be
-// /// called.
-// ///
-// /// Return NoError if successful, otherwise an error code indicating the cause
-// /// of failure.
-// fn initialize() -> Result<(), Error> {
-//     unsafe {
-//         match ffi::Pa_Initialize() {
-//             Error::NoError => Ok(()),
-//             err => Err(err),
-//         }
-//     }
-// }
-
-// /// Return information about the last host error encountered.
-// /// The error information returned by get_last_host_error_info() will never be
-// /// modified asynchronously by errors occurring in other PortAudio owned threads
-// /// (such as the thread that manages the stream callback.)
-// ///
-// /// This function is provided as a last resort, primarily to enhance debugging
-// /// by providing clients with access to all available error information.
-// ///
-// /// Return a pointer to an immuspacespacespacele structure constraining
-// /// information about the host error. The values in this structure will only be
-// /// valid if a PortAudio function has previously returned the
-// /// UnanticipatedHostError error code.
-// fn get_last_host_error_info() -> HostErrorInfo {
-//     let c_error = unsafe { ffi::Pa_GetLastHostErrorInfo() };
-//     HostErrorInfo::wrap(c_error)
-// }
 
 mod private {
-
     use num::{FromPrimitive, ToPrimitive};
     use std::ops::{Add, Sub, Mul, Div};
     use super::types::SampleFormat;
@@ -524,7 +579,6 @@ mod private {
         /// get the sample format
         fn to_sample_format() -> SampleFormat;
     }
-
 }
 
 impl private::SamplePrivate for f32 {
