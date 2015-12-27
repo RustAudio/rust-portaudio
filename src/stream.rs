@@ -144,7 +144,7 @@ pub struct InputCallbackArgs<'a, I: 'a> {
     /// The buffer of interleaved samples read from the **Input** **Stream**'s ADC.
     pub buffer: &'a [I],
     /// The number of frames of audio data stored within the `buffer`.
-    pub frames: u32,
+    pub frames: usize,
     /// Flags indicating the current state of the stream and whether or not any special edge cases
     /// have occurred.
     pub flags: CallbackFlags,
@@ -158,7 +158,7 @@ pub struct OutputCallbackArgs<'a, O: 'a> {
     /// The **Output** **Stream**'s buffer, to which we will write our interleaved audio data.
     pub buffer: &'a mut [O],
     /// The number of frames of audio data stored within the `buffer`.
-    pub frames: u32,
+    pub frames: usize,
     /// Flags indicating the current state of the stream and whether or not any special edge cases
     /// have occurred.
     pub flags: CallbackFlags,
@@ -174,7 +174,7 @@ pub struct DuplexCallbackArgs<'a, I: 'a, O: 'a> {
     /// The **Stream**'s output buffer, to which we will write interleaved audio data.
     pub out_buffer: &'a mut [O],
     /// The number of frames of audio data stored within the `buffer`.
-    pub frames: u32,
+    pub frames: usize,
     /// Flags indicating the current state of the stream and whether or not any special edge cases
     /// have occurred.
     pub flags: CallbackFlags,
@@ -245,7 +245,7 @@ pub struct InputSettings<I> {
 
 /// Settings used to construct an **Out** **Stream**.
 #[derive(Copy, Clone, Debug)]
-pub struct OutSettings<O> {
+pub struct OutputSettings<O> {
     /// The set of Parameters necessary for constructing the **Stream**.
     pub params: Parameters<O>,
     /// The number of audio frames written per second.
@@ -372,7 +372,7 @@ impl<I> Flow for Input<I>
         };
         InputCallbackArgs {
             buffer: buffer,
-            frames: frame_count as u32,
+            frames: frame_count as usize,
             flags: flags,
             time: time,
         }
@@ -422,7 +422,7 @@ impl<O> Flow for Output<O>
         };
         OutputCallbackArgs {
             buffer: buffer,
-            frames: frame_count as u32,
+            frames: frame_count as usize,
             flags: flags,
             time: time,
         }
@@ -483,7 +483,7 @@ impl<I, O> Flow for Duplex<I, O>
         DuplexCallbackArgs {
             in_buffer: in_buffer,
             out_buffer: out_buffer,
-            frames: frame_count as u32,
+            frames: frame_count as usize,
             flags: flags,
             time: time,
         }
@@ -752,10 +752,10 @@ impl<I> Settings for InputSettings<I> {
     }
 }
 
-impl<O> Settings for OutSettings<O> {
+impl<O> Settings for OutputSettings<O> {
     type Flow = Output<O>;
     fn into_flow_and_settings(self) -> (Self::Flow, f64, u32, Flags) {
-        let OutSettings { params, sample_rate, frames_per_buffer, flags } = self;
+        let OutputSettings { params, sample_rate, frames_per_buffer, flags } = self;
         let flow = Output { params: params };
         (flow, sample_rate, frames_per_buffer, flags)
     }

@@ -77,7 +77,7 @@ fn run() -> Result<(), pa::Error> {
         count_down -= dt;
         maybe_last_time = Some(current_time);
 
-        assert!(frames == FRAMES);
+        assert!(frames == FRAMES as usize);
         sender.send(count_down).ok();
 
         // Pass the input straight to the output - BEWARE OF FEEDBACK!
@@ -85,11 +85,7 @@ fn run() -> Result<(), pa::Error> {
             *output_sample = *input_sample;
         }
 
-        if count_down > 0.0 {
-            pa::StreamCallbackResult::Continue
-        } else {
-            pa::StreamCallbackResult::Complete
-        }
+        if count_down > 0.0 { pa::Continue } else { pa::Complete }
     };
 
     // Construct a stream with input and output sample types of f32.

@@ -73,9 +73,16 @@ pub use stream::{
     InputSettings as InputStreamSettings,
     InputCallbackArgs as InputStreamCallbackArgs,
     NonBlocking,
+    OutputSettings as OutputStreamSettings,
+    OutputCallbackArgs as OutputStreamCallbackArgs,
     Parameters as StreamParameters,
     Settings as StreamSettings,
     Stream,
+};
+pub use stream::CallbackResult::{
+    Continue,
+    Complete,
+    Abort,
 };
 pub use types::{
     DeviceIndex,
