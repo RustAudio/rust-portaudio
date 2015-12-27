@@ -23,7 +23,6 @@
 
 use pa::error::Error;
 use libc::{c_char, c_double, c_ulong, c_void};
-use std::ffi::{CStr, CString};
 
 use pa::{
     StreamInfo,
@@ -105,6 +104,8 @@ pub struct C_PaStreamParameters {
     pub host_api_specific_stream_info : *mut c_void
 }
 
+#[allow(raw_pointer_derive)]
+#[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct C_PaDeviceInfo {
     pub struct_version: i32,
@@ -119,12 +120,16 @@ pub struct C_PaDeviceInfo {
     pub default_sample_rate: c_double
 }
 
+#[allow(raw_pointer_derive)]
+#[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct C_PaHostErrorInfo {
     pub error_code: u32,
     pub error_text: *const c_char
 }
 
+#[allow(raw_pointer_derive)]
+#[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct C_PaHostApiInfo {
     pub struct_version: i32,
@@ -215,17 +220,14 @@ extern "C" {
     //pub fn PaMacCore_SetupChannelMap(PaMacCoreStreamInfo *data, const SInt32 *const channelMap, unsigned long channelMapSize) -> ();
 }
 
-/// A function to convert C strings to Rust strings
-pub fn c_str_to_string<'a>(c_str: &'a *const c_char) -> String {
+/// A function to convert C `*const char` arrays into Rust `&'a str`s.
+pub fn c_str_to_str<'a>(c_str: *const c_char) -> Result<&'a str, ::std::str::Utf8Error> {
     unsafe {
-        String::from_utf8_lossy(CStr::from_ptr(*c_str).to_bytes()).into_owned()
+        ::std::ffi::CStr::from_ptr(c_str).to_str()
     }
 }
 
 /// A function to convert Rust strings to C strings
-pub fn string_to_c_str(rust_str: &String) -> *const c_char {
-    match CString::new(rust_str.as_bytes()) {
-        Ok(c_string) => c_string.as_ptr(),
-        Err(err) => panic!(err),
-    }
+pub fn str_to_c_str(rust_str: &str) -> *const c_char {
+    rust_str.as_ptr() as *const _
 }
