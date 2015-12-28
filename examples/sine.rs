@@ -9,7 +9,6 @@ use portaudio as pa;
 use std::f64::consts::PI;
 
 const CHANNELS: i32 = 2;
-const INTERLEAVED: bool = true;
 const NUM_SECONDS: i32 = 5;
 const SAMPLE_RATE: f64 = 44_100.0;
 const FRAMES_PER_BUFFER: u32 = 64;
@@ -35,22 +34,14 @@ fn run() -> Result<(), pa::Error> {
 
     let pa = try!(pa::PortAudio::new());
 
-    let idx = try!(pa.default_output_device());
-    let latency = try!(pa.device_info(idx)).default_low_output_latency;
-    let output_params = pa::StreamParameters::new(idx, CHANNELS, INTERLEAVED, latency);
-    let settings = pa::OutputStreamSettings {
-        params: output_params,
-        sample_rate: SAMPLE_RATE,
-        frames_per_buffer: FRAMES_PER_BUFFER,
-        // we won't output out of range samples so don't bother clipping them.
-        flags: pa::stream_flags::CLIP_OFF, 
-    };
+    let mut settings = try!(pa.default_output_stream_settings(CHANNELS, SAMPLE_RATE, FRAMES_PER_BUFFER));
+    // we won't output out of range samples so don't bother clipping them.
+    settings.flags = pa::stream_flags::CLIP_OFF;
 
     // This routine will be called by the PortAudio engine when audio is needed. It may called at
     // interrupt level on some machines so don't do anything that could mess up the system like
     // dynamic resource allocation or IO.
-    let callback = move |args: pa::OutputStreamCallbackArgs<f32>| {
-        let pa::OutputStreamCallbackArgs { buffer, frames, .. } = args;
+    let callback = move |pa::OutputStreamCallbackArgs { buffer, frames, .. }| {
         let mut idx = 0;
         for _ in 0..frames {
             buffer[idx]   = sine[left_phase];
