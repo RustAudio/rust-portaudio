@@ -68,9 +68,7 @@ fn run() -> Result<(), pa::Error> {
     let (sender, receiver) = ::std::sync::mpsc::channel();
 
     // A callback to pass to the non-blocking stream.
-    let callback = move |args: pa::DuplexStreamCallbackArgs<f32, f32>| {
-        let pa::DuplexStreamCallbackArgs { in_buffer, out_buffer, frames, time, .. } = args;
-
+    let callback = move |pa::DuplexStreamCallbackArgs { in_buffer, out_buffer, frames, time, .. }| {
         let current_time = time.current;
         let prev_time = maybe_last_time.unwrap_or(current_time);
         let dt = current_time - prev_time;
