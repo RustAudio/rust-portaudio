@@ -66,7 +66,7 @@ pub trait Flow {
 }
 
 /// **Streams** that can be read by the user.
-pub trait Reader: Flow {
+trait Reader: Flow {
     /// The sample format for the readable buffer.
     type Sample;
     /// Borrow the readable **Buffer**.
@@ -76,7 +76,7 @@ pub trait Reader: Flow {
 }
 
 /// **Streams** that can be written to by the user for output to some DAC.
-pub trait Writer: Flow {
+trait Writer: Flow {
     /// The sample format for the writable buffer.
     type Sample;
     /// Mutably borrow the the writable **Buffer**.
@@ -197,10 +197,61 @@ pub struct NonBlocking {
 }
 
 
-/// Representation of an Audio stream where **F** is the stream's [**Flow**](./trait.Flow)
-/// ([**Input**](./struct.Input), [**Out**](./struct.Out) or [**Duplex**](./struct.Duplex)) and **M** is
-/// the stream's [**Mode**](./trait.Mode) ([**Blocking**](./enum.Blocking) or
-/// [**NonBlocking**](./struct.NonBlocking)).
+/// A type-safe PortAudio PaStream wrapper.
+///
+/// **F** is the stream's directional [**Flow**][1]:
+///
+/// - [**Input**][2] - Receives data from an input device's ADC.
+/// - [**Output**][3] - Sends data to an output device's DAC.
+/// - [**Duplex**][4] - Receives and Sends data on two devices synchronously.
+///
+/// A **Stream** of a particular [**Flow**][1] type can be opened by passing the **Flow**'s
+/// associated **Settings** type to either of the [**PortAudio::open_blocking_stream**][12] or
+/// [**PortAudio::open_non_blocking_stream**][13] methods.
+///
+/// - [**InputSettings**][14] -> [**Input**][2]
+/// - [**OutputSettings**][15] -> [**Output**][3]
+/// - [**DuplexSettings**][16] -> [**Duplex**][4]
+///
+/// **M** is the stream's [**Mode**][5]:
+///
+/// - [**Blocking**][6] - The stream will be run on the caller's thread. For [**Blocking**][6]
+/// streams, a user can read from [**Input**][2] and [**Duplex**][4] streams using the
+/// [**Stream::read_available**][8] and [**Stream::read**][9] methods and write to [**Output**][3]
+/// and [**Duplex**][4] streams using the [**Stream::write_available**][10] and
+/// [**Stream::write**][11] methods. A [**Blocking**][6] **Stream** can be opened using the
+/// [**PortAudio::open_blocking_stream][12]** method.
+/// - [**NonBlocking**][7] - The stream will be run on a separate thread. [**NonBlocking][7]
+/// streams are read and written to via the callback arguments that are associated with the
+/// **Stream**'s [**Flow**][1] type:
+///     - **Input** -> [**InputCallbackArgs**](./struct.InputCallbackArgs.html)
+///     - **Output** -> [**OutputCallbackArgs**](./struct.OutputCallbackArgs.html)
+///     - **Duplex** -> [**DuplexCallbackArgs**](./struct.DuplexCallbackArgs.html)
+/// A [**NonBlocking**][7] **Stream** can be opened using the
+/// [**PortAudio::open_non_blocking_stream][13]** method.
+///
+/// A **Stream** may only live as long as the **PortAudio** instance from which it was spawned and
+/// no longer.
+///
+/// The original PortAudio documentation for the **PaStream** type can be found [here][17].
+///
+/// [1]: ./trait.Flow.html
+/// [2]: ./struct.Input.html
+/// [3]: ./struct.Output.html
+/// [4]: ./struct.Duplex.html
+/// [5]: ./trait.Mode.html
+/// [6]: ./struct.Blocking.html
+/// [7]: ./struct.NonBlocking.html
+/// [8]: ./struct.Stream.html#method.read_available
+/// [9]: ./struct.Stream.html#method.read
+/// [10]: ./struct.Stream.html#method.write_available
+/// [11]: ./struct.Stream.html#method.write
+/// [12]: ../struct.PortAudio.html#method.open_blocking_stream
+/// [13]: ../struct.PortAudio.html#method.open_non_blocking_stream
+/// [14]: ./struct.InputSettings.html
+/// [15]: ./struct.OutputSettings.html
+/// [16]: ./struct.DuplexSettings.html
+/// [17]: http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a19874734f89958fccf86785490d53b4c
 pub struct Stream<'a, M, F> {
     pa_stream: *mut ffi::C_PaStream,
     mode: M,
