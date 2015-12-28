@@ -420,6 +420,84 @@ impl PortAudio {
         Stream::<'a, NonBlocking, S::Flow>::open(self, settings, callback)
     }
 
+    /// Produce the default **StreamParameters** for an **Input** **Stream**.
+    ///
+    /// The device used will be the default input device for the default Host API.
+    ///
+    /// The produced **Parameters** will assume interleaved buffered audio data.
+    pub fn default_input_stream_params<I>(&self, channels: i32)
+        -> Result<StreamParameters<I>, Error>
+    {
+        const INTERLEAVED: bool = true;
+        let device = try!(self.default_input_device());
+        let latency = try!(self.device_info(device)).default_low_input_latency;
+        Ok(StreamParameters::new(device, channels, INTERLEAVED, latency))
+    }
+
+    /// Produce the default **StreamParameters** for an **Output** **Stream**.
+    ///
+    /// The device used will be the default output device for the default Host API.
+    ///
+    /// The produced **Parameters** will assume interleaved buffered audio data.
+    pub fn default_output_stream_params<O>(&self, channels: i32)
+        -> Result<StreamParameters<O>, Error>
+    {
+        const INTERLEAVED: bool = true;
+        let device = try!(self.default_output_device());
+        let latency = try!(self.device_info(device)).default_low_output_latency;
+        Ok(StreamParameters::new(device, channels, INTERLEAVED, latency))
+    }
+
+    /// Produce the default **InputStreamSettings** with the given number of channels, sample_rate
+    /// and frames per buffer.
+    ///
+    /// The device used will be the default input device for the default Host API.
+    ///
+    /// The produced settings will assume interleaved buffered audio data.
+    pub fn default_input_stream_settings<I>(&self,
+                                            channels: i32,
+                                            sample_rate: f64,
+                                            frames_per_buffer: u32)
+                                            -> Result<InputStreamSettings<I>, Error>
+    {
+        let params = try!(self.default_input_stream_params(channels));
+        Ok(InputStreamSettings::new(params, sample_rate, frames_per_buffer))
+    }
+
+    /// Produce the default **OutputStreamSettings** with the given number of channels, sample_rate
+    /// and frames per buffer.
+    ///
+    /// The device used will be the default output device for the default Host API.
+    ///
+    /// The produced settings will assume interleaved buffered audio data.
+    pub fn default_output_stream_settings<O>(&self,
+                                             channels: i32,
+                                             sample_rate: f64,
+                                             frames_per_buffer: u32)
+                                             -> Result<OutputStreamSettings<O>, Error>
+    {
+        let params = try!(self.default_output_stream_params(channels));
+        Ok(OutputStreamSettings::new(params, sample_rate, frames_per_buffer))
+    }
+
+    /// Produce the default **DuplexStreamSettings** with the given number of channels, sample_rate
+    /// and frames per buffer.
+    ///
+    /// The devices used will be the default input and output devices for the default Host API.
+    ///
+    /// The produced settings will assume interleaved buffered audio data.
+    pub fn default_duplex_stream_settings<I, O>(&self,
+                                                in_channels: i32,
+                                                out_channels: i32,
+                                                sample_rate: f64,
+                                                frames_per_buffer: u32)
+                                                -> Result<DuplexStreamSettings<I, O>, Error>
+    {
+        let in_params = try!(self.default_input_stream_params(in_channels));
+        let out_params = try!(self.default_output_stream_params(out_channels));
+        Ok(DuplexStreamSettings::new(in_params, out_params, sample_rate, frames_per_buffer))
+    }
+
     /// Put the caller to sleep for at least 'msec' milliseconds.
     ///
     /// In the original API this function is provided only as a convenience for authors of portable

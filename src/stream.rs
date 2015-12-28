@@ -329,6 +329,71 @@ impl<S> Parameters<S> {
 }
 
 
+/// Simplify implementation of one-way-Stream Settings types.
+macro_rules! impl_half_duplex_settings {
+    ($name:ident) => {
+        impl<S> $name<S> {
+
+            /// Construct the settings from the given `params`, `sample_rate` and
+            /// `frames_per_buffer` with an empty set of **StreamFlags**.
+            pub fn new(params: Parameters<S>, sample_rate: f64, frames_per_buffer: u32) -> Self {
+                Self::with_flags(params, sample_rate, frames_per_buffer, Flags::empty())
+            }
+
+            /// Construct the settings with the given **Parameters**, `sample_rate`,
+            /// `frames_per_buffer` and **StreamFlags**.
+            pub fn with_flags(params: Parameters<S>,
+                              sample_rate: f64,
+                              frames_per_buffer: u32,
+                              flags: Flags) -> Self
+            {
+                $name {
+                    params: params,
+                    sample_rate: sample_rate,
+                    frames_per_buffer: frames_per_buffer,
+                    flags: flags,
+                }
+            }
+
+        }
+    };
+}
+
+impl_half_duplex_settings!(OutputSettings);
+impl_half_duplex_settings!(InputSettings);
+
+impl<I, O> DuplexSettings<I, O> {
+
+    /// Construct the settings from the given `params`, `sample_rate` and
+    /// `frames_per_buffer` with an empty set of **StreamFlags**.
+    pub fn new(in_params: Parameters<I>,
+               out_params: Parameters<O>,
+               sample_rate: f64,
+               frames_per_buffer: u32) -> Self
+    {
+        Self::with_flags(in_params, out_params, sample_rate, frames_per_buffer, Flags::empty())
+    }
+
+    /// Construct the settings with the given **Parameters**, `sample_rate`,
+    /// `frames_per_buffer` and **StreamFlags**.
+    pub fn with_flags(in_params: Parameters<I>,
+                      out_params: Parameters<O>,
+                      sample_rate: f64,
+                      frames_per_buffer: u32,
+                      flags: Flags) -> Self
+    {
+        DuplexSettings {
+            in_params: in_params,
+            out_params: out_params,
+            sample_rate: sample_rate,
+            frames_per_buffer: frames_per_buffer,
+            flags: flags,
+        }
+    }
+
+}
+
+
 impl<I> Flow for Input<I>
     where I: Sample + 'static,
 {
