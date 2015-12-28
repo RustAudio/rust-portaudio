@@ -18,6 +18,6 @@ crate-type = ["rlib"]
 pkg-config = "0.3.6"
 
 [dependencies]
-bitflags = "0.3.2"
-libc = "0.1.10"
-num = { version = "0.1.27", default-features = false }
+bitflags = "0.3.3"
+libc = "0.2.4"
+num = { version = "0.1.29", default-features = false }
