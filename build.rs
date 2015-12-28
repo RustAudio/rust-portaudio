@@ -152,7 +152,7 @@ mod platform {
 mod platform {
     use std::path::Path;
 
-    pub fn download(_: &Path) {
+    pub fn download() {
         panic!("Don't know how to build portaudio on Windows yet!");
     }
 
