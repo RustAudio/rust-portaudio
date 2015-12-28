@@ -1,9 +1,9 @@
 rust-portaudio [![Build Status](https://travis-ci.org/jeremyletang/rust-portaudio.png?branch=master)](https://travis-ci.org/jeremyletang/rust-portaudio) [![Crates.io](https://img.shields.io/crates/v/portaudio.svg)](https://crates.io/crates/portaudio) [![Crates.io](https://img.shields.io/crates/l/portaudio.svg)](https://github.com/jeremyletang/rust-portaudio/blob/master/LICENSE)
 ==============
 
-[**PortAudio**](http://www.portaudio.com/) bindings for Rust.
+[**PortAudio**](http://www.portaudio.com/) bindings and wrappers for Rust.
 
-PortAudio is a free, cross-platform, open-source, audio I/O library. These are the bindings and wrappers for Rust.
+PortAudio is a free, cross-platform, open-source, audio I/O library.
 
 **rust-portaudio** is still under development, so there may be bugs - please feel free to add an issue or even better, submit a PR!
 
