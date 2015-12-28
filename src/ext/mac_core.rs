@@ -27,7 +27,6 @@ use ffi;
 use pa::{
     DeviceIndex,
     HostApiTypeId,
-    Sample,
     Stream
 };
 
@@ -72,15 +71,14 @@ pub trait MacCore {
 // }
 
 
-impl<I: Sample, O: Sample> MacCore for Stream<I, O> {
-        fn get_stream_input_device(&self) -> DeviceIndex {
-        unsafe {
-            ffi::PaMacCore_GetStreamInputDevice(self.get_c_pa_stream())
+impl<'a, M, F> MacCore for Stream<'a, M, F> {
+    fn get_stream_input_device(&self) -> Result<DeviceIndex, Error> {
+        match unsafe { ffi::PaMacCore_GetStreamInputDevice(self.unsafe_pa_stream()) } {
         }
     }
-        fn get_stream_output_device(&self) -> DeviceIndex {
+    fn get_stream_output_device(&self) -> DeviceIndex {
         unsafe {
-            ffi::PaMacCore_GetStreamOutputDevice(self.get_c_pa_stream())
+            ffi::PaMacCore_GetStreamOutputDevice(self.unsafe_pa_stream()).into()
         }
     }
 }

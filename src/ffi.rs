@@ -21,24 +21,19 @@
 
 #![allow(dead_code, non_camel_case_types)]
 
-use pa::error::Error;
+use {StreamInfo, Time, StreamCallbackResult};
+use error::Error;
 use libc::{c_char, c_double, c_ulong, c_void};
-use std::ffi::{CStr, CString};
 
-use pa::{
-    DeviceIndex,
-    HostApiIndex,
-    StreamCallbackTimeInfo,
-    StreamInfo,
-    Time,
-    StreamCallbackResult
-};
+
+pub type DeviceIndex = i32;
+pub type HostApiIndex = i32;
 
 // Sample format
 pub type SampleFormat = u64;
 pub const PA_FLOAT_32        : SampleFormat = 0x00000001;
 pub const PA_INT_32          : SampleFormat = 0x00000002;
-// pub const PA_INT_24       : SampleFormat = 0x00000004;
+pub const PA_INT_24          : SampleFormat = 0x00000004;
 pub const PA_INT_16          : SampleFormat = 0x00000008;
 pub const PA_INT_8           : SampleFormat = 0x00000010;
 pub const PA_UINT_8          : SampleFormat = 0x00000020;
@@ -80,6 +75,18 @@ pub const PA_JACK: HostApiTypeId = 12;
 pub const PA_WASAPI: HostApiTypeId = 13;
 pub const PA_AUDIO_SCIENCE_HPI: HostApiTypeId = 14;
 
+
+
+#[doc(hidden)]
+#[derive(Clone, Copy, Debug)]
+#[repr(C)]
+pub struct C_PaStreamCallbackTimeInfo {
+    pub input_buffer_adc_time: Time,
+    pub current_time: Time,
+    pub output_buffer_dac_time: Time
+}
+
+
 pub type C_PaStream = c_void;
 
 #[allow(raw_pointer_derive)]
@@ -93,6 +100,8 @@ pub struct C_PaStreamParameters {
     pub host_api_specific_stream_info : *mut c_void
 }
 
+#[allow(raw_pointer_derive)]
+#[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct C_PaDeviceInfo {
     pub struct_version: i32,
@@ -107,12 +116,16 @@ pub struct C_PaDeviceInfo {
     pub default_sample_rate: c_double
 }
 
+#[allow(raw_pointer_derive)]
+#[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct C_PaHostErrorInfo {
     pub error_code: u32,
     pub error_text: *const c_char
 }
 
+#[allow(raw_pointer_derive)]
+#[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct C_PaHostApiInfo {
     pub struct_version: i32,
@@ -127,7 +140,7 @@ pub type C_PaStreamCallbackFn =
     extern "C" fn(*const c_void,
                   *mut c_void,
                   c_ulong,
-                  *const StreamCallbackTimeInfo,
+                  *const C_PaStreamCallbackTimeInfo,
                   StreamCallbackFlags,
                   *mut c_void) -> StreamCallbackResult;
 
@@ -152,7 +165,7 @@ extern "C" {
     pub fn Pa_GetDefaultOutputDevice() -> DeviceIndex;
     pub fn Pa_GetDeviceInfo(device : DeviceIndex) -> *const C_PaDeviceInfo;
     pub fn Pa_IsFormatSupported(input_parameters : *const C_PaStreamParameters, outputParameters : *const C_PaStreamParameters, sampleRate : c_double) -> Error;
-    pub fn Pa_GetSampleSize(format : SampleFormat) -> Error;
+    pub fn Pa_GetSampleSize(format : SampleFormat) -> i32;
     pub fn Pa_Sleep(msec : i32) -> ();
     pub fn Pa_OpenStream(stream : *mut *mut C_PaStream,
                          inputParameters : *const C_PaStreamParameters,
@@ -174,16 +187,16 @@ extern "C" {
                                 -> Error;
     pub fn Pa_CloseStream(stream : *mut C_PaStream) -> Error;
     //pub fn Pa_SetStreamFinishedCallback (stream : *PaStream, PaStreamFinishedCallback *streamFinishedCallback) -> Error;
-    pub fn Pa_StartStream(stream : *mut C_PaStream) -> Error;
-    pub fn Pa_StopStream(stream : *mut C_PaStream) -> Error;
-    pub fn Pa_AbortStream(stream : *mut C_PaStream) -> Error;
-    pub fn Pa_IsStreamStopped(stream : *mut C_PaStream) -> Error;
+    pub fn Pa_StartStream(stream : *mut C_PaStream) -> i32;
+    pub fn Pa_StopStream(stream : *mut C_PaStream) -> i32;
+    pub fn Pa_AbortStream(stream : *mut C_PaStream) -> i32;
+    pub fn Pa_IsStreamStopped(stream : *mut C_PaStream) -> i32;
     pub fn Pa_IsStreamActive(stream : *mut C_PaStream) -> i32;
     pub fn Pa_GetStreamInfo(stream : *mut C_PaStream) -> *const StreamInfo;
     pub fn Pa_GetStreamTime(stream : *mut C_PaStream) -> Time;
     pub fn Pa_GetStreamCpuLoad(stream : *mut C_PaStream) -> c_double;
-    pub fn Pa_ReadStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> Error;
-    pub fn Pa_WriteStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> Error;
+    pub fn Pa_ReadStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> i32;
+    pub fn Pa_WriteStream(stream : *mut C_PaStream, buffer : *mut c_void, frames : u32) -> i32;
     pub fn Pa_GetStreamReadAvailable(stream : *mut C_PaStream) -> i64;
     pub fn Pa_GetStreamWriteAvailable(stream : *mut C_PaStream) -> i64;
 
@@ -203,17 +216,14 @@ extern "C" {
     //pub fn PaMacCore_SetupChannelMap(PaMacCoreStreamInfo *data, const SInt32 *const channelMap, unsigned long channelMapSize) -> ();
 }
 
-/// A function to convert C strings to Rust strings
-pub fn c_str_to_string<'a>(c_str: &'a *const c_char) -> String {
+/// A function to convert C `*const char` arrays into Rust `&'a str`s.
+pub fn c_str_to_str<'a>(c_str: *const c_char) -> Result<&'a str, ::std::str::Utf8Error> {
     unsafe {
-        String::from_utf8_lossy(CStr::from_ptr(*c_str).to_bytes()).into_owned()
+        ::std::ffi::CStr::from_ptr(c_str).to_str()
     }
 }
 
 /// A function to convert Rust strings to C strings
-pub fn string_to_c_str(rust_str: &String) -> *const c_char {
-    match CString::new(rust_str.as_bytes()) {
-        Ok(c_string) => c_string.as_ptr(),
-        Err(err) => panic!(err),
-    }
+pub fn str_to_c_str(rust_str: &str) -> *const c_char {
+    rust_str.as_ptr() as *const _
 }

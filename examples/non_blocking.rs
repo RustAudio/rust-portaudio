@@ -1,81 +1,62 @@
-//!
 //! A demonstration of constructing and using a non-blocking stream.
 //!
 //! Audio from the default input device is passed directly to the default output device in a duplex
 //! stream, so beware of feedback!
-//!
 
 extern crate portaudio;
 
-use portaudio::pa;
-use std::error::Error;
+use portaudio as pa;
+
 
 const SAMPLE_RATE: f64 = 44_100.0;
 const FRAMES: u32 = 256;
+const CHANNELS: i32 = 2;
+const INTERLEAVED: bool = true;
+
 
 fn main() {
+    run().unwrap()
+}
 
-    println!("PortAudio version : {}", pa::get_version());
-    println!("PortAudio version text : {}", pa::get_version_text());
+fn run() -> Result<(), pa::Error> {
 
-    match pa::initialize() {
-        Ok(()) => println!("Successfully initialized PortAudio"),
-        Err(err) => println!("An error occurred while initializing PortAudio: {}", err.description()),
-    }
+    let pa = try!(pa::PortAudio::new());
 
-    println!("PortAudio host count : {}", pa::host::get_api_count() as isize);
+    println!("PortAudio:");
+    println!("version: {}", pa.version());
+    println!("version text: {:?}", pa.version_text());
+    println!("host count: {}", try!(pa.host_api_count()));
 
-    let default_host = pa::host::get_default_api();
-    println!("PortAudio default host : {}", default_host as isize);
+    let default_host = try!(pa.default_host_api());
+    println!("default host: {:#?}", pa.host_api_info(default_host));
 
-    match pa::host::get_api_info(default_host) {
-        None => println!("Couldn't retrieve api info for the default host."),
-        Some(info) => println!("PortAudio host name : {}", info.name),
-    }
-
-    let def_input = pa::device::get_default_input();
-    let input_info = match pa::device::get_info(def_input) {
-        Ok(info) => info,
-        Err(err) => panic!("An error occurred while retrieving input info: {}", err.description()),
-    };
-    println!("Default input device info :");
-    println!("\tversion : {}", input_info.struct_version);
-    println!("\tname : {}", input_info.name);
-    println!("\tmax input channels : {}", input_info.max_input_channels);
-    println!("\tmax output channels : {}", input_info.max_output_channels);
-    println!("\tdefault sample rate : {}", input_info.default_sample_rate);
+    let def_input = try!(pa.default_input_device());
+    let input_info = try!(pa.device_info(def_input));
+    println!("Default input device info: {:#?}", &input_info);
 
     // Construct the input stream parameters.
-    let input_stream_params = pa::StreamParameters {
-        device : def_input,
-        channel_count : 2,
-        sample_format : pa::SampleFormat::Float32,
-        suggested_latency : input_info.default_low_input_latency
-    };
+    let latency = input_info.default_low_input_latency;
+    let input_params = pa::StreamParameters::<f32>::new(def_input, CHANNELS, INTERLEAVED, latency);
 
-    let def_output = pa::device::get_default_output();
-    let output_info = match pa::device::get_info(def_output) {
-        Ok(info) => info,
-        Err(err) => panic!("An error occurred while retrieving output info: {}", err.description()),
-    };
-
-    println!("Default output device name : {}", output_info.name);
+    let def_output = try!(pa.default_output_device());
+    let output_info = try!(pa.device_info(def_output));
+    println!("Default output device info: {:#?}", &output_info);
 
     // Construct the output stream parameters.
-    let output_stream_params = pa::StreamParameters {
-        device : def_output,
-        channel_count : 2,
-        sample_format : pa::SampleFormat::Float32,
-        suggested_latency : output_info.default_low_output_latency
-    };
+    let latency = output_info.default_low_output_latency;
+    let output_params = pa::StreamParameters::new(def_output, CHANNELS, INTERLEAVED, latency);
 
     // Check that the stream format is supported.
-    if let Err(err) = pa::is_format_supported(Some(&input_stream_params), Some(&output_stream_params), SAMPLE_RATE) {
-        panic!("The given stream format is unsupported: {:?}", err.description());
-    }
+    try!(pa.is_duplex_format_supported(input_params, output_params, SAMPLE_RATE));
 
-    // Construct a stream with input and output sample types of f32.
-    let mut stream : pa::Stream<f32, f32> = pa::Stream::new();
+    // Construct the settings with which we'll open our duplex stream.
+    let settings = pa::DuplexStreamSettings {
+        in_params: input_params,
+        out_params: output_params,
+        sample_rate: SAMPLE_RATE,
+        frames_per_buffer: FRAMES,
+        flags: pa::StreamFlags::empty(),
+    };
 
     // Once the countdown reaches 0 we'll close the stream.
     let mut count_down = 3.0;
@@ -86,57 +67,32 @@ fn main() {
     // We'll use this channel to send the count_down to the main thread for fun.
     let (sender, receiver) = ::std::sync::mpsc::channel();
 
-
-    // Construct a custom callback function - in this case we're using a FnMut closure.
-    let callback = move |
-        input: &[f32],
-        output: &mut[f32],
-        frames: u32,
-        time_info: &pa::StreamCallbackTimeInfo,
-        _flags: pa::StreamCallbackFlags,
-    | -> pa::StreamCallbackResult {
-
-        let current_time = time_info.current_time;
+    // A callback to pass to the non-blocking stream.
+    let callback = move |pa::DuplexStreamCallbackArgs { in_buffer, out_buffer, frames, time, .. }| {
+        let current_time = time.current;
         let prev_time = maybe_last_time.unwrap_or(current_time);
         let dt = current_time - prev_time;
         count_down -= dt;
         maybe_last_time = Some(current_time);
 
-        assert!(frames == FRAMES);
+        assert!(frames == FRAMES as usize);
         sender.send(count_down).ok();
 
         // Pass the input straight to the output - BEWARE OF FEEDBACK!
-        for (output_sample, input_sample) in output.iter_mut().zip(input.iter()) {
+        for (output_sample, input_sample) in out_buffer.iter_mut().zip(in_buffer.iter()) {
             *output_sample = *input_sample;
         }
 
-        if count_down > 0.0 {
-            pa::StreamCallbackResult::Continue
-        } else {
-            pa::StreamCallbackResult::Complete
-        }
+        if count_down > 0.0 { pa::Continue } else { pa::Complete }
     };
 
+    // Construct a stream with input and output sample types of f32.
+    let mut stream = try!(pa.open_non_blocking_stream(settings, callback));
 
-    // Open a non-blocking stream (indicated by giving Some(callback)).
-    match stream.open_non_blocking(Some(&input_stream_params),
-                                   Some(&output_stream_params),
-                                   SAMPLE_RATE,
-                                   FRAMES,
-                                   pa::StreamFlags::empty(),
-                                   callback) {
-        Ok(()) => println!("Successfully opened the stream."),
-        Err(err) => println!("An error occurred while opening the stream: {}", err.description()),
-    }
-
-    match stream.start() {
-        Ok(()) => println!("Successfully started the stream."),
-        Err(err) => println!("An error occurred while starting the stream: {}", err.description()),
-    }
-
+    try!(stream.start());
 
     // Loop while the non-blocking stream is active.
-    while let Ok(true) = stream.is_active() {
+    while let true = try!(stream.is_active()) {
 
         // Do some stuff!
         while let Ok(count_down) = receiver.try_recv() {
@@ -145,17 +101,7 @@ fn main() {
 
     }
 
+    try!(stream.stop());
 
-    match stream.close() {
-        Ok(()) => println!("Successfully closed the stream."),
-        Err(err) => println!("An error occurred while closing the stream: {}", err.description()),
-    }
-
-    println!("");
-
-    match pa::terminate() {
-        Ok(()) => println!("Successfully terminated PortAudio."),
-        Err(err) => println!("An error occurred while terminating PortAudio: {}", err.description()),
-    }
-
+    Ok(())
 }

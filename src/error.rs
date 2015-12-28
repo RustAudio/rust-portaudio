@@ -79,9 +79,9 @@ impl ::std::error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::NoError => "No Error",
-            Error::NotInitialized => "Portaudio not initialized",
+            Error::NotInitialized => "PortAudio not initialized",
             Error::UnanticipatedHostError => "Unanticipated error from the host",
-            Error::InvalidChannelCount => "Invalid channel count",
+            Error::InvalidChannelCount => "Invalid number of channels",
             Error::InvalidSampleRate => "Invalid sample rate",
             Error::InvalidDevice => "Invalid device",
             Error::InvalidFlag => "Invalid flag",
@@ -151,10 +151,7 @@ impl ::num::FromPrimitive for Error {
     }
 
     fn from_u64(n: u64) -> Option<Error> {
-        match n {
-            0 => Some(Error::NoError),
-            _ => None,
-        }
+        ::num::FromPrimitive::from_i64(n as i64)
     }
 
 }
