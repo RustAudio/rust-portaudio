@@ -50,13 +50,7 @@ fn run() -> Result<(), pa::Error> {
     try!(pa.is_duplex_format_supported(input_params, output_params, SAMPLE_RATE));
 
     // Construct the settings with which we'll open our duplex stream.
-    let settings = pa::DuplexStreamSettings {
-        in_params: input_params,
-        out_params: output_params,
-        sample_rate: SAMPLE_RATE,
-        frames_per_buffer: FRAMES,
-        flags: pa::StreamFlags::empty(),
-    };
+    let settings = pa::DuplexStreamSettings::new(input_params, output_params, SAMPLE_RATE, FRAMES);
 
     // Once the countdown reaches 0 we'll close the stream.
     let mut count_down = 3.0;
