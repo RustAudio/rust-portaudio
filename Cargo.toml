@@ -7,8 +7,8 @@ authors = ["Jeremy Letang <letang.jeremy@gmail.com>",
 description = "PortAudio bindings for Rust."
 license = "MIT"
 build = "build.rs"
-homepage = "https://github.com/jeremyletang/rust-portaudio"
-repository = "https://github.com/jeremyletang/rust-portaudio.git"
+homepage = "https://github.com/RustAudio/rust-portaudio"
+repository = "https://github.com/RustAudio/rust-portaudio.git"
 
 [lib]
 name = "portaudio"
