@@ -292,6 +292,7 @@ impl HostApiTypeId {
             ffi::PA_SOUND_MANAGER => SoundManager,
             ffi::PA_CORE_AUDIO => CoreAudio,
             ffi::PA_OSS => OSS,
+            ffi::PA_ALSA => ALSA,
             ffi::PA_AL => AL,
             ffi::PA_BE_OS => BeOS,
             ffi::PA_WDMKS => WDMKS,
