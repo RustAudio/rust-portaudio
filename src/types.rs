@@ -315,10 +315,10 @@ pub struct HostApiInfo<'a> {
     pub name: &'a str,
     /// The total count of device in the host
     pub device_count: u32,
-    /// The index to the default input device
-    pub default_input_device: DeviceIndex,
-    /// The index to the default output device
-    pub default_output_device: DeviceIndex
+    /// The index to the default input device or None if no output device is available
+    pub default_input_device: Option<DeviceIndex>,
+    /// The index to the default output device or None if no output device is available
+    pub default_output_device: Option<DeviceIndex>,
 }
 
 impl<'a> HostApiInfo<'a> {
@@ -331,11 +331,13 @@ impl<'a> HostApiInfo<'a> {
     /// - a valid `HostApiTypeId` can't be constructed from the given `host_type`.
     pub fn from_c_info(c_info: ffi::C_PaHostApiInfo) -> Option<HostApiInfo<'a>> {
         let default_input_device = match c_info.default_input_device {
-            idx if idx >= 0 => DeviceIndex(idx as u32),
+            idx if idx >= 0 => Some(DeviceIndex(idx as u32)),
+            ffi::PA_NO_DEVICE => None,
             _ => return None,
         };
         let default_output_device = match c_info.default_output_device {
-            idx if idx >= 0 => DeviceIndex(idx as u32),
+            idx if idx >= 0 => Some(DeviceIndex(idx as u32)),
+            ffi::PA_NO_DEVICE => None,
             _ => return None,
         };
         let device_count = match c_info.device_count {
@@ -361,13 +363,21 @@ impl<'a> HostApiInfo<'a> {
 
 impl<'a> From<HostApiInfo<'a>> for ffi::C_PaHostApiInfo {
     fn from(info: HostApiInfo<'a>) -> Self {
+        let default_input_device = match info.default_input_device {
+            Some(i) => i.into(),
+            None    => ffi::PA_NO_DEVICE,
+        };
+        let default_output_device = match info.default_output_device {
+            Some(i) => i.into(),
+            None    => ffi::PA_NO_DEVICE,
+        };
         ffi::C_PaHostApiInfo {
             struct_version: info.struct_version as i32,
             host_type: info.host_type as i32,
             name: ffi::str_to_c_str(info.name),
             device_count: info.device_count as i32,
-            default_input_device: info.default_input_device.into(),
-            default_output_device: info.default_output_device.into(),
+            default_input_device: default_input_device,
+            default_output_device: default_output_device,
         }
     }
 }
