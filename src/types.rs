@@ -315,7 +315,7 @@ pub struct HostApiInfo<'a> {
     pub name: &'a str,
     /// The total count of device in the host
     pub device_count: u32,
-    /// The index to the default input device or None if no output device is available
+    /// The index to the default input device or None if no input device is available
     pub default_input_device: Option<DeviceIndex>,
     /// The index to the default output device or None if no output device is available
     pub default_output_device: Option<DeviceIndex>,
