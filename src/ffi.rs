@@ -28,6 +28,7 @@ use libc::{c_char, c_double, c_ulong, c_void};
 
 pub type DeviceIndex = i32;
 pub type HostApiIndex = i32;
+pub const PA_NO_DEVICE : DeviceIndex = -1;
 
 // Sample format
 pub type SampleFormat = u64;
