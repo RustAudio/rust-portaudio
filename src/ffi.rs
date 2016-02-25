@@ -90,7 +90,6 @@ pub struct C_PaStreamCallbackTimeInfo {
 
 pub type C_PaStream = c_void;
 
-#[allow(raw_pointer_derive)]
 #[derive(Clone, Copy)]
 #[repr(C)]
 pub struct C_PaStreamParameters {
@@ -101,7 +100,6 @@ pub struct C_PaStreamParameters {
     pub host_api_specific_stream_info : *mut c_void
 }
 
-#[allow(raw_pointer_derive)]
 #[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct C_PaDeviceInfo {
@@ -117,7 +115,6 @@ pub struct C_PaDeviceInfo {
     pub default_sample_rate: c_double
 }
 
-#[allow(raw_pointer_derive)]
 #[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct C_PaHostErrorInfo {
@@ -125,7 +122,6 @@ pub struct C_PaHostErrorInfo {
     pub error_text: *const c_char
 }
 
-#[allow(raw_pointer_derive)]
 #[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct C_PaHostApiInfo {
