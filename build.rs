@@ -153,14 +153,14 @@ mod platform {
     use std::path::Path;
 
     pub fn download() {
-        panic!("Don't know how to build portaudio on Windows yet!");
+        println!("Don't know how to build portaudio on Windows yet!");
     }
 
     pub fn build(_: &Path) {
-        panic!("Don't know how to build portaudio on Windows yet!");
+        println!("Don't know how to build portaudio on Windows yet!");
     }
 
     pub fn print_libs(_: &Path) {
-        panic!("Don't know how to build portaudio on Windows yet!");
+        println!("Don't know how to build portaudio on Windows yet!");
     }
 }
