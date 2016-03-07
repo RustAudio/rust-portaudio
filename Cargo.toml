@@ -14,7 +14,7 @@ repository = "https://github.com/RustAudio/rust-portaudio.git"
 name = "portaudio"
 crate-type = ["rlib"]
 
-[build-dependencies]
+[target."cfg(not(windows))".build-dependencies]
 pkg-config = "0.3.6"
 
 [dependencies]

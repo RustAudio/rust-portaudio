@@ -19,6 +19,7 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+#[cfg(not(windows))]
 extern crate pkg_config;
 
 use std::path::Path;
@@ -27,6 +28,7 @@ use std::env;
 #[cfg(all(unix, not(target_os = "linux")))]
 use unix_platform as platform;
 
+#[cfg(not(windows))]
 fn main() {
     if env::var("PORTAUDIO_ONLY_STATIC").is_err() {
         // If pkg-config finds a library on the system, we are done
@@ -35,6 +37,11 @@ fn main() {
         }
     }
 
+    build();
+}
+
+#[cfg(windows)]
+fn main() {
     build();
 }
 
