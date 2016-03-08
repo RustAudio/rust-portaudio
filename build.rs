@@ -151,16 +151,24 @@ mod platform {
 #[cfg(windows)]
 mod platform {
     use std::path::Path;
+    use std::io::{self, Write};
+
+    const PORTAUDIO_DOWNLOAD_URL: &'static str = "http://www.portaudio.com";
+
+    fn print_lib_url() {
+        let msg = format!("Don't know how to build portaudio on Windows yet. Sources and build instructions available at: {}", PORTAUDIO_DOWNLOAD_URL);
+        io::stderr().write(msg.as_bytes()).unwrap();
+    }
 
     pub fn download() {
-        panic!("Don't know how to build portaudio on Windows yet!");
+        print_lib_url();
     }
 
     pub fn build(_: &Path) {
-        panic!("Don't know how to build portaudio on Windows yet!");
+        print_lib_url();
     }
 
     pub fn print_libs(_: &Path) {
-        panic!("Don't know how to build portaudio on Windows yet!");
+        print_lib_url();
     }
 }
