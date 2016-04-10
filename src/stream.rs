@@ -66,7 +66,7 @@ pub trait Flow {
 }
 
 /// **Streams** that can be read by the user.
-trait Reader: Flow {
+pub trait Reader: Flow {
     /// The sample format for the readable buffer.
     type Sample;
     /// Borrow the readable **Buffer**.
@@ -76,7 +76,7 @@ trait Reader: Flow {
 }
 
 /// **Streams** that can be written to by the user for output to some DAC.
-trait Writer: Flow {
+pub trait Writer: Flow {
     /// The sample format for the writable buffer.
     type Sample;
     /// Mutably borrow the the writable **Buffer**.
