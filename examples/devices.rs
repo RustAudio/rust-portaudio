@@ -24,6 +24,10 @@ fn run() -> Result<(), pa::Error> {
     let num_devices = try!(pa.device_count());
     println!("Number of devices = {}", num_devices);
 
+    println!("Defualt input device: {:?}", pa.default_input_device());
+    println!("Defualt output device: {:?}", pa.default_output_device());
+
+    println!("All devices:");
     for device in try!(pa.devices()) {
         let (idx, info) = try!(device);
         println!("--------------------------------------- {:?}", idx);
