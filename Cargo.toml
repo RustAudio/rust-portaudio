@@ -9,6 +9,7 @@ license = "MIT"
 build = "build.rs"
 homepage = "https://github.com/RustAudio/rust-portaudio"
 repository = "https://github.com/RustAudio/rust-portaudio.git"
+links = "portaudio"
 
 [lib]
 name = "portaudio"
