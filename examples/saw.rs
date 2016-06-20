@@ -26,7 +26,7 @@ fn run() -> Result<(), pa::Error> {
 
     let pa = try!(pa::PortAudio::new());
 
-    let mut settings = try!(pa.default_output_stream_settings(CHANNELS, SAMPLE_RATE, FRAMES_PER_BUFFER));
+    let mut settings: pa::OutputStreamSettings<f32> = try!(pa.default_output_stream_settings(CHANNELS, SAMPLE_RATE, FRAMES_PER_BUFFER));
     // we won't output out of range samples so don't bother clipping them.
     settings.flags = pa::stream_flags::CLIP_OFF;
 
@@ -37,7 +37,7 @@ fn run() -> Result<(), pa::Error> {
         let mut idx = 0;
         for _ in 0..frames {
             buffer[idx] = left_saw;
-            buffer[idx] = right_saw;
+            buffer[idx+1] = right_saw;
             left_saw += 0.01;
             if left_saw >= 1.0 { left_saw -= 2.0; }
             right_saw += 0.03;
@@ -47,7 +47,7 @@ fn run() -> Result<(), pa::Error> {
         pa::Continue
     };
 
-    let mut stream = try!(pa.open_non_blocking_stream(settings, callback));
+    let mut stream: pa::Stream<pa::NonBlocking, pa::Output<f32>> = try!(pa.open_non_blocking_stream(settings, callback));
 
     try!(stream.start());
 
