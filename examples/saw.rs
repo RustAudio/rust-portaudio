@@ -37,7 +37,7 @@ fn run() -> Result<(), pa::Error> {
         let mut idx = 0;
         for _ in 0..frames {
             buffer[idx] = left_saw;
-            buffer[idx] = right_saw;
+            buffer[idx+1] = right_saw;
             left_saw += 0.01;
             if left_saw >= 1.0 { left_saw -= 2.0; }
             right_saw += 0.03;
