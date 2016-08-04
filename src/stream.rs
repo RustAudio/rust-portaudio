@@ -675,7 +675,7 @@ pub mod flags {
         ///
         /// See the [bitflags repo](https://github.com/rust-lang/bitflags/blob/master/src/lib.rs)
         /// for examples of composing flags together.
-        flags Flags: u64 {
+        pub flags Flags: u64 {
             /// No flags.
             const NO_FLAG =                                       ffi::PA_NO_FLAG,
             /// Disable default clipping of out of range samples.
@@ -725,7 +725,7 @@ pub mod callback_flags {
     use ffi;
     bitflags! {
         /// Flag bit constants for the status flags passed to the stream's callback function.
-        flags CallbackFlags: u64 {
+        pub flags CallbackFlags: u64 {
             /// No flags.
             const NO_FLAG          = ffi::PA_NO_FLAG,
             /// In a stream opened with paFramesPerBufferUnspecified, indicates that input data is

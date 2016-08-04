@@ -1,7 +1,7 @@
 [package]
 
 name = "portaudio"
-version = "0.6.4"
+version = "0.7.0"
 authors = ["Jeremy Letang <letang.jeremy@gmail.com>",
            "Mitchell Nordine <mitchell.nordine@gmail.com>"]
 description = "PortAudio bindings for Rust."
@@ -19,6 +19,6 @@ crate-type = ["rlib"]
 pkg-config = "0.3.6"
 
 [dependencies]
-bitflags = "0.3.3"
-libc = "0.2.4"
-num = { version = "0.1.29", default-features = false }
+bitflags = "0.7"
+libc = "0.2.14"
+num = { version = "0.1.34", default-features = false }
