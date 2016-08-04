@@ -123,9 +123,20 @@ mod types;
 /// termination of the underlying PortAudio instance.
 #[derive(Debug)]
 pub struct PortAudio {
+    /// The lifetime of the `PortAudio` API.
+    ///
+    /// The lifetime is shared between `PortAudio` and all its spawned `Stream`s.
+    life: std::sync::Arc<Life>,
+}
+
+/// The lifetime of the `PortAudio` instance.
+///
+/// This type is shared between `PortAudio` and its child `Stream`s.
+#[derive(Debug)]
+pub struct Life {
     /// This is solely used for checking whether or not the PortAudio API has already been
     /// terminated manually (via the `PortAudio::terminate` method) when `Drop::drop` is called.
-    is_terminated: bool,
+    is_terminated: std::sync::Mutex<bool>,
 }
 
 
@@ -145,7 +156,12 @@ impl PortAudio {
     pub fn new() -> Result<Self, Error> {
         unsafe {
             match ffi::Pa_Initialize() {
-                Error::NoError => Ok(PortAudio { is_terminated: false }),
+                Error::NoError => {
+                    let life = std::sync::Arc::new(Life {
+                        is_terminated: std::sync::Mutex::new(false)
+                    });
+                    Ok(PortAudio { life: life })
+                },
                 err => Err(err),
             }
         }
@@ -158,8 +174,8 @@ impl PortAudio {
     /// **Calling this method is optional**. It is only necessary if you require handling any
     /// PortAudio termination errors. Otherwise, `Pa_Terminate` will be called and all necessary
     /// cleanup will occur automatically when this **PortAudio** instance is **Drop**ped.
-    pub fn terminate(mut self) -> Result<(), Error> {
-        self.is_terminated = true;
+    pub fn terminate(self) -> Result<(), Error> {
+        *self.life.is_terminated.lock().unwrap() = true;
         terminate()
     }
 
@@ -415,12 +431,12 @@ impl PortAudio {
     /// respectively.
     ///
     /// The returned **Stream** is inactive (stopped).
-    pub fn open_blocking_stream<'a, S>(&'a self, settings: S)
-        -> Result<Stream<'a, Blocking<<S::Flow as Flow>::Buffer>, S::Flow>, Error>
+    pub fn open_blocking_stream<S>(&self, settings: S)
+        -> Result<Stream<Blocking<<S::Flow as Flow>::Buffer>, S::Flow>, Error>
         where S: StreamSettings,
-              S::Flow: Flow + 'a,
+              S::Flow: Flow,
     {
-        Stream::<'a, Blocking<<S::Flow as Flow>::Buffer>, S::Flow>::open(self, settings)
+        Stream::<Blocking<<S::Flow as Flow>::Buffer>, S::Flow>::open(self.life.clone(), settings)
     }
 
     /// Open a new non-blocking [**Stream**](./stream/struct.Stream.html) with the given settings.
@@ -457,13 +473,13 @@ impl PortAudio {
     /// irrespective of its return value.
     ///
     /// The returned **Stream** is inactive (stopped).
-    pub fn open_non_blocking_stream<'a, S, C>(&'a self, settings: S, callback: C)
-        -> Result<Stream<'a, NonBlocking, S::Flow>, Error>
+    pub fn open_non_blocking_stream<S, C>(&self, settings: S, callback: C)
+        -> Result<Stream<NonBlocking, S::Flow>, Error>
         where S: StreamSettings,
-              S::Flow: Flow + 'a,
+              S::Flow: Flow,
               C: FnMut(<S::Flow as Flow>::CallbackArgs) -> StreamCallbackResult + 'static,
     {
-        Stream::<'a, NonBlocking, S::Flow>::open(self, settings, callback)
+        Stream::<NonBlocking, S::Flow>::open(self.life.clone(), settings, callback)
     }
 
     /// Produce the default **StreamParameters** for an **Input** **Stream**.
@@ -578,9 +594,9 @@ impl PortAudio {
 }
 
 
-impl Drop for PortAudio {
+impl Drop for Life {
     fn drop(&mut self) {
-        if !self.is_terminated {
+        if !*self.is_terminated.lock().unwrap() {
             terminate().ok();
         }
     }

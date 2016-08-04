@@ -5,9 +5,7 @@
 
 use libc;
 use num::FromPrimitive;
-use std::ptr;
-use std::marker::PhantomData;
-use std::slice;
+use std::{self, ptr};
 use ffi;
 
 use super::error::Error;
@@ -252,11 +250,12 @@ pub struct NonBlocking {
 /// [15]: ./struct.OutputSettings.html
 /// [16]: ./struct.DuplexSettings.html
 /// [17]: http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a19874734f89958fccf86785490d53b4c
-pub struct Stream<'a, M, F> {
+#[allow(dead_code)]
+pub struct Stream<M, F> {
     pa_stream: *mut ffi::C_PaStream,
     mode: M,
     flow: F,
-    port_audio_lifetime: PhantomData<&'a ()>,
+    port_audio_life: std::sync::Arc<super::Life>,
 }
 
 
@@ -277,7 +276,7 @@ pub struct Parameters<S> {
     /// for each channel.
     pub is_interleaved: bool,
     /// Sample format of the audio data provided to/by the device.
-    sample_format: PhantomData<S>,
+    sample_format: std::marker::PhantomData<S>,
 }
 
 
@@ -373,7 +372,7 @@ impl<S> Parameters<S> {
             channel_count: channel_count,
             is_interleaved: is_interleaved,
             suggested_latency: suggested_latency,
-            sample_format: PhantomData,
+            sample_format: std::marker::PhantomData,
         }
     }
 
@@ -484,7 +483,7 @@ impl<I> Flow for Input<I>
         let buffer: &[I] = {
             let buffer_len = in_channels as usize * frame_count as usize;
             let buffer_ptr = input as *const I;
-            unsafe { slice::from_raw_parts(buffer_ptr, buffer_len) }
+            unsafe { std::slice::from_raw_parts(buffer_ptr, buffer_len) }
         };
         InputCallbackArgs {
             buffer: buffer,
@@ -534,7 +533,7 @@ impl<O> Flow for Output<O>
         let buffer: &mut [O] = {
             let buffer_len = out_channels as usize * frame_count as usize;
             let buffer_ptr = output as *mut O;
-            unsafe { slice::from_raw_parts_mut(buffer_ptr, buffer_len) }
+            unsafe { std::slice::from_raw_parts_mut(buffer_ptr, buffer_len) }
         };
         OutputCallbackArgs {
             buffer: buffer,
@@ -589,12 +588,12 @@ impl<I, O> Flow for Duplex<I, O>
         let in_buffer: &[I] = {
             let buffer_len = in_channels as usize * frame_count as usize;
             let buffer_ptr = input as *const I;
-            unsafe { slice::from_raw_parts(buffer_ptr, buffer_len) }
+            unsafe { std::slice::from_raw_parts(buffer_ptr, buffer_len) }
         };
         let out_buffer: &mut [O] = {
             let buffer_len = out_channels as usize * frame_count as usize;
             let buffer_ptr = output as *mut O;
-            unsafe { slice::from_raw_parts_mut(buffer_ptr, buffer_len) }
+            unsafe { std::slice::from_raw_parts_mut(buffer_ptr, buffer_len) }
         };
         DuplexCallbackArgs {
             in_buffer: in_buffer,
@@ -833,7 +832,7 @@ impl<S: Sample> Parameters<S> {
             channel_count: c_params.channel_count,
             suggested_latency: c_params.suggested_latency,
             is_interleaved: is_interleaved,
-            sample_format: PhantomData,
+            sample_format: std::marker::PhantomData,
         })
     }
 
@@ -909,7 +908,7 @@ impl Buffer {
         // TODO: At the moment, we assume this buffer is interleaved. We need to check whether
         // or not buffer is interleaved here. This should probably an extra type parameter
         // (along-side the Sample type param).
-        ::std::slice::from_raw_parts(self.data as *const S, len)
+        std::slice::from_raw_parts(self.data as *const S, len)
     }
 
     /// Convert the **Buffer**'s data field into a mutable slice with the given format.
@@ -918,7 +917,7 @@ impl Buffer {
         // TODO: At the moment, we assume this buffer is interleaved. We need to check whether
         // or not buffer is interleaved here. This should probably an extra type parameter
         // (along-side the Sample type param).
-        ::std::slice::from_raw_parts_mut(self.data as *mut S, len)
+        std::slice::from_raw_parts_mut(self.data as *mut S, len)
     }
 
 }
@@ -1013,14 +1012,14 @@ fn open_non_blocking_stream(in_params: Option<ffi::C_PaStreamParameters>,
 }
 
 
-impl<'a, M, F> Stream<'a, M, F> {
+impl<M, F> Stream<M, F> {
 
-    fn new_unopened(mode: M, flow: F) -> Self {
+    fn new_unopened(mode: M, flow: F, life: std::sync::Arc<super::Life>) -> Self {
         Stream {
             pa_stream: ptr::null_mut(),
             mode: mode,
             flow: flow,
-            port_audio_lifetime: PhantomData,
+            port_audio_life: life,
         }
     }
 
@@ -1143,19 +1142,19 @@ impl<'a, M, F> Stream<'a, M, F> {
 }
 
 
-impl<'a, F> Stream<'a, Blocking<F::Buffer>, F>
+impl<F> Stream<Blocking<F::Buffer>, F>
     where F: Flow,
 {
 
     /// Open a new **Blocking** **Stream** with the given **Flow** and settings.
-    pub fn open<S>(_: &'a super::PortAudio, settings: S) -> Result<Self, Error>
+    pub fn open<S>(life: std::sync::Arc<super::Life>, settings: S) -> Result<Self, Error>
         where S: Settings<Flow=F>,
     {
         let (flow, sample_rate, frames_per_buffer, flags) = settings.into_flow_and_settings();
         let buffer = flow.new_buffer(frames_per_buffer);
         let blocking = Blocking { buffer: buffer };
         let (in_params, out_params) = flow.params_both_directions();
-        let mut stream = Stream::new_unopened(blocking, flow);
+        let mut stream = Stream::new_unopened(blocking, flow, life);
         open_blocking_stream(in_params, out_params, sample_rate, frames_per_buffer, flags)
             .map(|pa_stream| {
                 stream.pa_stream = pa_stream;
@@ -1165,7 +1164,7 @@ impl<'a, F> Stream<'a, Blocking<F::Buffer>, F>
 
 }
 
-impl<'a, F> Stream<'a, Blocking<F::Buffer>, F>
+impl<F> Stream<Blocking<F::Buffer>, F>
     where F: Flow + Reader,
 {
 
@@ -1220,7 +1219,7 @@ impl<'a, F> Stream<'a, Blocking<F::Buffer>, F>
 
 }
 
-impl<'a, F> Stream<'a, Blocking<F::Buffer>, F>
+impl<F> Stream<Blocking<F::Buffer>, F>
     where F: Flow + Writer,
 {
 
@@ -1281,10 +1280,11 @@ impl<'a, F> Stream<'a, Blocking<F::Buffer>, F>
 }
 
 
-impl<'a, F> Stream<'a, NonBlocking, F> {
+impl<F> Stream<NonBlocking, F> {
 
     /// Open a new **NonBlocking** **Stream** with the given **Flow** and settings.
-    pub fn open<S, C>(_: &'a super::PortAudio, settings: S, mut callback: C) -> Result<Self, Error>
+    pub fn open<S, C>(life: std::sync::Arc<super::Life>, settings: S, mut callback: C)
+        -> Result<Self, Error>
         where S: Settings<Flow=F>,
               F: Flow,
               C: FnMut(F::CallbackArgs) -> CallbackResult + 'static,
@@ -1317,7 +1317,7 @@ impl<'a, F> Stream<'a, NonBlocking, F> {
             }),
         };
 
-        let mut stream = Stream::new_unopened(non_blocking, flow);
+        let mut stream = Stream::new_unopened(non_blocking, flow, life);
         open_non_blocking_stream(in_params, out_params, sample_rate, frames_per_buffer, flags,
                                  &mut stream.mode.callback)
             .map(|pa_stream| {
@@ -1339,7 +1339,7 @@ impl<'a, F> Stream<'a, NonBlocking, F> {
 }
 
 
-impl<'a, M, F> Drop for Stream<'a, M, F> {
+impl<M, F> Drop for Stream<M, F> {
     fn drop(&mut self) {
         self.stop().ok();
         self.close().ok();
