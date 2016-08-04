@@ -339,6 +339,10 @@ pub struct Duplex<I, O> {
 }
 
 
+unsafe impl Send for NonBlocking {}
+unsafe impl<M, F> Send for Stream<M, F> where M: Send, F: Send {}
+
+
 impl<S> Parameters<S> {
 
     /// Construct a new **Parameters**.
