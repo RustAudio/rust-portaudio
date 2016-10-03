@@ -23,6 +23,7 @@ extern crate pkg_config;
 
 use std::path::Path;
 use std::env;
+use std::fmt::Display;
 
 #[cfg(all(unix, not(target_os = "linux")))]
 use unix_platform as platform;
@@ -52,6 +53,15 @@ fn build() {
     platform::print_libs(out_dir);
 }
 
+// Similar to unwrap, but panics on just the error value
+#[allow(dead_code)]
+fn err_to_panic<T, E: Display>(result: Result<T, E>) -> T {
+    match result {
+        Ok(x) => x,
+        Err(e) => panic!("{}", e)
+    }
+}
+
 #[allow(dead_code)]
 mod unix_platform {
     use std::process::Command;
@@ -59,61 +69,42 @@ mod unix_platform {
 
     use std::env;
 
+    use super::err_to_panic;
+
     pub const PORTAUDIO_URL: &'static str = "http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz";
     pub const PORTAUDIO_TAR: &'static str = "pa_stable_v19_20140130.tgz";
     pub const PORTAUDIO_FOLDER: &'static str = "portaudio";
 
     pub fn download() {
-        match Command::new("curl").arg(PORTAUDIO_URL).arg("-O").output() {
-            Ok(_) => {},
-            Err(e) => panic!("{}", e)
-        }
+        err_to_panic(Command::new("curl").arg(PORTAUDIO_URL).arg("-O").output());
     }
 
     pub fn build(out_dir: &Path) {
         // untar portaudio sources
-        match Command::new("tar").arg("xvf").arg(PORTAUDIO_TAR).output() {
-            Ok(_) => {},
-            Err(e) => panic!("{}", e)
-        }
+        err_to_panic(Command::new("tar").arg("xvf").arg(PORTAUDIO_TAR).output());
 
         // change dir to the portaudio folder
-        match env::set_current_dir(PORTAUDIO_FOLDER) {
-            Ok(_) => {},
-            Err(e) => panic!("{}", e)
-        }
+        err_to_panic(env::set_current_dir(PORTAUDIO_FOLDER));
 
         // run portaudio autoconf
-        Command::new("./configure")
+        err_to_panic(Command::new("./configure")
             .args(&["--disable-shared", "--enable-static"]) // Only build static lib
             .args(&["--prefix", out_dir.to_str().unwrap()]) // Install on the outdir
             .arg("--with-pic") // Build position-independent code (required by Rust)
-            .output()
-            .unwrap();
+            .output());
 
         // then make
-        match Command::new("make").output() {
-            Ok(_) => {},
-            Err(e) => panic!("{}", e)
-        }
+        err_to_panic(Command::new("make").output());
 
         // "install" on the outdir
-        match Command::new("make").arg("install").output() {
-            Ok(_) => {},
-            Err(e) => panic!("{}", e)
-        }
+        err_to_panic(Command::new("make").arg("install").output());
 
         // return to rust-portaudio root
-        match env::set_current_dir("..") {
-            Ok(_) => {},
-            Err(e) => panic!("{}", e)
-        }
+        err_to_panic(env::set_current_dir(".."));
 
         // cleaning portaudio sources
-        match Command::new("rm").arg("-rf").args(&[PORTAUDIO_TAR, PORTAUDIO_FOLDER]).output() {
-            Ok(_) => {},
-            Err(e) => panic!("{}", e)
-        }
+        err_to_panic(Command::new("rm").arg("-rf")
+            .args(&[PORTAUDIO_TAR, PORTAUDIO_FOLDER]).output());
     }
 
     pub fn print_libs(out_dir: &Path) {
@@ -129,11 +120,10 @@ mod platform {
     use super::unix_platform;
     use std::path::Path;
 
+    use super::err_to_panic;
+
     pub fn download() {
-        match Command::new("wget").arg(unix_platform::PORTAUDIO_URL).output() {
-            Ok(_) => {},
-            Err(e) => panic!("{}", e)
-        }
+        err_to_panic(Command::new("wget").arg(unix_platform::PORTAUDIO_URL).output());
     }
 
     pub fn build(out_dir: &Path) {
@@ -144,20 +134,18 @@ mod platform {
         let portaudio_pc_file = out_dir.join("lib/pkgconfig/portaudio-2.0.pc");
         let portaudio_pc_file = portaudio_pc_file.to_str().unwrap();
 
-        pkg_config::Config::new().statik(true).find(portaudio_pc_file).unwrap();
+        err_to_panic(pkg_config::Config::new().statik(true).find(portaudio_pc_file));
     }
 }
 
 #[cfg(windows)]
 mod platform {
     use std::path::Path;
-    use std::io::{self, Write};
 
     const PORTAUDIO_DOWNLOAD_URL: &'static str = "http://www.portaudio.com";
 
     fn print_lib_url() {
-        let msg = format!("Don't know how to build portaudio on Windows yet. Sources and build instructions available at: {}", PORTAUDIO_DOWNLOAD_URL);
-        io::stderr().write(msg.as_bytes()).unwrap();
+        panic!("Don't know how to build portaudio on Windows yet. Sources and build instructions available at: {}", PORTAUDIO_DOWNLOAD_URL);
     }
 
     pub fn download() {
