@@ -229,21 +229,22 @@ pub mod sample_format_flags {
 
     impl ::std::fmt::Display for SampleFormatFlags {
         fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-            write!(f, "{:?}", match self.bits() {
-                ffi::PA_FLOAT_32 => "FLOAT_32",
-                ffi::PA_INT_32 => "INT_32",
-                //ffi::PA_INT_24 => "INT_24",
-                ffi::PA_INT_16 => "INT_16",
-                ffi::PA_INT_8 => "INT_8",
-                ffi::PA_UINT_8 => "UINT_8",
-                ffi::PA_CUSTOM_FORMAT => "CUSTOM_FORMAT",
-                ffi::PA_NON_INTERLEAVED => "NON_INTERLEAVED",
-                _   => "<Unknown SampleFormatFlags>",
-            })
+            write!(f,
+                   "{:?}",
+                   match self.bits() {
+                       ffi::PA_FLOAT_32 => "FLOAT_32",
+                       ffi::PA_INT_32 => "INT_32",
+                       // ffi::PA_INT_24 => "INT_24",
+                       ffi::PA_INT_16 => "INT_16",
+                       ffi::PA_INT_8 => "INT_8",
+                       ffi::PA_UINT_8 => "UINT_8",
+                       ffi::PA_CUSTOM_FORMAT => "CUSTOM_FORMAT",
+                       ffi::PA_NON_INTERLEAVED => "NON_INTERLEAVED",
+                       _ => "<Unknown SampleFormatFlags>",
+                   })
         }
     }
 }
-
 
 
 /// Unchanging unique identifiers for each supported host API
@@ -251,58 +252,82 @@ pub mod sample_format_flags {
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum HostApiTypeId {
     /// In development host
-    InDevelopment =   ffi::PA_IN_DEVELOPMENT,
+    InDevelopment = ffi::PaHostApiTypeId::paInDevelopment as i32,
     /// Direct sound
-    DirectSound =     ffi::PA_DIRECT_SOUND,
+    DirectSound = ffi::PaHostApiTypeId::paDirectSound as i32,
     /// MMe API
-    MME =             ffi::PA_MME,
+    MME = ffi::PaHostApiTypeId::paMME as i32,
     /// ASIO API
-    ASIO =            ffi::PA_ASIO,
+    ASIO = ffi::PaHostApiTypeId::paASIO as i32,
     /// Sound manager API
-    SoundManager =    ffi::PA_SOUND_MANAGER,
+    SoundManager = ffi::PaHostApiTypeId::paSoundManager as i32,
     /// Core Audio API
-    CoreAudio =       ffi::PA_CORE_AUDIO,
+    CoreAudio = ffi::PaHostApiTypeId::paCoreAudio as i32,
     /// OSS API
-    OSS =             ffi::PA_OSS,
+    OSS = ffi::PaHostApiTypeId::paOSS as i32,
     /// Alsa API
-    ALSA =            ffi::PA_ALSA,
+    ALSA = ffi::PaHostApiTypeId::paALSA as i32,
     /// AL API
-    AL =              ffi::PA_AL,
+    AL = ffi::PaHostApiTypeId::paAL as i32,
     /// BeOS API
-    BeOS =            ffi::PA_BE_OS,
+    BeOS = ffi::PaHostApiTypeId::paBeOS as i32,
     /// WDMKS
-    WDMKS =           ffi::PA_WDMKS,
+    WDMKS = ffi::PaHostApiTypeId::paWDMKS as i32,
     /// Jack API
-    JACK =            ffi::PA_JACK,
+    JACK = ffi::PaHostApiTypeId::paJACK as i32,
     /// WASAPI
-    WASAPI =          ffi::PA_WASAPI,
+    WASAPI = ffi::PaHostApiTypeId::paWASAPI as i32,
     /// Audio Science HPI
-    AudioScienceHPI = ffi::PA_AUDIO_SCIENCE_HPI
+    AudioScienceHPI = ffi::PaHostApiTypeId::paAudioScienceHPI as i32,
 }
+
 
 impl HostApiTypeId {
     /// Convert the given ffi::HostApiTypeId to a HostApiTypeId.
-    pub fn from_c_id(c_id: ffi::HostApiTypeId) -> Option<Self> {
+    pub fn from_c_id(c_id: ffi::PaHostApiTypeId) -> Option<Self> {
         use self::HostApiTypeId::*;
+
         Some(match c_id {
-            ffi::PA_IN_DEVELOPMENT => InDevelopment,
-            ffi::PA_DIRECT_SOUND => DirectSound,
-            ffi::PA_MME => MME,
-            ffi::PA_ASIO => ASIO,
-            ffi::PA_SOUND_MANAGER => SoundManager,
-            ffi::PA_CORE_AUDIO => CoreAudio,
-            ffi::PA_OSS => OSS,
-            ffi::PA_ALSA => ALSA,
-            ffi::PA_AL => AL,
-            ffi::PA_BE_OS => BeOS,
-            ffi::PA_WDMKS => WDMKS,
-            ffi::PA_JACK => JACK,
-            ffi::PA_WASAPI => WASAPI,
-            ffi::PA_AUDIO_SCIENCE_HPI => AudioScienceHPI,
-            _ => return None,
+            ffi::PaHostApiTypeId::paInDevelopment => InDevelopment,
+            ffi::PaHostApiTypeId::paDirectSound => DirectSound,
+            ffi::PaHostApiTypeId::paMME => MME,
+            ffi::PaHostApiTypeId::paASIO => ASIO,
+            ffi::PaHostApiTypeId::paSoundManager => SoundManager,
+            ffi::PaHostApiTypeId::paCoreAudio => CoreAudio,
+            ffi::PaHostApiTypeId::paOSS => OSS,
+            ffi::PaHostApiTypeId::paALSA => ALSA,
+            ffi::PaHostApiTypeId::paAL => AL,
+            ffi::PaHostApiTypeId::paBeOS => BeOS,
+            ffi::PaHostApiTypeId::paWDMKS => WDMKS,
+            ffi::PaHostApiTypeId::paJACK => JACK,
+            ffi::PaHostApiTypeId::paWASAPI => WASAPI,
+            ffi::PaHostApiTypeId::paAudioScienceHPI => AudioScienceHPI,
         })
     }
+    
+    /// Convert from HostApiTypeId to a ffi::HostApiTypeId
+    pub fn to_ffi_id(t_id : HostApiTypeId) -> ffi::PaHostApiTypeId {
+        use self::HostApiTypeId::*;
+
+        match t_id {
+            InDevelopment => ffi::PaHostApiTypeId::paInDevelopment,
+            DirectSound => ffi::PaHostApiTypeId::paDirectSound,
+            MME => ffi::PaHostApiTypeId::paMME,
+            ASIO => ffi::PaHostApiTypeId::paASIO,
+            SoundManager => ffi::PaHostApiTypeId::paSoundManager,
+            CoreAudio => ffi::PaHostApiTypeId::paCoreAudio,
+            OSS => ffi::PaHostApiTypeId::paOSS,
+            ALSA => ffi::PaHostApiTypeId::paALSA,
+            AL => ffi::PaHostApiTypeId::paAL,
+            BeOS => ffi::PaHostApiTypeId::paBeOS,
+            WDMKS => ffi::PaHostApiTypeId::paWDMKS,
+            JACK => ffi::PaHostApiTypeId::paJACK,
+            WASAPI => ffi::PaHostApiTypeId::paWASAPI,
+            AudioScienceHPI => ffi::PaHostApiTypeId::paAudioScienceHPI,
+        }
+    }
 }
+
 
 /// A structure containing information about a particular host API.
 #[derive(Clone, Debug, PartialEq)]
@@ -371,9 +396,11 @@ impl<'a> From<HostApiInfo<'a>> for ffi::C_PaHostApiInfo {
             Some(i) => i.into(),
             None    => ffi::PA_NO_DEVICE,
         };
+
+        let host_type: ffi::PaHostApiTypeId = HostApiTypeId::to_ffi_id(info.host_type);
         ffi::C_PaHostApiInfo {
             struct_version: info.struct_version as i32,
-            host_type: info.host_type as i32,
+            host_type: host_type,
             name: ffi::str_to_c_str(info.name),
             device_count: info.device_count as i32,
             default_input_device: default_input_device,

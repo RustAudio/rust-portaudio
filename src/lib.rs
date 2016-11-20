@@ -337,11 +337,11 @@ impl PortAudio {
     /// an error is encountered.
     ///
     /// TODO: Determine exactly what errors might occur (PA docs aren't clear on this).
-    pub fn host_api_type_id_to_host_api_index(&self, type_id: HostApiTypeId)
+    pub fn host_api_type_id_to_host_api_index(&self, type_id: ffi::PaHostApiTypeId)
         -> Result<HostApiIndex, Error>
     {
         unsafe {
-            result_from_host_api_index(ffi::Pa_HostApiTypeIdToHostApiIndex(type_id as i32))
+            result_from_host_api_index(ffi::Pa_HostApiTypeIdToHostApiIndex(type_id))
         }
     }
 
