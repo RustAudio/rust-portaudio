@@ -60,22 +60,26 @@ pub const PRIMING_OUTPUT   : StreamCallbackFlags = 0x00000010;
 
 
 /// Unchanging unique identifiers for each supported host API
-pub type HostApiTypeId = i32;
-pub const PA_IN_DEVELOPMENT: HostApiTypeId = 0;
-pub const PA_DIRECT_SOUND: HostApiTypeId = 1;
-pub const PA_MME: HostApiTypeId = 2;
-pub const PA_ASIO: HostApiTypeId = 3;
-pub const PA_SOUND_MANAGER: HostApiTypeId = 4;
-pub const PA_CORE_AUDIO: HostApiTypeId = 5;
-pub const PA_OSS: HostApiTypeId = 7;
-pub const PA_ALSA: HostApiTypeId = 8;
-pub const PA_AL: HostApiTypeId = 9;
-pub const PA_BE_OS: HostApiTypeId = 10;
-pub const PA_WDMKS: HostApiTypeId = 11;
-pub const PA_JACK: HostApiTypeId = 12;
-pub const PA_WASAPI: HostApiTypeId = 13;
-pub const PA_AUDIO_SCIENCE_HPI: HostApiTypeId = 14;
-
+pub type PaHostApiIndex = ::std::os::raw::c_int;
+#[derive(Copy, Clone)]
+#[repr(u32)]
+#[derive(Debug)]
+pub enum PaHostApiTypeId {
+    paInDevelopment = 0,
+    paDirectSound = 1,
+    paMME = 2,
+    paASIO = 3,
+    paSoundManager = 4,
+    paCoreAudio = 5,
+    paOSS = 7,
+    paALSA = 8,
+    paAL = 9,
+    paBeOS = 10,
+    paWDMKS = 11,
+    paJACK = 12,
+    paWASAPI = 13,
+    paAudioScienceHPI = 14,
+}
 
 
 #[doc(hidden)]
@@ -126,7 +130,7 @@ pub struct C_PaHostErrorInfo {
 #[repr(C)]
 pub struct C_PaHostApiInfo {
     pub struct_version: i32,
-    pub host_type: i32,
+    pub host_type: PaHostApiTypeId,
     pub name: *const c_char,
     pub device_count: i32,
     pub default_input_device: i32,
@@ -154,7 +158,7 @@ extern "C" {
     pub fn Pa_GetHostApiCount() -> HostApiIndex;
     pub fn Pa_GetDefaultHostApi() -> HostApiIndex;
     pub fn Pa_GetHostApiInfo(hostApi : HostApiIndex) -> *const C_PaHostApiInfo;
-    pub fn Pa_HostApiTypeIdToHostApiIndex(type_id : HostApiTypeId) -> HostApiIndex;
+    pub fn Pa_HostApiTypeIdToHostApiIndex(type_id : PaHostApiTypeId) -> HostApiIndex;
     pub fn Pa_HostApiDeviceIndexToDeviceIndex(hostApi : HostApiIndex, hostApiDeviceIndex : i32) -> DeviceIndex;
     pub fn Pa_GetLastHostErrorInfo() -> *const C_PaHostErrorInfo;
     pub fn Pa_GetDeviceCount() -> DeviceIndex;
