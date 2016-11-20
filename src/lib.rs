@@ -461,7 +461,7 @@ impl PortAudio {
     /// `frames_per_buffer` in the given settings (i.e. setting it to `0`).
     ///
     /// The `callback` should return one of the variants of the
-    /// [**StreamCallbackResult**](./stream/.enum.CallbackResult.html) enum. To ensure that the
+    /// [**StreamCallbackResult**](./stream/enum.CallbackResult.html) enum. To ensure that the
     /// callback continues to be called, it should return **Continue**. Either **Complete** or
     /// **Abort** can be returned to finish stream processing, after either of these values is
     /// returned the callback will not be called again. If **Abort** is returned the stream will
