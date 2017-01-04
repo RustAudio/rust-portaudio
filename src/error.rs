@@ -128,6 +128,7 @@ impl ::num::FromPrimitive for Error {
     fn from_i64(n: i64) -> Option<Error> {
         match n {
             0 => Some(Error::NoError),
+            -1 => Some(Error::NoDevice),
             -10_000 => Some(Error::NotInitialized),
             -9_999 => Some(Error::UnanticipatedHostError),
             -9_998 => Some(Error::InvalidChannelCount),
