@@ -1,7 +1,8 @@
-//!
 //! A module for implementing the Portaudio Error type and
 //! implementing the std Error trait.
 //!
+
+use ffi;
 
 /// Error codes returned by PortAudio functions.
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
@@ -9,6 +10,8 @@
 pub enum Error {
     /// No Error
     NoError = 0,
+    /// No device available
+    NoDevice = ffi::PA_NO_DEVICE as isize,
     /// Portaudio not initialized
     NotInitialized = -10000,
     /// Unanticipated error from the host
@@ -79,6 +82,7 @@ impl ::std::error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::NoError => "No Error",
+            Error::NoDevice => "No device available",
             Error::NotInitialized => "PortAudio not initialized",
             Error::UnanticipatedHostError => "Unanticipated error from the host",
             Error::InvalidChannelCount => "Invalid number of channels",
@@ -95,17 +99,25 @@ impl ::std::error::Error for Error {
             Error::TimedOut => "Time out",
             Error::InternalError => "Portaudio internal error",
             Error::DeviceUnavailable => "Device unavailable",
-            Error::IncompatibleHostApiSpecificStreamInfo => "Stream info not compatible with the host",
+            Error::IncompatibleHostApiSpecificStreamInfo => {
+                "Stream info not compatible with the host"
+            }
             Error::StreamIsStopped => "The stream is stopped",
             Error::StreamIsNotStopped => "The stream is not stopped",
             Error::InputOverflowed => "The input stream has overflowed",
             Error::OutputUnderflowed => "The output stream has underflowed",
             Error::HostApiNotFound => "The host api is not found by Portaudio",
             Error::InvalidHostApi => "The host API is invalid",
-            Error::CanNotReadFromACallbackStream => "Portaudio cannot read from the callback stream",
+            Error::CanNotReadFromACallbackStream => {
+                "Portaudio cannot read from the callback stream"
+            }
             Error::CanNotWriteToACallbackStream => "Portaudio cannot write to the callback stream",
-            Error::CanNotReadFromAnOutputOnlyStream => "Portaudio cannot read from an output only stream",
-            Error::CanNotWriteToAnInputOnlyStream => "Portaudio cannot write to an input only stream",
+            Error::CanNotReadFromAnOutputOnlyStream => {
+                "Portaudio cannot read from an output only stream"
+            }
+            Error::CanNotWriteToAnInputOnlyStream => {
+                "Portaudio cannot write to an input only stream"
+            }
             Error::IncompatibleStreamHostApi => "The stream is not compatible with the host API",
             Error::BadBufferPtr => "Invalid buffer",
         }
@@ -113,46 +125,44 @@ impl ::std::error::Error for Error {
 }
 
 impl ::num::FromPrimitive for Error {
-
     fn from_i64(n: i64) -> Option<Error> {
         match n {
-            0       => Some(Error::NoError),
+            0 => Some(Error::NoError),
+            -1 => Some(Error::NoDevice),
             -10_000 => Some(Error::NotInitialized),
-            -9_999  => Some(Error::UnanticipatedHostError),
-            -9_998  => Some(Error::InvalidChannelCount),
-            -9_997  => Some(Error::InvalidSampleRate),
-            -9_996  => Some(Error::InvalidDevice),
-            -9_995  => Some(Error::InvalidFlag),
-            -9_994  => Some(Error::SampleFormatNotSupported),
-            -9_993  => Some(Error::BadIODeviceCombination),
-            -9_992  => Some(Error::InsufficientMemory),
-            -9_991  => Some(Error::BufferTooBig),
-            -9_990  => Some(Error::BufferTooSmall),
-            -9_989  => Some(Error::NullCallback),
-            -9_988  => Some(Error::BadStreamPtr),
-            -9_987  => Some(Error::TimedOut),
-            -9_986  => Some(Error::InternalError),
-            -9_985  => Some(Error::DeviceUnavailable),
-            -9_984  => Some(Error::IncompatibleHostApiSpecificStreamInfo),
-            -9_983  => Some(Error::StreamIsStopped),
-            -9_982  => Some(Error::StreamIsNotStopped),
-            -9_981  => Some(Error::InputOverflowed),
-            -9_980  => Some(Error::OutputUnderflowed),
-            -9_979  => Some(Error::HostApiNotFound),
-            -9_978  => Some(Error::InvalidHostApi),
-            -9_977  => Some(Error::CanNotReadFromACallbackStream),
-            -9_976  => Some(Error::CanNotWriteToACallbackStream),
-            -9_975  => Some(Error::CanNotReadFromAnOutputOnlyStream),
-            -9_974  => Some(Error::CanNotWriteToAnInputOnlyStream),
-            -9_973  => Some(Error::IncompatibleStreamHostApi),
-            -9_972  => Some(Error::BadBufferPtr),
-            _       => None,
+            -9_999 => Some(Error::UnanticipatedHostError),
+            -9_998 => Some(Error::InvalidChannelCount),
+            -9_997 => Some(Error::InvalidSampleRate),
+            -9_996 => Some(Error::InvalidDevice),
+            -9_995 => Some(Error::InvalidFlag),
+            -9_994 => Some(Error::SampleFormatNotSupported),
+            -9_993 => Some(Error::BadIODeviceCombination),
+            -9_992 => Some(Error::InsufficientMemory),
+            -9_991 => Some(Error::BufferTooBig),
+            -9_990 => Some(Error::BufferTooSmall),
+            -9_989 => Some(Error::NullCallback),
+            -9_988 => Some(Error::BadStreamPtr),
+            -9_987 => Some(Error::TimedOut),
+            -9_986 => Some(Error::InternalError),
+            -9_985 => Some(Error::DeviceUnavailable),
+            -9_984 => Some(Error::IncompatibleHostApiSpecificStreamInfo),
+            -9_983 => Some(Error::StreamIsStopped),
+            -9_982 => Some(Error::StreamIsNotStopped),
+            -9_981 => Some(Error::InputOverflowed),
+            -9_980 => Some(Error::OutputUnderflowed),
+            -9_979 => Some(Error::HostApiNotFound),
+            -9_978 => Some(Error::InvalidHostApi),
+            -9_977 => Some(Error::CanNotReadFromACallbackStream),
+            -9_976 => Some(Error::CanNotWriteToACallbackStream),
+            -9_975 => Some(Error::CanNotReadFromAnOutputOnlyStream),
+            -9_974 => Some(Error::CanNotWriteToAnInputOnlyStream),
+            -9_973 => Some(Error::IncompatibleStreamHostApi),
+            -9_972 => Some(Error::BadBufferPtr),
+            _ => None,
         }
     }
 
     fn from_u64(n: u64) -> Option<Error> {
         ::num::FromPrimitive::from_i64(n as i64)
     }
-
 }
-
