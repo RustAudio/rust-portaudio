@@ -24,6 +24,8 @@
 #![allow(dead_code)]
 
 use ffi;
+use num::FromPrimitive;
+use std::os::raw;
 
 pub use self::sample_format_flags::SampleFormatFlags;
 
@@ -47,10 +49,10 @@ pub enum DeviceKind {
 }
 
 
-impl From<DeviceIndex> for ffi::DeviceIndex {
-    fn from(idx: DeviceIndex) -> ffi::DeviceIndex {
+impl From<DeviceIndex> for ffi::PaDeviceIndex {
+    fn from(idx: DeviceIndex) -> ffi::PaDeviceIndex {
         let DeviceIndex(idx) = idx;
-        idx as ffi::DeviceIndex
+        idx as ffi::PaDeviceIndex
     }
 }
 
@@ -60,8 +62,8 @@ impl From<DeviceIndex> for DeviceKind {
     }
 }
 
-impl From<DeviceKind> for ffi::DeviceIndex {
-    fn from(kind: DeviceKind) -> ffi::DeviceIndex {
+impl From<DeviceKind> for ffi::PaDeviceIndex {
+    fn from(kind: DeviceKind) -> ffi::PaDeviceIndex {
         match kind {
             DeviceKind::Index(idx) => idx.into(),
             DeviceKind::UseHostApiSpecificDeviceSpecification => -2,
@@ -77,10 +79,10 @@ pub const FRAMES_PER_BUFFER_UNSPECIFIED: u32 = 0;
 
 /// The type used to enumerate to host APIs at runtime.
 /// Values of this type range from 0 to (pa::get_host_api_count()-1).
-pub type HostApiIndex = u16;
+pub type HostApiIndex = ffi::PaHostApiIndex;
 
 /// The type used to represent monotonic time in seconds.
-pub type Time = f64;
+pub type Time = ffi::PaTime;
 
 /// An type alias used to represent a given number of frames.
 pub type Frames = i64;
@@ -282,25 +284,27 @@ pub enum HostApiTypeId {
 
 impl HostApiTypeId {
     /// Convert the given ffi::HostApiTypeId to a HostApiTypeId.
-    pub fn from_c_id(c_id: ffi::HostApiTypeId) -> Option<Self> {
-        use self::HostApiTypeId::*;
-        Some(match c_id {
-            ffi::PA_IN_DEVELOPMENT => InDevelopment,
-            ffi::PA_DIRECT_SOUND => DirectSound,
-            ffi::PA_MME => MME,
-            ffi::PA_ASIO => ASIO,
-            ffi::PA_SOUND_MANAGER => SoundManager,
-            ffi::PA_CORE_AUDIO => CoreAudio,
-            ffi::PA_OSS => OSS,
-            ffi::PA_ALSA => ALSA,
-            ffi::PA_AL => AL,
-            ffi::PA_BE_OS => BeOS,
-            ffi::PA_WDMKS => WDMKS,
-            ffi::PA_JACK => JACK,
-            ffi::PA_WASAPI => WASAPI,
-            ffi::PA_AUDIO_SCIENCE_HPI => AudioScienceHPI,
-            _ => return None,
-        })
+    // XXX returning an option it still necessary?
+    pub fn from_c_id(c_id: ffi::PaHostApiTypeId) -> Option<Self> {
+        use self::ffi::PaHostApiTypeId as C;
+        use HostApiTypeId::*;
+        let id = match c_id {
+            C::paInDevelopment => InDevelopment,
+            C::paDirectSound => DirectSound,
+            C::paMME => MME,
+            C::paASIO => ASIO,
+            C::paSoundManager => SoundManager,
+            C::paCoreAudio => CoreAudio,
+            C::paOSS => OSS,
+            C::paALSA => ALSA,
+            C::paAL => AL,
+            C::paBeOS => BeOS,
+            C::paWDMKS => WDMKS,
+            C::paJACK => JACK,
+            C::paWASAPI => WASAPI,
+            C::paAudioScienceHPI => AudioScienceHPI,
+        };
+        Some(id)
     }
 }
 
@@ -329,27 +333,27 @@ impl<'a> HostApiInfo<'a> {
     /// - either of the given device indices are invalid.
     /// - the device_count is less than `0`.
     /// - a valid `HostApiTypeId` can't be constructed from the given `host_type`.
-    pub fn from_c_info(c_info: ffi::C_PaHostApiInfo) -> Option<HostApiInfo<'a>> {
-        let default_input_device = match c_info.default_input_device {
+    pub fn from_c_info(c_info: ffi::PaHostApiInfo) -> Option<HostApiInfo<'a>> {
+        let default_input_device = match c_info.defaultInputDevice {
             idx if idx >= 0 => Some(DeviceIndex(idx as u32)),
             ffi::PA_NO_DEVICE => None,
             _ => return None,
         };
-        let default_output_device = match c_info.default_output_device {
+        let default_output_device = match c_info.defaultOutputDevice {
             idx if idx >= 0 => Some(DeviceIndex(idx as u32)),
             ffi::PA_NO_DEVICE => None,
             _ => return None,
         };
-        let device_count = match c_info.device_count {
+        let device_count = match c_info.deviceCount {
             n if n >= 0 => n as u32,
             _ => return None,
         };
-        let host_type = match HostApiTypeId::from_c_id(c_info.host_type) {
+        let host_type = match HostApiTypeId::from_c_id(c_info.type_) {
             Some(ty) => ty,
             None => return None,
         };
         Some(HostApiInfo {
-            struct_version: c_info.struct_version,
+            struct_version: c_info.structVersion,
             host_type: host_type,
             name: ffi::c_str_to_str(c_info.name)
                 .unwrap_or("<Failed to convert str from CStr>"),
@@ -361,7 +365,7 @@ impl<'a> HostApiInfo<'a> {
 
 }
 
-impl<'a> From<HostApiInfo<'a>> for ffi::C_PaHostApiInfo {
+impl<'a> From<HostApiInfo<'a>> for ffi::PaHostApiInfo {
     fn from(info: HostApiInfo<'a>) -> Self {
         let default_input_device = match info.default_input_device {
             Some(i) => i.into(),
@@ -371,13 +375,13 @@ impl<'a> From<HostApiInfo<'a>> for ffi::C_PaHostApiInfo {
             Some(i) => i.into(),
             None    => ffi::PA_NO_DEVICE,
         };
-        ffi::C_PaHostApiInfo {
-            struct_version: info.struct_version as i32,
-            host_type: info.host_type as i32,
+        ffi::PaHostApiInfo {
+            structVersion: info.struct_version as raw::c_int,
+            type_: FromPrimitive::from_i32(info.host_type as i32).unwrap(),
             name: ffi::str_to_c_str(info.name),
-            device_count: info.device_count as i32,
-            default_input_device: default_input_device,
-            default_output_device: default_output_device,
+            deviceCount: info.device_count as raw::c_int,
+            defaultInputDevice: default_input_device,
+            defaultOutputDevice: default_output_device,
         }
     }
 }
@@ -385,6 +389,8 @@ impl<'a> From<HostApiInfo<'a>> for ffi::C_PaHostApiInfo {
 /// Structure used to return information about a host error condition.
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct HostErrorInfo<'a> {
+    /// The host API which returned the error code
+    pub host_api_type: HostApiTypeId,
     /// The code of the error
     pub code: u32,
     /// The string which explain the error
@@ -393,20 +399,22 @@ pub struct HostErrorInfo<'a> {
 
 impl<'a> HostErrorInfo<'a> {
     /// Construct a HostErrorInfo from the equivalent C struct.
-    pub fn from_c_error_info(c_error: ffi::C_PaHostErrorInfo) -> HostErrorInfo<'a> {
+    pub fn from_c_error_info(c_error: ffi::PaHostErrorInfo) -> HostErrorInfo<'a> {
         HostErrorInfo {
-            code: c_error.error_code,
-            text: ffi::c_str_to_str(c_error.error_text)
+            host_api_type: HostApiTypeId::from_c_id(c_error.hostApiType).unwrap(),
+            code: c_error.errorCode as u32,
+            text: ffi::c_str_to_str(c_error.errorText)
                 .unwrap_or("<Failed to convert str from CStr>"),
         }
     }
 }
 
-impl<'a> From<HostErrorInfo<'a>> for ffi::C_PaHostErrorInfo {
+impl<'a> From<HostErrorInfo<'a>> for ffi::PaHostErrorInfo {
     fn from(error: HostErrorInfo<'a>) -> Self {
-        ffi::C_PaHostErrorInfo {
-            error_code: error.code,
-            error_text: ffi::str_to_c_str(error.text)
+        ffi::PaHostErrorInfo {
+            hostApiType: ::num::FromPrimitive::from_i32(error.host_api_type as i32).unwrap(),
+            errorCode: error.code as raw::c_long,
+            errorText: ffi::str_to_c_str(error.text)
         }
     }
 }
@@ -441,37 +449,37 @@ pub struct DeviceInfo<'a> {
 impl<'a> DeviceInfo<'a> {
 
     /// Construct a **DeviceInfo** from the equivalent C struct.
-    pub fn from_c_info(c_info: ffi::C_PaDeviceInfo) -> DeviceInfo<'a> {
+    pub fn from_c_info(c_info: ffi::PaDeviceInfo) -> DeviceInfo<'a> {
         DeviceInfo {
-            struct_version: c_info.struct_version,
+            struct_version: c_info.structVersion,
             name: ffi::c_str_to_str(c_info.name)
                 .unwrap_or("<Failed to convert str from CStr>"),
-            host_api: c_info.host_api as u16,
-            max_input_channels: c_info.max_input_channels,
-            max_output_channels: c_info.max_output_channels,
-            default_low_input_latency: c_info.default_low_input_latency,
-            default_low_output_latency: c_info.default_low_output_latency,
-            default_high_input_latency: c_info.default_high_input_latency,
-            default_high_output_latency: c_info.default_high_output_latency,
-            default_sample_rate: c_info.default_sample_rate
+            host_api: c_info.hostApi,
+            max_input_channels: c_info.maxInputChannels,
+            max_output_channels: c_info.maxOutputChannels,
+            default_low_input_latency: c_info.defaultLowInputLatency,
+            default_low_output_latency: c_info.defaultLowOutputLatency,
+            default_high_input_latency: c_info.defaultHighInputLatency,
+            default_high_output_latency: c_info.defaultHighOutputLatency,
+            default_sample_rate: c_info.defaultSampleRate
         }
     }
 
 }
 
-impl<'a> From<DeviceInfo<'a>> for ffi::C_PaDeviceInfo {
+impl<'a> From<DeviceInfo<'a>> for ffi::PaDeviceInfo {
     fn from(info: DeviceInfo<'a>) -> Self {
-        ffi::C_PaDeviceInfo {
-            struct_version: info.struct_version as i32,
+        ffi::PaDeviceInfo {
+            structVersion: info.struct_version as raw::c_int,
             name: ffi::str_to_c_str(info.name),
-            host_api: info.host_api as i32,
-            max_input_channels: info.max_input_channels as i32,
-            max_output_channels: info.max_output_channels as i32,
-            default_low_input_latency: info.default_low_input_latency,
-            default_low_output_latency: info.default_low_output_latency,
-            default_high_input_latency: info.default_high_input_latency,
-            default_high_output_latency: info.default_high_output_latency,
-            default_sample_rate: info.default_sample_rate
+            hostApi: info.host_api as ffi::PaHostApiIndex,
+            maxInputChannels: info.max_input_channels as raw::c_int,
+            maxOutputChannels: info.max_output_channels as raw::c_int,
+            defaultLowInputLatency: info.default_low_input_latency,
+            defaultLowOutputLatency: info.default_low_output_latency,
+            defaultHighInputLatency: info.default_high_input_latency,
+            defaultHighOutputLatency: info.default_high_output_latency,
+            defaultSampleRate: info.default_sample_rate
         }
     }
 }

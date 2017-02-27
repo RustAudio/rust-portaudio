@@ -1,0 +1,8 @@
+[package]
+name = "portaudio_sys"
+version = "0.1.0"
+authors = ["Cédric Ghibaudo <cdghibaudo@protonmail.com>"]
+
+[dependencies]
+num = { version = "0.1.34", default-features = false }
+enum_primitive = "0.1.1"
