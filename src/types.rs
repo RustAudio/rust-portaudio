@@ -247,65 +247,27 @@ pub mod sample_format_flags {
 }
 
 
-
+enum_from_primitive!{
 /// Unchanging unique identifiers for each supported host API
-#[repr(i32)]
+// FIXME enum_from_primitive! does not work with documentation
+#[repr(u32)]
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum HostApiTypeId {
-    /// In development host
-    InDevelopment =   ffi::PA_IN_DEVELOPMENT,
-    /// Direct sound
-    DirectSound =     ffi::PA_DIRECT_SOUND,
-    /// MMe API
-    MME =             ffi::PA_MME,
-    /// ASIO API
-    ASIO =            ffi::PA_ASIO,
-    /// Sound manager API
-    SoundManager =    ffi::PA_SOUND_MANAGER,
-    /// Core Audio API
-    CoreAudio =       ffi::PA_CORE_AUDIO,
-    /// OSS API
-    OSS =             ffi::PA_OSS,
-    /// Alsa API
-    ALSA =            ffi::PA_ALSA,
-    /// AL API
-    AL =              ffi::PA_AL,
-    /// BeOS API
-    BeOS =            ffi::PA_BE_OS,
-    /// WDMKS
-    WDMKS =           ffi::PA_WDMKS,
-    /// Jack API
-    JACK =            ffi::PA_JACK,
-    /// WASAPI
-    WASAPI =          ffi::PA_WASAPI,
-    /// Audio Science HPI
-    AudioScienceHPI = ffi::PA_AUDIO_SCIENCE_HPI
+    InDevelopment = ffi::PaHostApiTypeId_paInDevelopment,
+    DirectSound = ffi::PaHostApiTypeId_paDirectSound,
+    MME = ffi::PaHostApiTypeId_paMME,
+    ASIO = ffi::PaHostApiTypeId_paASIO,
+    SoundManager = ffi::PaHostApiTypeId_paSoundManager,
+    CoreAudio = ffi::PaHostApiTypeId_paCoreAudio,
+    OSS = ffi::PaHostApiTypeId_paOSS,
+    ALSA = ffi::PaHostApiTypeId_paALSA,
+    AL = ffi::PaHostApiTypeId_paAL,
+    BeOS = ffi::PaHostApiTypeId_paBeOS,
+    WDMKS = ffi::PaHostApiTypeId_paWDMKS,
+    JACK = ffi::PaHostApiTypeId_paJACK,
+    WASAPI = ffi::PaHostApiTypeId_paWASAPI,
+    AudioScienceHPI = ffi::PaHostApiTypeId_paAudioScienceHPI,
 }
-
-impl HostApiTypeId {
-    /// Convert the given ffi::HostApiTypeId to a HostApiTypeId.
-    // XXX returning an option it still necessary?
-    pub fn from_c_id(c_id: ffi::PaHostApiTypeId) -> Option<Self> {
-        use self::ffi::PaHostApiTypeId as C;
-        use HostApiTypeId::*;
-        let id = match c_id {
-            C::paInDevelopment => InDevelopment,
-            C::paDirectSound => DirectSound,
-            C::paMME => MME,
-            C::paASIO => ASIO,
-            C::paSoundManager => SoundManager,
-            C::paCoreAudio => CoreAudio,
-            C::paOSS => OSS,
-            C::paALSA => ALSA,
-            C::paAL => AL,
-            C::paBeOS => BeOS,
-            C::paWDMKS => WDMKS,
-            C::paJACK => JACK,
-            C::paWASAPI => WASAPI,
-            C::paAudioScienceHPI => AudioScienceHPI,
-        };
-        Some(id)
-    }
 }
 
 /// A structure containing information about a particular host API.
@@ -348,7 +310,7 @@ impl<'a> HostApiInfo<'a> {
             n if n >= 0 => n as u32,
             _ => return None,
         };
-        let host_type = match HostApiTypeId::from_c_id(c_info.type_) {
+        let host_type = match FromPrimitive::from_u32(c_info.type_) {
             Some(ty) => ty,
             None => return None,
         };
@@ -377,7 +339,7 @@ impl<'a> From<HostApiInfo<'a>> for ffi::PaHostApiInfo {
         };
         ffi::PaHostApiInfo {
             structVersion: info.struct_version as raw::c_int,
-            type_: FromPrimitive::from_i32(info.host_type as i32).unwrap(),
+            type_: info.host_type as ffi::PaHostApiTypeId,
             name: ffi::str_to_c_str(info.name),
             deviceCount: info.device_count as raw::c_int,
             defaultInputDevice: default_input_device,
@@ -401,7 +363,7 @@ impl<'a> HostErrorInfo<'a> {
     /// Construct a HostErrorInfo from the equivalent C struct.
     pub fn from_c_error_info(c_error: ffi::PaHostErrorInfo) -> HostErrorInfo<'a> {
         HostErrorInfo {
-            host_api_type: HostApiTypeId::from_c_id(c_error.hostApiType).unwrap(),
+            host_api_type: FromPrimitive::from_u32(c_error.hostApiType).unwrap(),
             code: c_error.errorCode as u32,
             text: ffi::c_str_to_str(c_error.errorText)
                 .unwrap_or("<Failed to convert str from CStr>"),

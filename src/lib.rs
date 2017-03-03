@@ -49,9 +49,10 @@
 //! portaudio = "*"
 //! ```
 
-#![warn(missing_docs)]
+//#![warn(missing_docs)]
 
 #[macro_use] extern crate bitflags;
+#[macro_use] extern crate enum_primitive;
 extern crate libc;
 extern crate num;
 extern crate portaudio_sys as ffi;
@@ -85,8 +86,8 @@ pub use stream::{
     Stream,
 };
 pub use ffi::{PaStreamCallbackResult as StreamCallbackResult,
-              PA_COMPLETE as Complete,
               PA_CONTINUE as Continue,
+              PA_COMPLETE as Complete,
               PA_ABORT as Abort};
 pub use types::{
     DeviceIndex,

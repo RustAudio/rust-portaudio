@@ -1,8 +1,6 @@
-#![allow(non_upper_case_globals)]
-#![allow(non_camel_case_types)]
-#![allow(non_snake_case)]
-
-#[macro_use] extern crate enum_primitive;
+// bindgen portaudio.h -o portaudio.rs
+//                     --constified-enum PaHostApiTypeId
+//                     --blacklist-type PaStreamCallbackResult
 
 mod portaudio;
 
@@ -38,29 +36,6 @@ pub const OUTPUT_UNDERFLOW : StreamCallbackFlags = 0x00000004;
 pub const OUTPUT_OVERFLOW  : StreamCallbackFlags = 0x00000008;
 pub const PRIMING_OUTPUT   : StreamCallbackFlags = 0x00000010;
 
-/// Unchanging unique identifiers for each supported host API
-pub type HostApiTypeId = i32;
-pub const PA_IN_DEVELOPMENT: HostApiTypeId = 0;
-pub const PA_DIRECT_SOUND: HostApiTypeId = 1;
-pub const PA_MME: HostApiTypeId = 2;
-pub const PA_ASIO: HostApiTypeId = 3;
-pub const PA_SOUND_MANAGER: HostApiTypeId = 4;
-pub const PA_CORE_AUDIO: HostApiTypeId = 5;
-pub const PA_OSS: HostApiTypeId = 7;
-pub const PA_ALSA: HostApiTypeId = 8;
-pub const PA_AL: HostApiTypeId = 9;
-pub const PA_BE_OS: HostApiTypeId = 10;
-pub const PA_WDMKS: HostApiTypeId = 11;
-pub const PA_JACK: HostApiTypeId = 12;
-pub const PA_WASAPI: HostApiTypeId = 13;
-pub const PA_AUDIO_SCIENCE_HPI: HostApiTypeId = 14;
-
-pub type PaStreamCallbackResult = i32;
-pub const PA_CONTINUE: PaStreamCallbackResult = 0;
-pub const PA_COMPLETE: PaStreamCallbackResult = 1;
-pub const PA_ABORT: PaStreamCallbackResult = 2;
-
-
 /// A function to convert C `*const char` arrays into Rust `&'a str`s.
 pub fn c_str_to_str<'a>(c_str: *const std::os::raw::c_char) -> Result<&'a str, ::std::str::Utf8Error> {
     unsafe {
@@ -72,3 +47,15 @@ pub fn c_str_to_str<'a>(c_str: *const std::os::raw::c_char) -> Result<&'a str, :
 pub fn str_to_c_str(rust_str: &str) -> *const std::os::raw::c_char {
     rust_str.as_ptr() as *const _
 }
+
+pub const PA_CONTINUE: PaStreamCallbackResult = 0;
+pub const PA_COMPLETE: PaStreamCallbackResult = 1;
+pub const PA_ABORT: PaStreamCallbackResult = 2;
+/**
+ Allowable return values for the PaStreamCallback.
+ @see PaStreamCallback
+ */
+// XXX Callback returns int, but this is uint,
+// making a cast necessary in the examples.
+// So it is now a int. Probably not a problem?
+pub type PaStreamCallbackResult = ::std::os::raw::c_int;
