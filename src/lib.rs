@@ -105,12 +105,6 @@ pub use types::{
 use std::ptr;
 
 
-#[cfg(any(target_os="macos", target_os="linux", target_os="win32", target_os="windows"))]
-mod c_library {
-    #[link(name = "portaudio")]
-    extern {}
-}
-
 pub mod error;
 pub mod ext;
 pub mod stream;
