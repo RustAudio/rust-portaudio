@@ -249,7 +249,6 @@ pub mod sample_format_flags {
 
 enum_from_primitive!{
 /// Unchanging unique identifiers for each supported host API
-// FIXME enum_from_primitive! does not work with documentation
 #[repr(u32)]
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum HostApiTypeId {
@@ -388,7 +387,7 @@ impl<'a> HostErrorInfo<'a> {
 impl<'a> From<HostErrorInfo<'a>> for ffi::PaHostErrorInfo {
     fn from(error: HostErrorInfo<'a>) -> Self {
         ffi::PaHostErrorInfo {
-            hostApiType: ::num::FromPrimitive::from_i32(error.host_api_type as i32).unwrap(),
+            hostApiType: FromPrimitive::from_i32(error.host_api_type as i32).unwrap(),
             errorCode: error.code as raw::c_long,
             errorText: ffi::str_to_c_str(error.text)
         }

@@ -1,6 +1,9 @@
-// bindgen portaudio.h -o portaudio.rs
-//                     --constified-enum PaHostApiTypeId
-//                     --blacklist-type PaStreamCallbackResult
+// Command used to generate portaudio.rs:
+/* bindgen portaudio.h -o portaudio.rs \
+                       --constified-enum PaHostApiTypeId \
+                       --constified-enum PaErrorCode \
+                       --blacklist-type PaStreamCallbackResult
+*/
 
 #[cfg(any(target_os="macos", target_os="linux", target_os="win32", target_os="windows"))]
 mod c_library {

@@ -7,7 +7,6 @@ use ffi;
 
 enum_from_primitive!{
 /// Error codes returned by PortAudio functions.
-// FIXME enum_from_primitive does not work with the documentation
 #[repr(i32)]
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum Error {

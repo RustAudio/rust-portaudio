@@ -794,8 +794,8 @@ pub struct Info {
     pub sample_rate : f64
 }
 
-impl Info {
-    fn from_c_stream_info(info: ffi::PaStreamInfo) -> Info {
+impl From<ffi::PaStreamInfo> for Info {
+    fn from(info: ffi::PaStreamInfo) -> Info {
         Info {
             struct_version: info.structVersion,
             input_latency: info.inputLatency,
@@ -804,7 +804,6 @@ impl Info {
         }
     }
 }
-
 
 impl<B> Mode for Blocking<B> {}
 impl Mode for NonBlocking {}
@@ -1141,7 +1140,7 @@ impl<M, F> Stream<M, F> {
     pub fn info(&self) -> Info {
         unsafe {
             let info = ffi::Pa_GetStreamInfo(self.pa_stream);
-            Info::from_c_stream_info(*info)
+            Info::from(*info)
         }
     }
 
@@ -1218,7 +1217,9 @@ impl<F> Stream<Blocking<F::Buffer>, F>
     pub fn read<'b>(&'b self, frames: u32) -> Result<&'b [F::Sample], Error> {
         let buffer = F::readable_buffer(&self.mode);
         let err = unsafe {
-            ffi::Pa_ReadStream(self.pa_stream, buffer.data as *mut raw::c_void, frames as raw::c_ulong)
+            ffi::Pa_ReadStream(self.pa_stream,
+                               buffer.data as *mut raw::c_void,
+                               frames as raw::c_ulong)
         };
         match err {
             0 => unsafe {
@@ -1366,7 +1367,8 @@ extern "C" fn stream_callback_proc(input: *const raw::c_void,
                                    frame_count: raw::c_ulong,
                                    time_info: *const ffi::PaStreamCallbackTimeInfo,
                                    flags: ffi::PaStreamCallbackFlags,
-                                   user_callback_ptr: *mut raw::c_void) -> ffi::PaStreamCallbackResult
+                                   user_callback_ptr: *mut raw::c_void)
+                                   -> ffi::PaStreamCallbackResult
 {
     let callback = user_callback_ptr as *mut CallbackFnWrapper;
     unsafe {
