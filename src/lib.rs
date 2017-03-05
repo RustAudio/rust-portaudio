@@ -49,16 +49,16 @@
 //! portaudio = "*"
 //! ```
 
-//#![warn(missing_docs)]
+#![warn(missing_docs)]
 
 #[macro_use] extern crate bitflags;
-#[macro_use] extern crate enum_primitive;
 extern crate libc;
 extern crate num;
 extern crate portaudio_sys as ffi;
 
 use num::FromPrimitive;
 use std::os::raw;
+use std::option::Option;
 
 pub use error::Error;
 pub use stream::{
@@ -104,7 +104,7 @@ pub use types::{
 
 use std::ptr;
 
-
+#[macro_use] mod enum_primitive;
 pub mod error;
 pub mod ext;
 pub mod stream;

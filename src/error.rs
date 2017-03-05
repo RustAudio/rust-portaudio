@@ -3,41 +3,104 @@
 //! implementing the std Error trait.
 //!
 
+use ffi;
+
 enum_from_primitive!{
 /// Error codes returned by PortAudio functions.
 // FIXME enum_from_primitive does not work with the documentation
+#[repr(i32)]
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum Error {
-    NoError = 0,
-    NotInitialized = -10000,
-    UnanticipatedHostError,
-    InvalidChannelCount,
-    InvalidSampleRate,
-    InvalidDevice,
-    InvalidFlag,
-    SampleFormatNotSupported,
-    BadIODeviceCombination,
-    InsufficientMemory,
-    BufferTooBig,
-    BufferTooSmall,
-    NullCallback,
-    BadStreamPtr,
-    TimedOut,
-    InternalError,
-    DeviceUnavailable,
-    IncompatibleHostApiSpecificStreamInfo,
-    StreamIsStopped,
-    StreamIsNotStopped,
-    InputOverflowed,
-    OutputUnderflowed,
-    HostApiNotFound,
-    InvalidHostApi,
-    CanNotReadFromACallbackStream,
-    CanNotWriteToACallbackStream,
-    CanNotReadFromAnOutputOnlyStream,
-    CanNotWriteToAnInputOnlyStream,
-    IncompatibleStreamHostApi,
-    BadBufferPtr,
+    /// No Error
+    NoError =
+        ffi::PaErrorCode_paNoError,
+    /// Portaudio not initialized
+    NotInitialized =
+        ffi::PaErrorCode_paNotInitialized,
+    /// Unanticipated error from the host
+    UnanticipatedHostError =
+        ffi::PaErrorCode_paUnanticipatedHostError,
+    /// Invalid channel count
+    InvalidChannelCount =
+        ffi::PaErrorCode_paInvalidChannelCount,
+    /// Invalid sample rate
+    InvalidSampleRate =
+        ffi::PaErrorCode_paInvalidSampleRate,
+    /// Invalid Device
+    InvalidDevice =
+        ffi::PaErrorCode_paInvalidDevice,
+    /// Invalid Flag
+    InvalidFlag =
+        ffi::PaErrorCode_paInvalidFlag,
+    /// The Sample format is not supported
+    SampleFormatNotSupported =
+        ffi::PaErrorCode_paSampleFormatNotSupported,
+    /// Input device not compatible with output device
+    BadIODeviceCombination =
+        ffi::PaErrorCode_paBadIODeviceCombination,
+    /// Memory insufficient
+    InsufficientMemory =
+        ffi::PaErrorCode_paInsufficientMemory,
+    /// The buffer is too big
+    BufferTooBig =
+        ffi::PaErrorCode_paBufferTooBig,
+    /// The buffer is too small
+    BufferTooSmall =
+        ffi::PaErrorCode_paBufferTooSmall,
+    /// Invalid callback
+    NullCallback =
+        ffi::PaErrorCode_paNullCallback,
+    /// Invalid Stream
+    BadStreamPtr =
+        ffi::PaErrorCode_paBadStreamPtr,
+    /// Time out
+    TimedOut =
+        ffi::PaErrorCode_paTimedOut,
+    /// Portaudio internal error
+    InternalError =
+        ffi::PaErrorCode_paInternalError,
+    /// Device unavailable
+    DeviceUnavailable =
+        ffi::PaErrorCode_paDeviceUnavailable,
+    /// Stream info not compatible with the host
+    IncompatibleHostApiSpecificStreamInfo =
+        ffi::PaErrorCode_paIncompatibleHostApiSpecificStreamInfo,
+    /// The stream is stopped
+    StreamIsStopped =
+        ffi::PaErrorCode_paStreamIsStopped,
+    /// The stream is not stopped
+    StreamIsNotStopped =
+        ffi::PaErrorCode_paStreamIsNotStopped,
+    /// The input stream has overflowed
+    InputOverflowed =
+        ffi::PaErrorCode_paInputOverflowed,
+    /// The output has underflowed
+    OutputUnderflowed =
+        ffi::PaErrorCode_paOutputUnderflowed,
+    /// The host API is not found by Portaudio
+    HostApiNotFound =
+        ffi::PaErrorCode_paHostApiNotFound,
+    /// The host API is invalid
+    InvalidHostApi =
+        ffi::PaErrorCode_paInvalidHostApi,
+    /// Portaudio cannot read from the callback stream
+    CanNotReadFromACallbackStream =
+        ffi::PaErrorCode_paCanNotReadFromACallbackStream,
+    /// Portaudio cannot write to the callback stream
+    CanNotWriteToACallbackStream =
+        ffi::PaErrorCode_paCanNotWriteToACallbackStream,
+    /// Portaudio cannot read from an output only stream
+    CanNotReadFromAnOutputOnlyStream =
+        ffi::PaErrorCode_paCanNotReadFromAnOutputOnlyStream,
+    /// Portaudio cannot write to an input only stream
+    CanNotWriteToAnInputOnlyStream =
+        ffi::PaErrorCode_paCanNotWriteToAnInputOnlyStream,
+    /// The stream is not compatible with the host API
+    IncompatibleStreamHostApi =
+        ffi::PaErrorCode_paIncompatibleStreamHostApi,
+    /// Invalid buffer
+    BadBufferPtr =
+        ffi::PaErrorCode_paBadBufferPtr,
 }
 }
 

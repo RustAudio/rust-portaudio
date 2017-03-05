@@ -97,40 +97,38 @@ extern "C" {
  Note that with the exception of paNoError, all PaErrorCodes are negative.
 */
 pub type PaError = ::std::os::raw::c_int;
-#[repr(i32)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum PaErrorCode {
-    paNoError = 0,
-    paNotInitialized = -10000,
-    paUnanticipatedHostError = -9999,
-    paInvalidChannelCount = -9998,
-    paInvalidSampleRate = -9997,
-    paInvalidDevice = -9996,
-    paInvalidFlag = -9995,
-    paSampleFormatNotSupported = -9994,
-    paBadIODeviceCombination = -9993,
-    paInsufficientMemory = -9992,
-    paBufferTooBig = -9991,
-    paBufferTooSmall = -9990,
-    paNullCallback = -9989,
-    paBadStreamPtr = -9988,
-    paTimedOut = -9987,
-    paInternalError = -9986,
-    paDeviceUnavailable = -9985,
-    paIncompatibleHostApiSpecificStreamInfo = -9984,
-    paStreamIsStopped = -9983,
-    paStreamIsNotStopped = -9982,
-    paInputOverflowed = -9981,
-    paOutputUnderflowed = -9980,
-    paHostApiNotFound = -9979,
-    paInvalidHostApi = -9978,
-    paCanNotReadFromACallbackStream = -9977,
-    paCanNotWriteToACallbackStream = -9976,
-    paCanNotReadFromAnOutputOnlyStream = -9975,
-    paCanNotWriteToAnInputOnlyStream = -9974,
-    paIncompatibleStreamHostApi = -9973,
-    paBadBufferPtr = -9972,
-}
+pub const PaErrorCode_paNoError: PaErrorCode = 0;
+pub const PaErrorCode_paNotInitialized: PaErrorCode = -10000;
+pub const PaErrorCode_paUnanticipatedHostError: PaErrorCode = -9999;
+pub const PaErrorCode_paInvalidChannelCount: PaErrorCode = -9998;
+pub const PaErrorCode_paInvalidSampleRate: PaErrorCode = -9997;
+pub const PaErrorCode_paInvalidDevice: PaErrorCode = -9996;
+pub const PaErrorCode_paInvalidFlag: PaErrorCode = -9995;
+pub const PaErrorCode_paSampleFormatNotSupported: PaErrorCode = -9994;
+pub const PaErrorCode_paBadIODeviceCombination: PaErrorCode = -9993;
+pub const PaErrorCode_paInsufficientMemory: PaErrorCode = -9992;
+pub const PaErrorCode_paBufferTooBig: PaErrorCode = -9991;
+pub const PaErrorCode_paBufferTooSmall: PaErrorCode = -9990;
+pub const PaErrorCode_paNullCallback: PaErrorCode = -9989;
+pub const PaErrorCode_paBadStreamPtr: PaErrorCode = -9988;
+pub const PaErrorCode_paTimedOut: PaErrorCode = -9987;
+pub const PaErrorCode_paInternalError: PaErrorCode = -9986;
+pub const PaErrorCode_paDeviceUnavailable: PaErrorCode = -9985;
+pub const PaErrorCode_paIncompatibleHostApiSpecificStreamInfo: PaErrorCode =
+    -9984;
+pub const PaErrorCode_paStreamIsStopped: PaErrorCode = -9983;
+pub const PaErrorCode_paStreamIsNotStopped: PaErrorCode = -9982;
+pub const PaErrorCode_paInputOverflowed: PaErrorCode = -9981;
+pub const PaErrorCode_paOutputUnderflowed: PaErrorCode = -9980;
+pub const PaErrorCode_paHostApiNotFound: PaErrorCode = -9979;
+pub const PaErrorCode_paInvalidHostApi: PaErrorCode = -9978;
+pub const PaErrorCode_paCanNotReadFromACallbackStream: PaErrorCode = -9977;
+pub const PaErrorCode_paCanNotWriteToACallbackStream: PaErrorCode = -9976;
+pub const PaErrorCode_paCanNotReadFromAnOutputOnlyStream: PaErrorCode = -9975;
+pub const PaErrorCode_paCanNotWriteToAnInputOnlyStream: PaErrorCode = -9974;
+pub const PaErrorCode_paIncompatibleStreamHostApi: PaErrorCode = -9973;
+pub const PaErrorCode_paBadBufferPtr: PaErrorCode = -9972;
+pub type PaErrorCode = ::std::os::raw::c_int;
 extern "C" {
     /** Translate the supplied PortAudio error code into a human readable
  message.

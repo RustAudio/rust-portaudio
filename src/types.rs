@@ -253,19 +253,33 @@ enum_from_primitive!{
 #[repr(u32)]
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
 pub enum HostApiTypeId {
+    /// In development host
     InDevelopment = ffi::PaHostApiTypeId_paInDevelopment,
+    /// Direct sound
     DirectSound = ffi::PaHostApiTypeId_paDirectSound,
+    /// MMe API
     MME = ffi::PaHostApiTypeId_paMME,
+    /// ASIO API
     ASIO = ffi::PaHostApiTypeId_paASIO,
+    /// Sound manager API
     SoundManager = ffi::PaHostApiTypeId_paSoundManager,
+    /// Core Audio API
     CoreAudio = ffi::PaHostApiTypeId_paCoreAudio,
+    /// OSS API
     OSS = ffi::PaHostApiTypeId_paOSS,
+    /// Alsa API
     ALSA = ffi::PaHostApiTypeId_paALSA,
+    /// AL API
     AL = ffi::PaHostApiTypeId_paAL,
+    /// BeOS API
     BeOS = ffi::PaHostApiTypeId_paBeOS,
+    /// WDMKS
     WDMKS = ffi::PaHostApiTypeId_paWDMKS,
+    /// Jack API
     JACK = ffi::PaHostApiTypeId_paJACK,
+    /// WASAPI
     WASAPI = ffi::PaHostApiTypeId_paWASAPI,
+    /// Audio Science HPI
     AudioScienceHPI = ffi::PaHostApiTypeId_paAudioScienceHPI,
 }
 }
