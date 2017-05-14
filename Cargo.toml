@@ -18,6 +18,9 @@ crate-type = ["rlib"]
 [build-dependencies]
 pkg-config = "0.3.6"
 
+[target.'cfg(windows)'.build-dependencies]
+cmake = "0.1"
+
 [dependencies]
 bitflags = "0.7"
 libc = "0.2.14"

@@ -140,23 +140,59 @@ mod platform {
 
 #[cfg(windows)]
 mod platform {
+    use std;
     use std::path::Path;
+    use std::process::Command;
 
-    const PORTAUDIO_DOWNLOAD_URL: &'static str = "http://www.portaudio.com";
-
-    fn print_lib_url() {
-        panic!("Don't know how to build portaudio on Windows yet. Sources and build instructions available at: {}", PORTAUDIO_DOWNLOAD_URL);
-    }
+    extern crate cmake;
 
     pub fn download() {
-        print_lib_url();
+        let mut command = Command::new("cmake");
+
+        command.arg("-P");
+        command.arg("download.cmake");
+
+        match command.status() {
+            Ok(status) =>
+                if !status.success() {
+                    panic!("Failed to execute command: {:?}", command)
+                },
+            Err(error) =>
+                panic!("Failed to execute command: {:?}\n{}", command, error)
+        }
     }
 
-    pub fn build(_: &Path) {
-        print_lib_url();
+    pub fn build(out_dir: &Path) {
+        let source_path = out_dir.join("portaudio");
+
+        // Note: the 'PA_WDMKS_NO_KSGUID_LIB' preprocessor definition is a
+        // workaround for an issue which is fixed in the newer versions. See
+        // https://app.assembla.com/spaces/portaudio/subversion/commits/1944
+        cmake::Config::new(source_path)
+            .define("CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG", out_dir)
+            .define("CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE", out_dir)
+            .cflag("-DPA_WDMKS_NO_KSGUID_LIB")
+            .out_dir(out_dir)
+            .build_target("portaudio_static")
+            .build();
+
+        std::fs::rename(
+            out_dir.join(platform_specific_library_name()),
+            out_dir.join("portaudio.lib")).unwrap();
     }
 
-    pub fn print_libs(_: &Path) {
-        print_lib_url();
+    pub fn print_libs(out_dir: &Path) {
+        println!(
+            "cargo:rustc-link-search=native={}", out_dir.to_str().unwrap());
+    }
+
+    #[cfg(target_arch = "x86")]
+    fn platform_specific_library_name() -> &'static str {
+        "portaudio_static_x86.lib"
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    fn platform_specific_library_name() -> &'static str {
+        "portaudio_static_x64.lib"
     }
 }
