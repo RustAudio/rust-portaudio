@@ -7,6 +7,7 @@ use libc;
 use num::FromPrimitive;
 use std::{self, ptr};
 use ffi;
+use std::os::raw;
 
 use super::error::Error;
 use super::Sample;
@@ -50,15 +51,15 @@ pub trait Flow {
     /// Construct a new **Self::Buffer**.
     fn new_buffer(&self, frames_per_buffer: u32) -> Self::Buffer;
     /// Necessary for dynamically acquiring bi-directional params for Pa_OpenStream.
-    fn params_both_directions(&self) -> (Option<ffi::C_PaStreamParameters>,
-                                         Option<ffi::C_PaStreamParameters>);
+    fn params_both_directions(&self) -> (Option<ffi::PaStreamParameters>,
+                                         Option<ffi::PaStreamParameters>);
     /// Constructs the **Flow**'s associated **CallbackArgs** from the non-blocking C API stream
     /// parameters.
-    fn new_callback_args(input: *const libc::c_void,
-                         output: *mut libc::c_void,
-                         frame_count: libc::c_ulong,
-                         time_info: *const ffi::C_PaStreamCallbackTimeInfo,
-                         flags: ffi::StreamCallbackFlags,
+    fn new_callback_args(input: *const raw::c_void,
+                         output: *mut raw::c_void,
+                         frame_count: raw::c_ulong,
+                         time_info: *const ffi::PaStreamCallbackTimeInfo,
+                         flags: ffi::PaStreamCallbackFlags,
                          in_channels: i32,
                          out_channels: i32) -> Self::CallbackArgs;
 }
@@ -85,11 +86,11 @@ pub trait Writer: Flow {
 
 
 /// An alias for the boxed Callback function type.
-type CallbackFn = FnMut(*const libc::c_void,
-                        *mut libc::c_void,
-                        libc::c_ulong,
-                        *const ffi::C_PaStreamCallbackTimeInfo,
-                        ffi::StreamCallbackFlags) -> CallbackResult;
+type CallbackFn = FnMut(*const raw::c_void,
+                        *mut raw::c_void,
+                        raw::c_ulong,
+                        *const ffi::PaStreamCallbackTimeInfo,
+                        ffi::PaStreamCallbackFlags) -> ffi::PaStreamCallbackResult;
 
 /// A wrapper around a user-given **CallbackFn** that can be sent to PortAudio.
 struct CallbackFnWrapper {
@@ -252,7 +253,7 @@ pub struct NonBlocking {
 /// [17]: http://portaudio.com/docs/v19-doxydocs/portaudio_8h.html#a19874734f89958fccf86785490d53b4c
 #[allow(dead_code)]
 pub struct Stream<M, F> {
-    pa_stream: *mut ffi::C_PaStream,
+    pa_stream: *mut ffi::PaStream,
     mode: M,
     flow: F,
     port_audio_life: std::sync::Arc<super::Life>,
@@ -460,25 +461,25 @@ impl<I> Flow for Input<I>
         Buffer::new::<I>(frames_per_buffer, channel_count)
     }
 
-    fn params_both_directions(&self) -> (Option<ffi::C_PaStreamParameters>,
-                                         Option<ffi::C_PaStreamParameters>)
+    fn params_both_directions(&self) -> (Option<ffi::PaStreamParameters>,
+                                         Option<ffi::PaStreamParameters>)
     {
         (Some(self.params.into()), None)
     }
 
-    fn new_callback_args(input: *const libc::c_void,
-                         _output: *mut libc::c_void,
-                         frame_count: libc::c_ulong,
-                         time_info: *const ffi::C_PaStreamCallbackTimeInfo,
-                         flags: ffi::StreamCallbackFlags,
+    fn new_callback_args(input: *const raw::c_void,
+                         _output: *mut raw::c_void,
+                         frame_count: raw::c_ulong,
+                         time_info: *const ffi::PaStreamCallbackTimeInfo,
+                         flags: ffi::PaStreamCallbackFlags,
                          in_channels: i32,
                          _out_channels: i32) -> Self::CallbackArgs
     {
         let flags = CallbackFlags::from_bits(flags).unwrap_or_else(|| CallbackFlags::empty());
         let time = unsafe {
             InputCallbackTimeInfo {
-                current: (*time_info).current_time,
-                buffer_adc: (*time_info).input_buffer_adc_time,
+                current: (*time_info).currentTime,
+                buffer_adc: (*time_info).inputBufferAdcTime,
             }
         };
         // TODO: At the moment, we assume the buffer is interleaved. We need to check whether or
@@ -505,8 +506,8 @@ impl<O> Flow for Output<O>
     type CallbackArgs = OutputCallbackArgs<'static, O>;
     type CallbackTimeInfo = OutputCallbackTimeInfo;
 
-    fn params_both_directions(&self) -> (Option<ffi::C_PaStreamParameters>,
-                                         Option<ffi::C_PaStreamParameters>)
+    fn params_both_directions(&self) -> (Option<ffi::PaStreamParameters>,
+                                         Option<ffi::PaStreamParameters>)
     {
         (None, Some(self.params.into()))
     }
@@ -516,19 +517,19 @@ impl<O> Flow for Output<O>
         Buffer::new::<O>(frames_per_buffer, channel_count)
     }
 
-    fn new_callback_args(_input: *const libc::c_void,
-                         output: *mut libc::c_void,
-                         frame_count: libc::c_ulong,
-                         time_info: *const ffi::C_PaStreamCallbackTimeInfo,
-                         flags: ffi::StreamCallbackFlags,
+    fn new_callback_args(_input: *const raw::c_void,
+                         output: *mut raw::c_void,
+                         frame_count: raw::c_ulong,
+                         time_info: *const ffi::PaStreamCallbackTimeInfo,
+                         flags: ffi::PaStreamCallbackFlags,
                          _in_channels: i32,
                          out_channels: i32) -> Self::CallbackArgs
     {
         let flags = CallbackFlags::from_bits(flags).unwrap_or_else(|| CallbackFlags::empty());
         let time = unsafe {
             OutputCallbackTimeInfo {
-                current: (*time_info).current_time,
-                buffer_dac: (*time_info).output_buffer_dac_time,
+                current: (*time_info).currentTime,
+                buffer_dac: (*time_info).outputBufferDacTime,
             }
         };
         // TODO: At the moment, we assume the buffer is interleaved. We need to check whether or
@@ -556,8 +557,8 @@ impl<I, O> Flow for Duplex<I, O>
     type CallbackArgs = DuplexCallbackArgs<'static, I, O>;
     type CallbackTimeInfo = DuplexCallbackTimeInfo;
 
-    fn params_both_directions(&self) -> (Option<ffi::C_PaStreamParameters>,
-                                         Option<ffi::C_PaStreamParameters>)
+    fn params_both_directions(&self) -> (Option<ffi::PaStreamParameters>,
+                                         Option<ffi::PaStreamParameters>)
     {
         (Some(self.in_params.into()), Some(self.out_params.into()))
     }
@@ -570,20 +571,20 @@ impl<I, O> Flow for Duplex<I, O>
         (in_buffer, out_buffer)
     }
 
-    fn new_callback_args(input: *const libc::c_void,
-                         output: *mut libc::c_void,
-                         frame_count: libc::c_ulong,
-                         time_info: *const ffi::C_PaStreamCallbackTimeInfo,
-                         flags: ffi::StreamCallbackFlags,
+    fn new_callback_args(input: *const raw::c_void,
+                         output: *mut raw::c_void,
+                         frame_count: raw::c_ulong,
+                         time_info: *const ffi::PaStreamCallbackTimeInfo,
+                         flags: ffi::PaStreamCallbackFlags,
                          in_channels: i32,
                          out_channels: i32) -> Self::CallbackArgs
     {
         let flags = CallbackFlags::from_bits(flags).unwrap_or_else(|| CallbackFlags::empty());
         let time = unsafe {
             DuplexCallbackTimeInfo {
-                current: (*time_info).current_time,
-                in_buffer_adc: (*time_info).input_buffer_adc_time,
-                out_buffer_dac: (*time_info).output_buffer_dac_time,
+                current: (*time_info).currentTime,
+                in_buffer_adc: (*time_info).inputBufferAdcTime,
+                out_buffer_dac: (*time_info).outputBufferDacTime,
             }
         };
         // TODO: At the moment, we assume these buffers are interleaved. We need to check whether
@@ -675,7 +676,7 @@ pub mod flags {
         ///
         /// See the [bitflags repo](https://github.com/rust-lang/bitflags/blob/master/src/lib.rs)
         /// for examples of composing flags together.
-        pub flags Flags: u64 {
+        pub flags Flags: ::std::os::raw::c_ulong {
             /// No flags.
             const NO_FLAG =                                       ffi::PA_NO_FLAG,
             /// Disable default clipping of out of range samples.
@@ -713,7 +714,7 @@ pub mod flags {
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Available {
     /// The number of frames available for reading.
-    Frames(i64),
+    Frames(::std::os::raw::c_long),
     /// The input stream has overflowed.
     InputOverflowed,
     /// The output stream has underflowed.
@@ -725,7 +726,7 @@ pub mod callback_flags {
     use ffi;
     bitflags! {
         /// Flag bit constants for the status flags passed to the stream's callback function.
-        pub flags CallbackFlags: u64 {
+        pub flags CallbackFlags:  ::std::os::raw::c_ulong {
             /// No flags.
             const NO_FLAG          = ffi::PA_NO_FLAG,
             /// In a stream opened with paFramesPerBufferUnspecified, indicates that input data is
@@ -764,19 +765,6 @@ pub mod callback_flags {
     }
 }
 
-
-/// The result of the StreamCallbackFn.
-#[derive(Copy, Clone, Debug)]
-#[repr(C)]
-pub enum CallbackResult {
-    /// Continue the stream.
-    Continue = 0,
-    /// The stream has completed.
-    Complete = 1,
-    /// Abort the stream.
-    Abort = 2
-}
-
 /// Timing information for the buffers passed to the stream callback.
 ///
 /// Time values are expressed in seconds and are synchronised with the time base used by
@@ -806,6 +794,16 @@ pub struct Info {
     pub sample_rate : f64
 }
 
+impl From<ffi::PaStreamInfo> for Info {
+    fn from(info: ffi::PaStreamInfo) -> Info {
+        Info {
+            struct_version: info.structVersion,
+            input_latency: info.inputLatency,
+            output_latency: info.outputLatency,
+            sample_rate: info.sampleRate,
+        }
+    }
+}
 
 impl<B> Mode for Blocking<B> {}
 impl Mode for NonBlocking {}
@@ -819,10 +817,10 @@ impl<S: Sample> Parameters<S> {
     ///
     /// Returns `None` if the `device` index is neither a valid index or a
     /// `UseHostApiSpecificDeviceSpecification` flag.
-    pub fn from_c_params(c_params: ffi::C_PaStreamParameters) -> Option<Self> {
-        let sample_format_flags: SampleFormatFlags = c_params.sample_format.into();
+    pub fn from_c_params(c_params: ffi::PaStreamParameters) -> Option<Self> {
+        let sample_format_flags: SampleFormatFlags = c_params.sampleFormat.into();
         let is_interleaved = !sample_format_flags.contains(sample_format_flags::NON_INTERLEAVED);
-        let c_sample_format = SampleFormat::from_flags(c_params.sample_format.into());
+        let c_sample_format = SampleFormat::from_flags(c_params.sampleFormat.into());
         if S::sample_format() != c_sample_format {
             return None;
         }
@@ -833,8 +831,8 @@ impl<S: Sample> Parameters<S> {
         };
         Some(Parameters {
             device: device,
-            channel_count: c_params.channel_count,
-            suggested_latency: c_params.suggested_latency,
+            channel_count: c_params.channelCount,
+            suggested_latency: c_params.suggestedLatency,
             is_interleaved: is_interleaved,
             sample_format: std::marker::PhantomData,
         })
@@ -842,7 +840,7 @@ impl<S: Sample> Parameters<S> {
 
 }
 
-impl<S: Sample> From<Parameters<S>> for ffi::C_PaStreamParameters {
+impl<S: Sample> From<Parameters<S>> for ffi::PaStreamParameters {
     /// Converts the **Parameters** into its matching `C_PaStreamParameters`.
     fn from(params: Parameters<S>) -> Self {
         let Parameters { device, channel_count, suggested_latency, is_interleaved, .. } = params;
@@ -851,12 +849,12 @@ impl<S: Sample> From<Parameters<S>> for ffi::C_PaStreamParameters {
         if !is_interleaved {
             sample_format_flags.insert(sample_format_flags::NON_INTERLEAVED);
         }
-        ffi::C_PaStreamParameters {
+        ffi::PaStreamParameters {
             device: device.into(),
-            channel_count: channel_count as i32,
-            sample_format: sample_format_flags.bits(),
-            suggested_latency: suggested_latency,
-            host_api_specific_stream_info: ptr::null_mut()
+            channelCount: channel_count as raw::c_int,
+            sampleFormat: sample_format_flags.bits(),
+            suggestedLatency: suggested_latency,
+            hostApiSpecificStreamInfo: ptr::null_mut()
         }
     }
 }
@@ -935,14 +933,14 @@ impl Drop for Buffer {
 }
 
 
-fn open_blocking_stream(in_params: Option<ffi::C_PaStreamParameters>,
-                        out_params: Option<ffi::C_PaStreamParameters>,
+fn open_blocking_stream(in_params: Option<ffi::PaStreamParameters>,
+                        out_params: Option<ffi::PaStreamParameters>,
                         sample_rate: f64,
                         frames_per_buffer: u32,
-                        flags: Flags) -> Result<*mut libc::c_void, Error>
+                        flags: Flags) -> Result<*mut raw::c_void, Error>
 {
     // The pointer to which PortAudio will attach the stream.
-    let mut c_stream_ptr: *mut libc::c_void = ptr::null_mut();
+    let mut c_stream_ptr: *mut raw::c_void = ptr::null_mut();
     let in_c_params = in_params.map(|p| p.into());
     let out_c_params = out_params.map(|p| p.into());
     let in_c_params_ptr = in_c_params.as_ref().map(|p| p as *const _).unwrap_or(ptr::null());
@@ -951,15 +949,16 @@ fn open_blocking_stream(in_params: Option<ffi::C_PaStreamParameters>,
 
     // open the PortAudio stream.
     unsafe {
-        let result = ffi::Pa_OpenStream(&mut c_stream_ptr,
+        let error_code = ffi::Pa_OpenStream(&mut c_stream_ptr,
                                         in_c_params_ptr,
                                         out_c_params_ptr,
                                         sample_rate,
-                                        frames_per_buffer,
+                                        frames_per_buffer as raw::c_ulong,
                                         c_flags,
                                         None,
                                         ptr::null_mut());
-        match result {
+        let error = FromPrimitive::from_i32(error_code).unwrap();
+        match error {
             Error::NoError => Ok(c_stream_ptr),
             err => Err(err),
         }
@@ -967,16 +966,15 @@ fn open_blocking_stream(in_params: Option<ffi::C_PaStreamParameters>,
 }
 
 
-fn open_non_blocking_stream(in_params: Option<ffi::C_PaStreamParameters>,
-                            out_params: Option<ffi::C_PaStreamParameters>,
+fn open_non_blocking_stream(in_params: Option<ffi::PaStreamParameters>,
+                            out_params: Option<ffi::PaStreamParameters>,
                             sample_rate: f64,
                             frames_per_buffer: u32,
                             flags: Flags,
                             callback: &mut CallbackFnWrapper)
-                            -> Result<*mut libc::c_void, Error>
-{
+                            -> Result<*mut raw::c_void, Error> {
     // The pointer to which PortAudio will attach the stream.
-    let mut c_stream_ptr: *mut libc::c_void = ptr::null_mut();
+    let mut c_stream_ptr: *mut raw::c_void = ptr::null_mut();
     let in_c_params = in_params.map(|p| p.into());
     let out_c_params = out_params.map(|p| p.into());
     let in_c_params_ptr = in_c_params.as_ref().map(|p| p as *const _).unwrap_or(ptr::null());
@@ -995,20 +993,21 @@ fn open_non_blocking_stream(in_params: Option<ffi::C_PaStreamParameters>,
     // 3. The aliased function is a private member and can't be accessed outside this module.
     let user_data = {
         let callback_fn_ptr = callback as *mut CallbackFnWrapper;
-        callback_fn_ptr as *mut libc::c_void
+        callback_fn_ptr as *mut raw::c_void
     };
 
     // open the PortAudio stream.
     unsafe {
-        let result = ffi::Pa_OpenStream(&mut c_stream_ptr,
+        let error_code = ffi::Pa_OpenStream(&mut c_stream_ptr,
                                         in_c_params_ptr,
                                         out_c_params_ptr,
                                         sample_rate,
-                                        frames_per_buffer,
+                                        frames_per_buffer as raw::c_ulong,
                                         c_flags,
                                         Some(stream_callback_proc),
                                         user_data);
-        match result {
+        let error = FromPrimitive::from_i32(error_code).unwrap();
+        match error {
             Error::NoError => Ok(c_stream_ptr),
             err => Err(err),
         }
@@ -1032,9 +1031,9 @@ impl<M, F> Stream<M, F> {
     /// If the audio stream is active it discards any pending buffers as if Stream::abort had been
     /// called.
     pub fn close(&mut self) -> Result<(), Error> {
-        match unsafe {
-            ffi::Pa_CloseStream(self.pa_stream)
-        } {
+        let error_code = unsafe { ffi::Pa_CloseStream(self.pa_stream) };
+        let error = FromPrimitive::from_i32(error_code).unwrap();
+        match error{
             Error::NoError => Ok(()),
             err => Err(err),
         }
@@ -1042,9 +1041,11 @@ impl<M, F> Stream<M, F> {
 
     /// Commences audio processing.
     pub fn start(&mut self) -> Result<(), Error> {
-        match unsafe { ffi::Pa_StartStream(self.pa_stream) } {
+        let error_code = unsafe { ffi::Pa_StartStream(self.pa_stream) };
+        let error = FromPrimitive::from_i32(error_code).unwrap();
+        match error {
             0 => Ok(()),
-            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
+            err => Err(FromPrimitive::from_i32(err).unwrap()),
         }
     }
 
@@ -1052,17 +1053,21 @@ impl<M, F> Stream<M, F> {
     ///
     /// It waits until all pending audio buffers have been played before it returns.
     pub fn stop(&mut self) -> Result<(), Error> {
-        match unsafe { ffi::Pa_StopStream(self.pa_stream) } {
+        let error_code = unsafe { ffi::Pa_StopStream(self.pa_stream) };
+        let error = FromPrimitive::from_i32(error_code).unwrap();
+        match error {
             0 => Ok(()),
-            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
+            err => Err(FromPrimitive::from_i32(err).unwrap()),
         }
     }
 
     /// Terminates audio processing immediately without waiting for pending buffers to complete.
     pub fn abort(&mut self) -> Result<(), Error> {
-        match unsafe { ffi::Pa_AbortStream(self.pa_stream) } {
+        let error_code = unsafe { ffi::Pa_AbortStream(self.pa_stream) };
+        let error = FromPrimitive::from_i32(error_code).unwrap();
+        match error {
             0 => Ok(()),
-            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
+            err => Err(FromPrimitive::from_i32(err).unwrap()),
         }
     }
 
@@ -1082,10 +1087,11 @@ impl<M, F> Stream<M, F> {
     ///
     /// TODO: Clarify what errors can actually an occur.
     pub fn is_stopped(&self) -> Result<bool, Error> {
-        match unsafe { ffi::Pa_IsStreamStopped(self.pa_stream) } {
+        let error_code = unsafe { ffi::Pa_IsStreamStopped(self.pa_stream) };
+        match error_code {
             1 => Ok(true),
             0 => Ok(false),
-            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
+            err => Err(FromPrimitive::from_i32(err).unwrap()),
         }
     }
 
@@ -1104,11 +1110,11 @@ impl<M, F> Stream<M, F> {
     ///
     /// TODO: Clarify what errors can actually an occur.
     pub fn is_active(&self) -> Result<bool, Error> {
-        let err = unsafe { ffi::Pa_IsStreamActive(self.pa_stream) };
-        match err {
+        let error_code = unsafe { ffi::Pa_IsStreamActive(self.pa_stream) };
+        match error_code{
             0 => Ok(false),
             1 => Ok(true),
-            err => Err(::num::FromPrimitive::from_i32(err).unwrap())
+            err => Err( FromPrimitive::from_i32(err).unwrap())
         }
     }
 
@@ -1133,13 +1139,14 @@ impl<M, F> Stream<M, F> {
     /// Retrieve a Info structure containing information about the stream.
     pub fn info(&self) -> Info {
         unsafe {
-            *ffi::Pa_GetStreamInfo(self.pa_stream)
+            let info = ffi::Pa_GetStreamInfo(self.pa_stream);
+            Info::from(*info)
         }
     }
 
     /// This function is solely for use within the extension modules for interacting with PortAudio
     /// platform-specific extension APIs.
-    pub fn unsafe_pa_stream(&self) -> *mut ffi::C_PaStream {
+    pub fn unsafe_pa_stream(&self) -> *mut ffi::PaStream {
         self.pa_stream
     }
 
@@ -1185,7 +1192,7 @@ impl<F> Stream<Blocking<F::Buffer>, F>
     pub fn read_available(&self) -> Result<Available, Error> {
         match unsafe { ffi::Pa_GetStreamReadAvailable(self.pa_stream) } {
             n if n >= 0 => Ok(Available::Frames(n)),
-            n           => match FromPrimitive::from_i64(n) {
+            n           => match FromPrimitive::from_i64(n as i64) {
                 Some(Error::InputOverflowed) => Ok(Available::InputOverflowed),
                 Some(Error::OutputUnderflowed) => Ok(Available::OutputUnderflowed),
                 Some(err) => Err(err),
@@ -1210,14 +1217,16 @@ impl<F> Stream<Blocking<F::Buffer>, F>
     pub fn read<'b>(&'b self, frames: u32) -> Result<&'b [F::Sample], Error> {
         let buffer = F::readable_buffer(&self.mode);
         let err = unsafe {
-            ffi::Pa_ReadStream(self.pa_stream, buffer.data, frames)
+            ffi::Pa_ReadStream(self.pa_stream,
+                               buffer.data as *mut raw::c_void,
+                               frames as raw::c_ulong)
         };
         match err {
             0 => unsafe {
                 let channel_count = Reader::channel_count(&self.flow);
                 Ok(buffer.slice(frames, channel_count))
             },
-            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
+            err => Err(FromPrimitive::from_i32(err).unwrap()),
         }
     }
 
@@ -1240,7 +1249,7 @@ impl<F> Stream<Blocking<F::Buffer>, F>
     pub fn write_available(&self) -> Result<Available, Error> {
         match unsafe { ffi::Pa_GetStreamWriteAvailable(self.pa_stream) } {
             n if n >= 0 => Ok(Available::Frames(n)),
-            n           => match FromPrimitive::from_i64(n) {
+            n           => match FromPrimitive::from_i64(n as i64) {
                 Some(Error::InputOverflowed) => Ok(Available::InputOverflowed),
                 Some(Error::OutputUnderflowed) => Ok(Available::OutputUnderflowed),
                 Some(err) => Err(err),
@@ -1272,12 +1281,12 @@ impl<F> Stream<Blocking<F::Buffer>, F>
             slice
         };
         let result = unsafe {
-            let written_slice_ptr = written_slice.as_ptr() as *mut libc::c_void;
-            ffi::Pa_WriteStream(pa_stream, written_slice_ptr, frames)
+            let written_slice_ptr = written_slice.as_ptr() as *mut raw::c_void;
+            ffi::Pa_WriteStream(pa_stream, written_slice_ptr, frames as raw::c_ulong)
         };
         match result {
             0 => Ok(()),
-            err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
+            err => Err(FromPrimitive::from_i32(err).unwrap()),
         }
     }
 
@@ -1291,18 +1300,18 @@ impl<F> Stream<NonBlocking, F> {
         -> Result<Self, Error>
         where S: Settings<Flow=F>,
               F: Flow,
-              C: FnMut(F::CallbackArgs) -> CallbackResult + 'static,
+              C: FnMut(F::CallbackArgs) -> ffi::PaStreamCallbackResult + 'static,
     {
         let (flow, sample_rate, frames_per_buffer, flags) = settings.into_flow_and_settings();
         let (in_params, out_params) = flow.params_both_directions();
-        let in_channels = in_params.map(|p| p.channel_count).unwrap_or(0);
-        let out_channels = out_params.map(|p| p.channel_count).unwrap_or(0);
+        let in_channels = in_params.map(|p| p.channelCount).unwrap_or(0);
+        let out_channels = out_params.map(|p| p.channelCount).unwrap_or(0);
 
-        let callback_wrapper_fn = move |input: *const libc::c_void,
-                                        output: *mut libc::c_void,
-                                        frame_count: libc::c_ulong,
-                                        time_info: *const ffi::C_PaStreamCallbackTimeInfo,
-                                        flags: ffi::StreamCallbackFlags| -> CallbackResult
+        let callback_wrapper_fn = move |input: *const raw::c_void,
+                                        output: *mut raw::c_void,
+                                        frame_count: raw::c_ulong,
+                                        time_info: *const ffi::PaStreamCallbackTimeInfo,
+                                        flags: ffi::PaStreamCallbackFlags| -> ffi::PaStreamCallbackResult
         {
             let args = F::new_callback_args(input, output, frame_count, time_info, flags,
                                             in_channels, out_channels);
@@ -1353,12 +1362,13 @@ impl<M, F> Drop for Stream<M, F> {
 
 /// A callback procedure to be used by portaudio in the case that a user_callback has been given
 /// upon opening the stream (`Stream::open`).
-extern "C" fn stream_callback_proc(input: *const libc::c_void,
-                                   output: *mut libc::c_void,
-                                   frame_count: libc::c_ulong,
-                                   time_info: *const ffi::C_PaStreamCallbackTimeInfo,
-                                   flags: ffi::StreamCallbackFlags,
-                                   user_callback_ptr: *mut libc::c_void) -> CallbackResult
+extern "C" fn stream_callback_proc(input: *const raw::c_void,
+                                   output: *mut raw::c_void,
+                                   frame_count: raw::c_ulong,
+                                   time_info: *const ffi::PaStreamCallbackTimeInfo,
+                                   flags: ffi::PaStreamCallbackFlags,
+                                   user_callback_ptr: *mut raw::c_void)
+                                   -> ffi::PaStreamCallbackResult
 {
     let callback = user_callback_ptr as *mut CallbackFnWrapper;
     unsafe {

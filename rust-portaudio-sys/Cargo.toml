@@ -1,16 +1,19 @@
 [package]
 
-name = "portaudio"
-version = "0.7.0"
+name = "portaudio_sys"
+version = "0.1.0"
 authors = ["Jeremy Letang <letang.jeremy@gmail.com>",
            "Mitchell Nordine <mitchell.nordine@gmail.com>"]
 description = "PortAudio bindings for Rust."
 license = "MIT"
+build = "build.rs"
 homepage = "https://github.com/RustAudio/rust-portaudio"
 repository = "https://github.com/RustAudio/rust-portaudio.git"
+links = "portaudio"
 
-[dependencies]
-bitflags = "0.7"
-libc = "0.2.14"
-num = { version = "0.1.34", default-features = false }
-portaudio_sys = { path = "./rust-portaudio-sys", version = "0.1.0" }
+[lib]
+name = "portaudio_sys"
+crate-type = ["rlib"]
+
+[build-dependencies]
+pkg-config = "0.3.6"

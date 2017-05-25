@@ -54,7 +54,11 @@
 #[macro_use] extern crate bitflags;
 extern crate libc;
 extern crate num;
+extern crate portaudio_sys as ffi;
 
+use num::FromPrimitive;
+use std::os::raw;
+use std::option::Option;
 
 pub use error::Error;
 pub use stream::{
@@ -62,7 +66,6 @@ pub use stream::{
     Blocking,
     callback_flags as stream_callback_flags,
     CallbackFlags as StreamCallbackFlags,
-    CallbackResult as StreamCallbackResult,
     CallbackTimeInfo as StreamCallbackTimeInfo,
     Duplex,
     DuplexSettings as DuplexStreamSettings,
@@ -82,11 +85,10 @@ pub use stream::{
     Settings as StreamSettings,
     Stream,
 };
-pub use stream::CallbackResult::{
-    Continue,
-    Complete,
-    Abort,
-};
+pub use ffi::{PaStreamCallbackResult as StreamCallbackResult,
+              PA_CONTINUE as Continue,
+              PA_COMPLETE as Complete,
+              PA_ABORT as Abort};
 pub use types::{
     DeviceIndex,
     DeviceInfo,
@@ -100,19 +102,11 @@ pub use types::{
     FRAMES_PER_BUFFER_UNSPECIFIED,
 };
 
-use libc::c_double;
 use std::ptr;
 
-
-#[cfg(any(target_os="macos", target_os="linux", target_os="win32", target_os="windows"))]
-mod c_library {
-    #[link(name = "portaudio")]
-    extern {}
-}
-
+#[macro_use] mod enum_primitive;
 pub mod error;
 pub mod ext;
-mod ffi;
 pub mod stream;
 mod types;
 
@@ -155,7 +149,8 @@ impl PortAudio {
     /// is rarely necessary.
     pub fn new() -> Result<Self, Error> {
         unsafe {
-            match ffi::Pa_Initialize() {
+            let error = FromPrimitive::from_i32(ffi::Pa_Initialize()).unwrap();
+            match error {
                 Error::NoError => {
                     let life = std::sync::Arc::new(Life {
                         is_terminated: std::sync::Mutex::new(false)
@@ -319,7 +314,7 @@ impl PortAudio {
     ///
     /// Returns `None` if the `host_api` parameter is out of range or an error is encountered.
     pub fn host_api_info<'a>(&'a self, host_api: HostApiIndex) -> Option<HostApiInfo<'a>> {
-        let c_host_info = unsafe { ffi::Pa_GetHostApiInfo(host_api as ffi::HostApiIndex) };
+        let c_host_info = unsafe { ffi::Pa_GetHostApiInfo(host_api as HostApiIndex) };
         if c_host_info.is_null() {
             None
         } else {
@@ -340,8 +335,9 @@ impl PortAudio {
     pub fn host_api_type_id_to_host_api_index(&self, type_id: HostApiTypeId)
         -> Result<HostApiIndex, Error>
     {
+        let id = FromPrimitive::from_i32(type_id as i32).unwrap();
         unsafe {
-            result_from_host_api_index(ffi::Pa_HostApiTypeIdToHostApiIndex(type_id as i32))
+            result_from_host_api_index(ffi::Pa_HostApiTypeIdToHostApiIndex(id))
         }
     }
 
@@ -366,7 +362,7 @@ impl PortAudio {
                                             -> Result<DeviceIndex, Error>
     {
         let result = unsafe {
-            ffi::Pa_HostApiDeviceIndexToDeviceIndex(host_api as i32, host_api_device_index)
+            ffi::Pa_HostApiDeviceIndexToDeviceIndex(host_api, host_api_device_index)
         };
         match result {
             idx if idx >= 0 => Ok(DeviceIndex(idx as u32)),
@@ -477,7 +473,7 @@ impl PortAudio {
         -> Result<Stream<NonBlocking, S::Flow>, Error>
         where S: StreamSettings,
               S::Flow: Flow,
-              C: FnMut(<S::Flow as Flow>::CallbackArgs) -> StreamCallbackResult + 'static,
+              C: FnMut(<S::Flow as Flow>::CallbackArgs) -> ffi::PaStreamCallbackResult + 'static,
     {
         Stream::<NonBlocking, S::Flow>::open(self.life.clone(), settings, callback)
     }
@@ -570,7 +566,7 @@ impl PortAudio {
     /// timing.
     pub fn sleep(&self, m_sec: i32) -> () {
         unsafe {
-            ffi::Pa_Sleep(m_sec)
+            ffi::Pa_Sleep(m_sec as raw::c_long)
         }
     }
 
@@ -640,7 +636,8 @@ pub fn version_text() -> Result<&'static str, ::std::str::Utf8Error> {
 /// Return NoError if successful, otherwise an error code indicating the cause of failure.
 fn terminate() -> Result<(), Error> {
     unsafe {
-        match ffi::Pa_Terminate() {
+        let error = FromPrimitive::from_i32(ffi::Pa_Terminate()).unwrap();
+        match error {
             Error::NoError => Ok(()),
             err => Err(err),
         }
@@ -664,8 +661,8 @@ fn terminate() -> Result<(), Error> {
 /// Return Ok(()) if the format is supported, and an Error indicating why the format is not
 /// supported otherwise. The constant PaFormatIsSupported is provided to compare with the return
 /// value for success.
-fn is_format_supported(maybe_input_parameters: Option<ffi::C_PaStreamParameters>,
-                       maybe_output_parameters: Option<ffi::C_PaStreamParameters>,
+fn is_format_supported(maybe_input_parameters: Option<ffi::PaStreamParameters>,
+                       maybe_output_parameters: Option<ffi::PaStreamParameters>,
                        sample_rate : f64) -> Result<(), Error>
 {
     let c_input = maybe_input_parameters.as_ref().map(|input| input as *const _);
@@ -674,9 +671,12 @@ fn is_format_supported(maybe_input_parameters: Option<ffi::C_PaStreamParameters>
         Err(Error::InvalidDevice)
     } else {
         unsafe {
-            match ffi::Pa_IsFormatSupported(c_input.unwrap_or(ptr::null()),
-                                            c_output.unwrap_or(ptr::null()),
-                                            sample_rate as c_double) {
+            let error_code =
+                ffi::Pa_IsFormatSupported(c_input.unwrap_or(ptr::null()),
+                                          c_output.unwrap_or(ptr::null()),
+                                          sample_rate as raw::c_double);
+            let error = FromPrimitive::from_i32(error_code).unwrap();
+            match error {
                 Error::NoError => Ok(()),
                 err => Err(err),
             }
@@ -732,9 +732,9 @@ impl<'a> Iterator for HostApis<'a> {
 }
 
 
-fn result_from_host_api_index(idx: ffi::HostApiIndex) -> Result<HostApiIndex, Error> {
+fn result_from_host_api_index(idx: ffi::PaHostApiIndex) -> Result<HostApiIndex, Error> {
     match idx {
-        idx if idx >= 0 => Ok(idx as u16),
+        idx if idx >= 0 => Ok(idx),
         err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
     }
 }
@@ -745,7 +745,7 @@ fn result_from_host_api_index(idx: ffi::HostApiIndex) -> Result<HostApiIndex, Er
 /// Return the size in bytes of a single sample in the specified format,
 /// or SampleFormatNotSupported if the format is not supported.
 pub fn get_sample_size(format: SampleFormat) -> Result<u8, Error> {
-    let result = unsafe { ffi::Pa_GetSampleSize(format as u64) };
+    let result = unsafe { ffi::Pa_GetSampleSize(format as ffi::PaSampleFormat) };
     if result < 0 {
         Err(::num::FromPrimitive::from_i32(result).unwrap())
     } else {
