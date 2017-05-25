@@ -202,7 +202,7 @@ pub mod sample_format_flags {
         /// The paNonInterleaved flag indicates that audio data is passed as an array of pointers
         /// to separate buffers, one buffer for each channel. Usually, when this flag is not used,
         /// audio data is passed as a single buffer with all channels interleaved.
-        pub flags SampleFormatFlags: u64 {
+        pub flags SampleFormatFlags: ::std::os::raw::c_ulong {
             /// 32 bits float sample format
             const FLOAT_32 = ffi::PA_FLOAT_32,
             /// 32 bits int sample format

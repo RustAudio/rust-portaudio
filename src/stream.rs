@@ -676,7 +676,7 @@ pub mod flags {
         ///
         /// See the [bitflags repo](https://github.com/rust-lang/bitflags/blob/master/src/lib.rs)
         /// for examples of composing flags together.
-        pub flags Flags: u64 {
+        pub flags Flags: ::std::os::raw::c_ulong {
             /// No flags.
             const NO_FLAG =                                       ffi::PA_NO_FLAG,
             /// Disable default clipping of out of range samples.
@@ -714,7 +714,7 @@ pub mod flags {
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Available {
     /// The number of frames available for reading.
-    Frames(i64),
+    Frames(::std::os::raw::c_long),
     /// The input stream has overflowed.
     InputOverflowed,
     /// The output stream has underflowed.
@@ -726,7 +726,7 @@ pub mod callback_flags {
     use ffi;
     bitflags! {
         /// Flag bit constants for the status flags passed to the stream's callback function.
-        pub flags CallbackFlags: u64 {
+        pub flags CallbackFlags:  ::std::os::raw::c_ulong {
             /// No flags.
             const NO_FLAG          = ffi::PA_NO_FLAG,
             /// In a stream opened with paFramesPerBufferUnspecified, indicates that input data is
@@ -1192,7 +1192,7 @@ impl<F> Stream<Blocking<F::Buffer>, F>
     pub fn read_available(&self) -> Result<Available, Error> {
         match unsafe { ffi::Pa_GetStreamReadAvailable(self.pa_stream) } {
             n if n >= 0 => Ok(Available::Frames(n)),
-            n           => match FromPrimitive::from_i64(n) {
+            n           => match FromPrimitive::from_i64(n as i64) {
                 Some(Error::InputOverflowed) => Ok(Available::InputOverflowed),
                 Some(Error::OutputUnderflowed) => Ok(Available::OutputUnderflowed),
                 Some(err) => Err(err),
@@ -1249,7 +1249,7 @@ impl<F> Stream<Blocking<F::Buffer>, F>
     pub fn write_available(&self) -> Result<Available, Error> {
         match unsafe { ffi::Pa_GetStreamWriteAvailable(self.pa_stream) } {
             n if n >= 0 => Ok(Available::Frames(n)),
-            n           => match FromPrimitive::from_i64(n) {
+            n           => match FromPrimitive::from_i64(n as i64) {
                 Some(Error::InputOverflowed) => Ok(Available::InputOverflowed),
                 Some(Error::OutputUnderflowed) => Ok(Available::OutputUnderflowed),
                 Some(err) => Err(err),

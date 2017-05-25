@@ -18,7 +18,7 @@ pub use portaudio::*;
 pub const PA_NO_DEVICE : PaDeviceIndex = -1;
 
 // Sample format
-pub type SampleFormat = u64;
+pub type SampleFormat = ::std::os::raw::c_ulong;
 pub const PA_FLOAT_32        : SampleFormat = 0x00000001;
 pub const PA_INT_32          : SampleFormat = 0x00000002;
 pub const PA_INT_24          : SampleFormat = 0x00000004;
@@ -29,7 +29,7 @@ pub const PA_CUSTOM_FORMAT   : SampleFormat = 0x00010000;
 pub const PA_NON_INTERLEAVED : SampleFormat = 0x80000000;
 
 // Stream flags
-pub type StreamFlags = u64;
+pub type StreamFlags = ::std::os::raw::c_ulong;
 pub const PA_NO_FLAG                                    : StreamFlags = 0;
 pub const PA_CLIP_OFF                                   : StreamFlags = 0x00000001;
 pub const PA_DITHER_OFF                                 : StreamFlags = 0x00000002;
@@ -38,7 +38,7 @@ pub const PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK : StreamFlags = 0x000000
 pub const PA_PLATFORM_SPECIFIC_FLAGS                    : StreamFlags = 0xFFFF0000;
 
 // Stream callback falgs.
-pub type StreamCallbackFlags = u64;
+pub type StreamCallbackFlags = ::std::os::raw::c_ulong;
 pub const INPUT_UNDERFLOW  : StreamCallbackFlags = 0x00000001;
 pub const INPUT_OVERFLOW   : StreamCallbackFlags = 0x00000002;
 pub const OUTPUT_UNDERFLOW : StreamCallbackFlags = 0x00000004;
