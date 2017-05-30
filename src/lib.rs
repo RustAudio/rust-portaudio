@@ -54,7 +54,6 @@
 #[macro_use] extern crate bitflags;
 extern crate libc;
 extern crate num;
-extern crate portaudio_sys as ffi;
 
 use num::FromPrimitive;
 use std::os::raw;
@@ -108,8 +107,9 @@ use std::ptr;
 pub mod error;
 pub mod ext;
 pub mod stream;
-mod types;
 
+mod types;
+mod ffi;
 
 /// A type-safe wrapper around the PortAudio API.
 ///
