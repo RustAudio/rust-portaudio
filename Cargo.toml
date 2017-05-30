@@ -8,9 +8,13 @@ description = "PortAudio bindings for Rust."
 license = "MIT"
 homepage = "https://github.com/RustAudio/rust-portaudio"
 repository = "https://github.com/RustAudio/rust-portaudio.git"
+build = "build.rs"
+links = "portaudio"
 
 [dependencies]
 bitflags = "0.7"
 libc = "0.2.14"
 num = { version = "0.1.34", default-features = false }
-portaudio_sys = { path = "./rust-portaudio-sys", version = "0.1.0" }
+
+[build-dependencies]
+pkg-config = "0.3.6"

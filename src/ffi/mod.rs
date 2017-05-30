@@ -5,15 +5,15 @@
                        --blacklist-type PaStreamCallbackResult
 */
 
+mod portaudio;
+
 #[cfg(any(target_os="macos", target_os="linux", target_os="win32", target_os="windows"))]
 mod c_library {
     #[link(name = "portaudio")]
     extern {}
 }
 
-mod portaudio;
-
-pub use portaudio::*;
+pub use self::portaudio::*;
 
 pub const PA_NO_DEVICE : PaDeviceIndex = -1;
 
@@ -46,14 +46,14 @@ pub const OUTPUT_OVERFLOW  : StreamCallbackFlags = 0x00000008;
 pub const PRIMING_OUTPUT   : StreamCallbackFlags = 0x00000010;
 
 /// A function to convert C `*const char` arrays into Rust `&'a str`s.
-pub fn c_str_to_str<'a>(c_str: *const std::os::raw::c_char) -> Result<&'a str, ::std::str::Utf8Error> {
+pub fn c_str_to_str<'a>(c_str: *const ::std::os::raw::c_char) -> Result<&'a str, ::std::str::Utf8Error> {
     unsafe {
         ::std::ffi::CStr::from_ptr(c_str).to_str()
     }
 }
 
 /// A function to convert Rust strings to C strings
-pub fn str_to_c_str(rust_str: &str) -> *const std::os::raw::c_char {
+pub fn str_to_c_str(rust_str: &str) -> *const ::std::os::raw::c_char {
     rust_str.as_ptr() as *const _
 }
 

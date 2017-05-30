@@ -62,6 +62,18 @@ fn err_to_panic<T, E: Display>(result: Result<T, E>) -> T {
     }
 }
 
+/// Executes the given command and prints it to stdout. (Stdout will only be displayed by cargo if the build 
+/// script panics).
+/// Panics if the execution fails or the command returns non-successful.
+#[allow(dead_code)]
+fn execute_or_panic(cmd: &mut std::process::Command) {
+	let output = err_to_panic(cmd.output());
+	println!("{:?}", cmd);
+	if !output.status.success() {
+		panic!("{}", String::from_utf8_lossy(&output.stderr));
+	}
+}
+
 #[allow(dead_code)]
 mod unix_platform {
     use std::process::Command;
@@ -69,6 +81,7 @@ mod unix_platform {
 
     use std::env;
 
+    use super::execute_or_panic;
     use super::err_to_panic;
 
     pub const PORTAUDIO_URL: &'static str = "http://www.portaudio.com/archives/pa_stable_v19_20140130.tgz";
@@ -76,35 +89,35 @@ mod unix_platform {
     pub const PORTAUDIO_FOLDER: &'static str = "portaudio";
 
     pub fn download() {
-        err_to_panic(Command::new("curl").arg(PORTAUDIO_URL).arg("-O").output());
+        execute_or_panic(Command::new("curl").arg(PORTAUDIO_URL).arg("-O"));
     }
 
     pub fn build(out_dir: &Path) {
         // untar portaudio sources
-        err_to_panic(Command::new("tar").arg("xvf").arg(PORTAUDIO_TAR).output());
+        execute_or_panic(Command::new("tar").arg("xvf").arg(PORTAUDIO_TAR));
 
         // change dir to the portaudio folder
         err_to_panic(env::set_current_dir(PORTAUDIO_FOLDER));
 
         // run portaudio autoconf
-        err_to_panic(Command::new("./configure")
+        execute_or_panic(Command::new("./configure")
             .args(&["--disable-shared", "--enable-static"]) // Only build static lib
             .args(&["--prefix", out_dir.to_str().unwrap()]) // Install on the outdir
             .arg("--with-pic") // Build position-independent code (required by Rust)
-            .output());
+            );
 
         // then make
-        err_to_panic(Command::new("make").output());
+        execute_or_panic(&mut Command::new("make"));
 
         // "install" on the outdir
-        err_to_panic(Command::new("make").arg("install").output());
+        execute_or_panic(Command::new("make").arg("install"));
 
         // return to rust-portaudio root
         err_to_panic(env::set_current_dir(".."));
 
         // cleaning portaudio sources
-        err_to_panic(Command::new("rm").arg("-rf")
-            .args(&[PORTAUDIO_TAR, PORTAUDIO_FOLDER]).output());
+        execute_or_panic(Command::new("rm").arg("-rf")
+            .args(&[PORTAUDIO_TAR, PORTAUDIO_FOLDER]));
     }
 
     pub fn print_libs(out_dir: &Path) {
@@ -120,10 +133,11 @@ mod platform {
     use super::unix_platform;
     use std::path::Path;
 
+    use super::execute_or_panic;
     use super::err_to_panic;
 
     pub fn download() {
-        err_to_panic(Command::new("wget").arg(unix_platform::PORTAUDIO_URL).output());
+        execute_or_panic(Command::new("wget").arg(unix_platform::PORTAUDIO_URL));
     }
 
     pub fn build(out_dir: &Path) {
