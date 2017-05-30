@@ -134,6 +134,7 @@ mod platform {
     use std::path::Path;
 
     use super::execute_or_panic;
+    use super::err_to_panic;
 
     pub fn download() {
         execute_or_panic(Command::new("wget").arg(unix_platform::PORTAUDIO_URL));
@@ -147,7 +148,7 @@ mod platform {
         let portaudio_pc_file = out_dir.join("lib/pkgconfig/portaudio-2.0.pc");
         let portaudio_pc_file = portaudio_pc_file.to_str().unwrap();
 
-        execute_or_panic(pkg_config::Config::new().statik(true).find(portaudio_pc_file));
+        err_to_panic(pkg_config::Config::new().statik(true).find(portaudio_pc_file));
     }
 }
 
