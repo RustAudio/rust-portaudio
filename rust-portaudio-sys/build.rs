@@ -29,6 +29,9 @@ use std::fmt::Display;
 use unix_platform as platform;
 
 fn main() {
+    println!("cargo:rerun-if-changed=build.rs");
+
+    println!("cargo:rerun-if-env-changed=PORTAUDIO_ONLY_STATIC");
     if env::var("PORTAUDIO_ONLY_STATIC").is_err() {
         // If pkg-config finds a library on the system, we are done
         if pkg_config::Config::new().atleast_version("19").find("portaudio-2.0").is_ok() {
