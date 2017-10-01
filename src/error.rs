@@ -13,6 +13,9 @@ pub enum Error {
     /// No Error
     NoError =
         ffi::PaErrorCode_paNoError,
+    /// No audio devices
+    NoDevice =
+        ffi::PA_NO_DEVICE,
     /// Portaudio not initialized
     NotInitialized =
         ffi::PaErrorCode_paNotInitialized,
@@ -113,6 +116,7 @@ impl ::std::error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::NoError => "No Error",
+            Error::NoDevice  => "No Device",
             Error::NotInitialized => "PortAudio not initialized",
             Error::UnanticipatedHostError => "Unanticipated error from the host",
             Error::InvalidChannelCount => "Invalid number of channels",

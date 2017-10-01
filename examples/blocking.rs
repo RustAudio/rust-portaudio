@@ -16,7 +16,12 @@ const INTERLEAVED: bool = true;
 
 
 fn main() {
-    run().unwrap()
+    match run() {
+        Ok(_) => {},
+        e => {
+            eprintln!("Example failed with the following: {:?}", e);
+        }
+    }
 }
 
 fn run() -> Result<(), pa::Error> {

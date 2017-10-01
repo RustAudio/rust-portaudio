@@ -13,7 +13,12 @@ const SAMPLE_RATE: f64 = 44_100.0;
 const FRAMES_PER_BUFFER: u32 = 64;
 
 fn main() {
-    run().unwrap()
+    match run() {
+        Ok(_) => {},
+        e => {
+            eprintln!("Example failed with the following: {:?}", e);
+        }
+    }
 }
 
 

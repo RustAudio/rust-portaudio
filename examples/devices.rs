@@ -13,7 +13,12 @@ const STANDARD_SAMPLE_RATES: [f64; 13] = [
 
 
 fn main() {
-    run().unwrap()
+    match run() {
+        Ok(_) => {},
+        e => {
+            eprintln!("Example failed with the following: {:?}", e);
+        }
+    }
 }
 
 
