@@ -16,7 +16,12 @@ const TABLE_SIZE: usize = 200;
 
 
 fn main() {
-    run().unwrap()
+    match run() {
+        Ok(_) => {},
+        e => {
+            eprintln!("Example failed with the following: {:?}", e);
+        }
+    }
 }
 
 
