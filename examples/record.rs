@@ -8,6 +8,8 @@ extern crate portaudio;
 
 use portaudio as pa;
 use std::io;
+use std::thread;
+use std::time::Duration;
 
 const SAMPLE_RATE: f64 = 44_100.0;
 const FRAMES: u32 = 256;
@@ -132,11 +134,15 @@ fn run() -> Result<(), pa::Error> {
     let mut output_stream = try!(pa.open_non_blocking_stream(output_settings, output_callback));
 
     try!(output_stream.start());
-    
-    println!("Playback has started. Press Enter to stop.");
 
-    // Wait for enter to be pressed
-    io::stdin().read_line(&mut buffer).ok();
+    // wait until the output stream reaches the end
+    while let true = try!(output_stream.is_active()) {
+        // This thread doesn't need to do anything while it waits. If
+        // we don't make the thread sleep, we max out the CPU usage
+        // doing nothing but checking if the output stream is still
+        // active.
+        thread::sleep(Duration::from_millis(100));
+    }
 
     try!(output_stream.stop());
     
