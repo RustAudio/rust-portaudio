@@ -20,30 +20,30 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //! # rust-portaudio
-//! 
+//!
 //! __PortAudio__ bindings for Rust
-//! 
+//!
 //! PortAudio provides a uniform application programming interface (API) across all
 //! supported platforms.  You can think of the PortAudio library as a wrapper that
 //! converts calls to the PortAudio API into calls to platform-specific native audio
 //! APIs. Operating systems often offer more than one native audio API and some APIs
 //! (such as JACK) may be available on multiple target operating systems.
 //! PortAudio supports all the major native audio APIs on each supported platform.
-//! 
+//!
 //! # Installation
-//! 
+//!
 //! rust-portaudio's build script will check to see if you have already installed
 //! PortAudio on your system. If not, it will attempt to automatically download and
 //! install it for you. If this fails, please let us know by posting an issue at [our
 //! github repository] (https://github.com/jeremyletang/rust-portaudio).
-//! 
+//!
 //! If you'd prefer to install it manually, you can download it directly from the website:
 //! [PortAudio](http://www.portaudio.com/download.html).
-//! 
+//!
 //! # Usage
-//! 
+//!
 //! Add rust-portaudio to your project by adding the dependency to your Cargo.toml as follows:
-//! 
+//!
 //! ```toml
 //! [dependencies]
 //! portaudio = "*"
@@ -51,65 +51,44 @@
 
 #![warn(missing_docs)]
 
-#[macro_use] extern crate bitflags;
+#[macro_use]
+extern crate bitflags;
 extern crate libc;
 extern crate num;
 extern crate portaudio_sys as ffi;
 
 use num::FromPrimitive;
-use std::os::raw;
 use std::option::Option;
+use std::os::raw;
 
 pub use error::Error;
-pub use stream::{
-    Available as StreamAvailable,
-    Blocking,
-    callback_flags as stream_callback_flags,
-    CallbackFlags as StreamCallbackFlags,
-    CallbackTimeInfo as StreamCallbackTimeInfo,
-    Duplex,
-    DuplexSettings as DuplexStreamSettings,
-    DuplexCallbackArgs as DuplexStreamCallbackArgs,
-    flags as stream_flags,
-    Flags as StreamFlags,
-    Flow,
-    Info as StreamInfo,
-    Input,
-    InputSettings as InputStreamSettings,
-    InputCallbackArgs as InputStreamCallbackArgs,
-    NonBlocking,
-    Output,
-    OutputSettings as OutputStreamSettings,
-    OutputCallbackArgs as OutputStreamCallbackArgs,
-    Parameters as StreamParameters,
-    Settings as StreamSettings,
-    Stream,
+pub use ffi::{
+    PaStreamCallbackResult as StreamCallbackResult, PA_ABORT as Abort, PA_COMPLETE as Complete,
+    PA_CONTINUE as Continue,
 };
-pub use ffi::{PaStreamCallbackResult as StreamCallbackResult,
-              PA_CONTINUE as Continue,
-              PA_COMPLETE as Complete,
-              PA_ABORT as Abort};
+pub use stream::{
+    callback_flags as stream_callback_flags, flags as stream_flags, Available as StreamAvailable,
+    Blocking, CallbackFlags as StreamCallbackFlags, CallbackTimeInfo as StreamCallbackTimeInfo,
+    Duplex, DuplexCallbackArgs as DuplexStreamCallbackArgs, DuplexSettings as DuplexStreamSettings,
+    Flags as StreamFlags, Flow, Info as StreamInfo, Input,
+    InputCallbackArgs as InputStreamCallbackArgs, InputSettings as InputStreamSettings,
+    NonBlocking, Output, OutputCallbackArgs as OutputStreamCallbackArgs,
+    OutputSettings as OutputStreamSettings, Parameters as StreamParameters,
+    Settings as StreamSettings, Stream,
+};
 pub use types::{
-    DeviceIndex,
-    DeviceInfo,
-    Frames,
-    HostApiIndex,
-    HostApiInfo,
-    HostApiTypeId,
-    HostErrorInfo,
-    SampleFormat,
-    Time,
-    FRAMES_PER_BUFFER_UNSPECIFIED,
+    DeviceIndex, DeviceInfo, Frames, HostApiIndex, HostApiInfo, HostApiTypeId, HostErrorInfo,
+    SampleFormat, Time, FRAMES_PER_BUFFER_UNSPECIFIED,
 };
 
 use std::ptr;
 
-#[macro_use] mod enum_primitive;
+#[macro_use]
+mod enum_primitive;
 pub mod error;
 pub mod ext;
 pub mod stream;
 mod types;
-
 
 /// A type-safe wrapper around the PortAudio API.
 ///
@@ -133,9 +112,7 @@ pub struct Life {
     is_terminated: std::sync::Mutex<bool>,
 }
 
-
 impl PortAudio {
-
     /// Construct a **PortAudio** instance.
     ///
     /// This calls PortAudio's `Pa_Initialize` function which initializes internal data structures
@@ -153,10 +130,10 @@ impl PortAudio {
             match error {
                 Error::NoError => {
                     let life = std::sync::Arc::new(Life {
-                        is_terminated: std::sync::Mutex::new(false)
+                        is_terminated: std::sync::Mutex::new(false),
                     });
                     Ok(PortAudio { life: life })
-                },
+                }
                 err => Err(err),
             }
         }
@@ -190,7 +167,7 @@ impl PortAudio {
     /// respective **DeviceInfo**s.
     pub fn devices(&self) -> Result<Devices, Error> {
         Ok(Devices {
-            total: try!(self.device_count()),
+            total: self.device_count()?,
             next: 0,
             port_audio: self,
         })
@@ -259,8 +236,7 @@ impl PortAudio {
         let c_info = unsafe { ffi::Pa_GetDeviceInfo(device.into()) };
         if c_info.is_null() {
             Err(Error::InvalidDevice)
-        }
-        else {
+        } else {
             Ok(DeviceInfo::from_c_info(unsafe { *c_info }))
         }
     }
@@ -284,9 +260,7 @@ impl PortAudio {
     ///
     /// TODO: Determine exactly what errors might occur (PA docs aren't clear on this).
     pub fn host_api_count(&self) -> Result<HostApiIndex, Error> {
-        unsafe {
-            result_from_host_api_index(ffi::Pa_GetHostApiCount())
-        }
+        unsafe { result_from_host_api_index(ffi::Pa_GetHostApiCount()) }
     }
 
     /// Retrieve the index of the default host API.
@@ -299,9 +273,7 @@ impl PortAudio {
     ///
     /// TODO: Determine exactly what errors might occur (PA docs aren't clear on this).
     pub fn default_host_api(&self) -> Result<HostApiIndex, Error> {
-        unsafe {
-            result_from_host_api_index(ffi::Pa_GetDefaultHostApi())
-        }
+        unsafe { result_from_host_api_index(ffi::Pa_GetDefaultHostApi()) }
     }
 
     /// Retrieve a pointer to a structure containing information about a specific host Api.
@@ -332,13 +304,12 @@ impl PortAudio {
     /// an error is encountered.
     ///
     /// TODO: Determine exactly what errors might occur (PA docs aren't clear on this).
-    pub fn host_api_type_id_to_host_api_index(&self, type_id: HostApiTypeId)
-        -> Result<HostApiIndex, Error>
-    {
+    pub fn host_api_type_id_to_host_api_index(
+        &self,
+        type_id: HostApiTypeId,
+    ) -> Result<HostApiIndex, Error> {
         let id = FromPrimitive::from_i32(type_id as i32).unwrap();
-        unsafe {
-            result_from_host_api_index(ffi::Pa_HostApiTypeIdToHostApiIndex(id))
-        }
+        unsafe { result_from_host_api_index(ffi::Pa_HostApiTypeIdToHostApiIndex(id)) }
     }
 
     /// Convert a host-API-specific device index to standard PortAudio device index.
@@ -356,14 +327,13 @@ impl PortAudio {
     /// or an `Error` if an error is encountered.
     ///
     /// TODO: Determine exactly what errors might occur (PA docs aren't clear on this).
-    pub fn api_device_index_to_device_index(&self,
-                                            host_api: HostApiIndex,
-                                            host_api_device_index: i32)
-                                            -> Result<DeviceIndex, Error>
-    {
-        let result = unsafe {
-            ffi::Pa_HostApiDeviceIndexToDeviceIndex(host_api, host_api_device_index)
-        };
+    pub fn api_device_index_to_device_index(
+        &self,
+        host_api: HostApiIndex,
+        host_api_device_index: i32,
+    ) -> Result<DeviceIndex, Error> {
+        let result =
+            unsafe { ffi::Pa_HostApiDeviceIndexToDeviceIndex(host_api, host_api_device_index) };
         match result {
             idx if idx >= 0 => Ok(DeviceIndex(idx as u32)),
             err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
@@ -377,9 +347,13 @@ impl PortAudio {
     ///
     /// Returns `Ok(())` if the format is supported, and an `Err(Error)` indicating why the format
     /// is not supported otherwise.
-    pub fn is_input_format_supported<I>(&self, params: StreamParameters<I>, sample_rate: f64)
-        -> Result<(), Error>
-        where I: Sample,
+    pub fn is_input_format_supported<I>(
+        &self,
+        params: StreamParameters<I>,
+        sample_rate: f64,
+    ) -> Result<(), Error>
+    where
+        I: Sample,
     {
         is_format_supported(Some(params.into()), None, sample_rate)
     }
@@ -391,9 +365,13 @@ impl PortAudio {
     ///
     /// Returns `Ok(())` if the format is supported, and an `Err(Error)` indicating why the format
     /// is not supported otherwise.
-    pub fn is_output_format_supported<O>(&self, params: StreamParameters<O>, sample_rate: f64)
-        -> Result<(), Error>
-        where O: Sample,
+    pub fn is_output_format_supported<O>(
+        &self,
+        params: StreamParameters<O>,
+        sample_rate: f64,
+    ) -> Result<(), Error>
+    where
+        O: Sample,
     {
         is_format_supported(None, Some(params.into()), sample_rate)
     }
@@ -405,13 +383,15 @@ impl PortAudio {
     ///
     /// Returns `Ok(())` if the format is supported, and an `Err(Error)` indicating why the format
     /// is not supported otherwise.
-    pub fn is_duplex_format_supported<I, O>(&self,
-                                            in_params: StreamParameters<I>,
-                                            out_params: StreamParameters<O>,
-                                            sample_rate: f64)
-        -> Result<(), Error>
-        where I: Sample,
-              O: Sample,
+    pub fn is_duplex_format_supported<I, O>(
+        &self,
+        in_params: StreamParameters<I>,
+        out_params: StreamParameters<O>,
+        sample_rate: f64,
+    ) -> Result<(), Error>
+    where
+        I: Sample,
+        O: Sample,
     {
         is_format_supported(Some(in_params.into()), Some(out_params.into()), sample_rate)
     }
@@ -427,10 +407,13 @@ impl PortAudio {
     /// respectively.
     ///
     /// The returned **Stream** is inactive (stopped).
-    pub fn open_blocking_stream<S>(&self, settings: S)
-        -> Result<Stream<Blocking<<S::Flow as Flow>::Buffer>, S::Flow>, Error>
-        where S: StreamSettings,
-              S::Flow: Flow,
+    pub fn open_blocking_stream<S>(
+        &self,
+        settings: S,
+    ) -> Result<Stream<Blocking<<S::Flow as Flow>::Buffer>, S::Flow>, Error>
+    where
+        S: StreamSettings,
+        S::Flow: Flow,
     {
         Stream::<Blocking<<S::Flow as Flow>::Buffer>, S::Flow>::open(self.life.clone(), settings)
     }
@@ -469,11 +452,15 @@ impl PortAudio {
     /// irrespective of its return value.
     ///
     /// The returned **Stream** is inactive (stopped).
-    pub fn open_non_blocking_stream<S, C>(&self, settings: S, callback: C)
-        -> Result<Stream<NonBlocking, S::Flow>, Error>
-        where S: StreamSettings,
-              S::Flow: Flow,
-              C: FnMut(<S::Flow as Flow>::CallbackArgs) -> ffi::PaStreamCallbackResult + 'static,
+    pub fn open_non_blocking_stream<S, C>(
+        &self,
+        settings: S,
+        callback: C,
+    ) -> Result<Stream<NonBlocking, S::Flow>, Error>
+    where
+        S: StreamSettings,
+        S::Flow: Flow,
+        C: FnMut(<S::Flow as Flow>::CallbackArgs) -> ffi::PaStreamCallbackResult + 'static,
     {
         Stream::<NonBlocking, S::Flow>::open(self.life.clone(), settings, callback)
     }
@@ -483,13 +470,19 @@ impl PortAudio {
     /// The device used will be the default input device for the default Host API.
     ///
     /// The produced **Parameters** will assume interleaved buffered audio data.
-    pub fn default_input_stream_params<I>(&self, channels: i32)
-        -> Result<StreamParameters<I>, Error>
-    {
+    pub fn default_input_stream_params<I>(
+        &self,
+        channels: i32,
+    ) -> Result<StreamParameters<I>, Error> {
         const INTERLEAVED: bool = true;
-        let device = try!(self.default_input_device());
-        let latency = try!(self.device_info(device)).default_low_input_latency;
-        Ok(StreamParameters::new(device, channels, INTERLEAVED, latency))
+        let device = self.default_input_device()?;
+        let latency = self.device_info(device)?.default_low_input_latency;
+        Ok(StreamParameters::new(
+            device,
+            channels,
+            INTERLEAVED,
+            latency,
+        ))
     }
 
     /// Produce the default **StreamParameters** for an **Output** **Stream**.
@@ -497,13 +490,19 @@ impl PortAudio {
     /// The device used will be the default output device for the default Host API.
     ///
     /// The produced **Parameters** will assume interleaved buffered audio data.
-    pub fn default_output_stream_params<O>(&self, channels: i32)
-        -> Result<StreamParameters<O>, Error>
-    {
+    pub fn default_output_stream_params<O>(
+        &self,
+        channels: i32,
+    ) -> Result<StreamParameters<O>, Error> {
         const INTERLEAVED: bool = true;
-        let device = try!(self.default_output_device());
-        let latency = try!(self.device_info(device)).default_low_output_latency;
-        Ok(StreamParameters::new(device, channels, INTERLEAVED, latency))
+        let device = self.default_output_device()?;
+        let latency = self.device_info(device)?.default_low_output_latency;
+        Ok(StreamParameters::new(
+            device,
+            channels,
+            INTERLEAVED,
+            latency,
+        ))
     }
 
     /// Produce the default **InputStreamSettings** with the given number of channels, sample_rate
@@ -512,14 +511,18 @@ impl PortAudio {
     /// The device used will be the default input device for the default Host API.
     ///
     /// The produced settings will assume interleaved buffered audio data.
-    pub fn default_input_stream_settings<I>(&self,
-                                            channels: i32,
-                                            sample_rate: f64,
-                                            frames_per_buffer: u32)
-                                            -> Result<InputStreamSettings<I>, Error>
-    {
-        let params = try!(self.default_input_stream_params(channels));
-        Ok(InputStreamSettings::new(params, sample_rate, frames_per_buffer))
+    pub fn default_input_stream_settings<I>(
+        &self,
+        channels: i32,
+        sample_rate: f64,
+        frames_per_buffer: u32,
+    ) -> Result<InputStreamSettings<I>, Error> {
+        let params = self.default_input_stream_params(channels)?;
+        Ok(InputStreamSettings::new(
+            params,
+            sample_rate,
+            frames_per_buffer,
+        ))
     }
 
     /// Produce the default **OutputStreamSettings** with the given number of channels, sample_rate
@@ -528,14 +531,18 @@ impl PortAudio {
     /// The device used will be the default output device for the default Host API.
     ///
     /// The produced settings will assume interleaved buffered audio data.
-    pub fn default_output_stream_settings<O>(&self,
-                                             channels: i32,
-                                             sample_rate: f64,
-                                             frames_per_buffer: u32)
-                                             -> Result<OutputStreamSettings<O>, Error>
-    {
-        let params = try!(self.default_output_stream_params(channels));
-        Ok(OutputStreamSettings::new(params, sample_rate, frames_per_buffer))
+    pub fn default_output_stream_settings<O>(
+        &self,
+        channels: i32,
+        sample_rate: f64,
+        frames_per_buffer: u32,
+    ) -> Result<OutputStreamSettings<O>, Error> {
+        let params = self.default_output_stream_params(channels)?;
+        Ok(OutputStreamSettings::new(
+            params,
+            sample_rate,
+            frames_per_buffer,
+        ))
     }
 
     /// Produce the default **DuplexStreamSettings** with the given number of channels, sample_rate
@@ -544,16 +551,21 @@ impl PortAudio {
     /// The devices used will be the default input and output devices for the default Host API.
     ///
     /// The produced settings will assume interleaved buffered audio data.
-    pub fn default_duplex_stream_settings<I, O>(&self,
-                                                in_channels: i32,
-                                                out_channels: i32,
-                                                sample_rate: f64,
-                                                frames_per_buffer: u32)
-                                                -> Result<DuplexStreamSettings<I, O>, Error>
-    {
-        let in_params = try!(self.default_input_stream_params(in_channels));
-        let out_params = try!(self.default_output_stream_params(out_channels));
-        Ok(DuplexStreamSettings::new(in_params, out_params, sample_rate, frames_per_buffer))
+    pub fn default_duplex_stream_settings<I, O>(
+        &self,
+        in_channels: i32,
+        out_channels: i32,
+        sample_rate: f64,
+        frames_per_buffer: u32,
+    ) -> Result<DuplexStreamSettings<I, O>, Error> {
+        let in_params = self.default_input_stream_params(in_channels)?;
+        let out_params = self.default_output_stream_params(out_channels)?;
+        Ok(DuplexStreamSettings::new(
+            in_params,
+            out_params,
+            sample_rate,
+            frames_per_buffer,
+        ))
     }
 
     /// Put the caller to sleep for at least 'msec' milliseconds.
@@ -565,9 +577,7 @@ impl PortAudio {
     /// The function may sleep longer than requested so don't rely on this for accurate musical
     /// timing.
     pub fn sleep(&self, m_sec: i32) -> () {
-        unsafe {
-            ffi::Pa_Sleep(m_sec as raw::c_long)
-        }
+        unsafe { ffi::Pa_Sleep(m_sec as raw::c_long) }
     }
 
     /// Return information about the last host error encountered.
@@ -586,9 +596,7 @@ impl PortAudio {
         let c_error = unsafe { ffi::Pa_GetLastHostErrorInfo() };
         HostErrorInfo::from_c_error_info(unsafe { *c_error })
     }
-
 }
-
 
 impl Drop for Life {
     fn drop(&mut self) {
@@ -598,23 +606,17 @@ impl Drop for Life {
     }
 }
 
-
 /// Retrieve the release number of the currently running PortAudio build.
 pub fn version() -> i32 {
-    unsafe {
-        ffi::Pa_GetVersion()
-    }
+    unsafe { ffi::Pa_GetVersion() }
 }
 
 /// Retrieve a textual description of the current PortAudio build.
 ///
 /// FIXME: This should return a `&'static str`, not a `String`.
 pub fn version_text() -> Result<&'static str, ::std::str::Utf8Error> {
-    unsafe {
-        ffi::c_str_to_str(ffi::Pa_GetVersionText())
-    }
+    unsafe { ffi::c_str_to_str(ffi::Pa_GetVersionText()) }
 }
-
 
 /// This is used by the **PortAudio::terminate** method.
 ///
@@ -661,20 +663,26 @@ fn terminate() -> Result<(), Error> {
 /// Return Ok(()) if the format is supported, and an Error indicating why the format is not
 /// supported otherwise. The constant PaFormatIsSupported is provided to compare with the return
 /// value for success.
-fn is_format_supported(maybe_input_parameters: Option<ffi::PaStreamParameters>,
-                       maybe_output_parameters: Option<ffi::PaStreamParameters>,
-                       sample_rate : f64) -> Result<(), Error>
-{
-    let c_input = maybe_input_parameters.as_ref().map(|input| input as *const _);
-    let c_output = maybe_output_parameters.as_ref().map(|output| output as *const _);
+fn is_format_supported(
+    maybe_input_parameters: Option<ffi::PaStreamParameters>,
+    maybe_output_parameters: Option<ffi::PaStreamParameters>,
+    sample_rate: f64,
+) -> Result<(), Error> {
+    let c_input = maybe_input_parameters
+        .as_ref()
+        .map(|input| input as *const _);
+    let c_output = maybe_output_parameters
+        .as_ref()
+        .map(|output| output as *const _);
     if c_input.is_none() && c_output.is_none() {
         Err(Error::InvalidDevice)
     } else {
         unsafe {
-            let error_code =
-                ffi::Pa_IsFormatSupported(c_input.unwrap_or(ptr::null()),
-                                          c_output.unwrap_or(ptr::null()),
-                                          sample_rate as raw::c_double);
+            let error_code = ffi::Pa_IsFormatSupported(
+                c_input.unwrap_or(ptr::null()),
+                c_output.unwrap_or(ptr::null()),
+                sample_rate as raw::c_double,
+            );
             let error = FromPrimitive::from_i32(error_code).unwrap();
             match error {
                 Error::NoError => Ok(()),
@@ -684,7 +692,6 @@ fn is_format_supported(maybe_input_parameters: Option<ffi::PaStreamParameters>,
     }
 }
 
-
 /// An iterator yielding the **DeviceIndex** for each available device along with their respective
 /// **DeviceInfo**s.
 pub struct Devices<'a> {
@@ -692,7 +699,6 @@ pub struct Devices<'a> {
     next: u32,
     port_audio: &'a PortAudio,
 }
-
 
 /// An iterator yielding the **HostApiIndex** for each available API along with their respective
 /// **HostApiInfo**s.
@@ -702,7 +708,6 @@ pub struct HostApis<'a> {
     next: HostApiIndex,
     port_audio: &'a PortAudio,
 }
-
 
 impl<'a> Iterator for Devices<'a> {
     type Item = Result<(DeviceIndex, DeviceInfo<'a>), Error>;
@@ -715,7 +720,6 @@ impl<'a> Iterator for Devices<'a> {
         None
     }
 }
-
 
 impl<'a> Iterator for HostApis<'a> {
     type Item = (HostApiIndex, HostApiInfo<'a>);
@@ -731,14 +735,12 @@ impl<'a> Iterator for HostApis<'a> {
     }
 }
 
-
 fn result_from_host_api_index(idx: ffi::PaHostApiIndex) -> Result<HostApiIndex, Error> {
     match idx {
         idx if idx >= 0 => Ok(idx),
         err => Err(::num::FromPrimitive::from_i32(err).unwrap()),
     }
 }
-
 
 /// Retrieve the size of a given sample format in bytes.
 ///
@@ -753,15 +755,24 @@ pub fn get_sample_size(format: SampleFormat) -> Result<u8, Error> {
     }
 }
 
-
 mod private {
-    use num::{FromPrimitive, ToPrimitive};
-    use std::ops::{Add, Sub, Mul, Div};
     use super::types::SampleFormat;
+    use num::{FromPrimitive, ToPrimitive};
+    use std::ops::{Add, Div, Mul, Sub};
 
     /// internal private trait for Sample format management
-    pub trait SamplePrivate: ::std::default::Default + Copy + Clone + ::std::fmt::Debug
-                             + ToPrimitive + FromPrimitive + Add + Sub + Mul + Div {
+    pub trait SamplePrivate:
+        ::std::default::Default
+        + Copy
+        + Clone
+        + ::std::fmt::Debug
+        + ToPrimitive
+        + FromPrimitive
+        + Add
+        + Sub
+        + Mul
+        + Div
+    {
         /// return the size of a sample format
         fn size<S: SamplePrivate>() -> usize {
             ::std::mem::size_of::<S>()
@@ -772,29 +783,41 @@ mod private {
 }
 
 impl private::SamplePrivate for f32 {
-    fn to_sample_format() -> SampleFormat { SampleFormat::F32 }
+    fn to_sample_format() -> SampleFormat {
+        SampleFormat::F32
+    }
 }
 
 impl private::SamplePrivate for i32 {
-    fn to_sample_format() -> SampleFormat { SampleFormat::I32 }
+    fn to_sample_format() -> SampleFormat {
+        SampleFormat::I32
+    }
 }
 
 impl private::SamplePrivate for i16 {
-    fn to_sample_format() -> SampleFormat { SampleFormat::I16 }
+    fn to_sample_format() -> SampleFormat {
+        SampleFormat::I16
+    }
 }
 
 impl private::SamplePrivate for i8 {
-    fn to_sample_format() -> SampleFormat { SampleFormat::I8 }
+    fn to_sample_format() -> SampleFormat {
+        SampleFormat::I8
+    }
 }
 
 impl private::SamplePrivate for u8 {
-    fn to_sample_format() -> SampleFormat { SampleFormat::U8 }
+    fn to_sample_format() -> SampleFormat {
+        SampleFormat::U8
+    }
 }
 
 /// public trait to constraint pa::Stream for specific types
 pub trait Sample: private::SamplePrivate {
     /// Retrieve the SampleFormat variant associated with the type.
-    fn sample_format() -> SampleFormat { Self::to_sample_format() }
+    fn sample_format() -> SampleFormat {
+        Self::to_sample_format()
+    }
 }
 
 impl Sample for f32 {}

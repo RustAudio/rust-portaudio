@@ -7,16 +7,14 @@ extern crate portaudio;
 
 use portaudio as pa;
 
-
 const SAMPLE_RATE: f64 = 44_100.0;
 const FRAMES: u32 = 256;
 const CHANNELS: i32 = 2;
 const INTERLEAVED: bool = true;
 
-
 fn main() {
     match run() {
-        Ok(_) => {},
+        Ok(_) => {}
         e => {
             eprintln!("Example failed with the following: {:?}", e);
         }
@@ -24,27 +22,26 @@ fn main() {
 }
 
 fn run() -> Result<(), pa::Error> {
-
-    let pa = try!(pa::PortAudio::new());
+    let pa = pa::PortAudio::new()?;
 
     println!("PortAudio:");
     println!("version: {}", pa.version());
     println!("version text: {:?}", pa.version_text());
-    println!("host count: {}", try!(pa.host_api_count()));
+    println!("host count: {}", pa.host_api_count()?);
 
-    let default_host = try!(pa.default_host_api());
+    let default_host = pa.default_host_api()?;
     println!("default host: {:#?}", pa.host_api_info(default_host));
 
-    let def_input = try!(pa.default_input_device());
-    let input_info = try!(pa.device_info(def_input));
+    let def_input = pa.default_input_device()?;
+    let input_info = pa.device_info(def_input)?;
     println!("Default input device info: {:#?}", &input_info);
 
     // Construct the input stream parameters.
     let latency = input_info.default_low_input_latency;
     let input_params = pa::StreamParameters::<f32>::new(def_input, CHANNELS, INTERLEAVED, latency);
 
-    let def_output = try!(pa.default_output_device());
-    let output_info = try!(pa.device_info(def_output));
+    let def_output = pa.default_output_device()?;
+    let output_info = pa.device_info(def_output)?;
     println!("Default output device info: {:#?}", &output_info);
 
     // Construct the output stream parameters.
@@ -52,7 +49,7 @@ fn run() -> Result<(), pa::Error> {
     let output_params = pa::StreamParameters::new(def_output, CHANNELS, INTERLEAVED, latency);
 
     // Check that the stream format is supported.
-    try!(pa.is_duplex_format_supported(input_params, output_params, SAMPLE_RATE));
+    pa.is_duplex_format_supported(input_params, output_params, SAMPLE_RATE)?;
 
     // Construct the settings with which we'll open our duplex stream.
     let settings = pa::DuplexStreamSettings::new(input_params, output_params, SAMPLE_RATE, FRAMES);
@@ -67,7 +64,13 @@ fn run() -> Result<(), pa::Error> {
     let (sender, receiver) = ::std::sync::mpsc::channel();
 
     // A callback to pass to the non-blocking stream.
-    let callback = move |pa::DuplexStreamCallbackArgs { in_buffer, out_buffer, frames, time, .. }| {
+    let callback = move |pa::DuplexStreamCallbackArgs {
+                             in_buffer,
+                             out_buffer,
+                             frames,
+                             time,
+                             ..
+                         }| {
         let current_time = time.current;
         let prev_time = maybe_last_time.unwrap_or(current_time);
         let dt = current_time - prev_time;
@@ -82,25 +85,27 @@ fn run() -> Result<(), pa::Error> {
             *output_sample = *input_sample;
         }
 
-        if count_down > 0.0 { pa::Continue } else { pa::Complete }
+        if count_down > 0.0 {
+            pa::Continue
+        } else {
+            pa::Complete
+        }
     };
 
     // Construct a stream with input and output sample types of f32.
-    let mut stream = try!(pa.open_non_blocking_stream(settings, callback));
+    let mut stream = pa.open_non_blocking_stream(settings, callback)?;
 
-    try!(stream.start());
+    stream.start()?;
 
     // Loop while the non-blocking stream is active.
-    while let true = try!(stream.is_active()) {
-
+    while let true = stream.is_active()? {
         // Do some stuff!
         while let Ok(count_down) = receiver.try_recv() {
             println!("count_down: {:?}", count_down);
         }
-
     }
 
-    try!(stream.stop());
+    stream.stop()?;
 
     Ok(())
 }

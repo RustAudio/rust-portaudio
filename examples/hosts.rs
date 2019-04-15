@@ -5,7 +5,7 @@ extern crate portaudio as pa;
 
 fn main() {
     match run() {
-        Ok(_) => {},
+        Ok(_) => {}
         e => {
             eprintln!("Example failed with the following: {:?}", e);
         }
@@ -13,7 +13,7 @@ fn main() {
 }
 
 fn run() -> Result<(), pa::Error> {
-    let pa = try!(pa::PortAudio::new());
+    let pa = pa::PortAudio::new()?;
 
     println!("Default Host API: {:?}", pa.default_host_api());
     println!("All Host APIs:");
