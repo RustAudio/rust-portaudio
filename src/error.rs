@@ -5,7 +5,7 @@
 
 use ffi;
 
-enum_from_primitive!{
+enum_from_primitive! {
 /// Error codes returned by PortAudio functions.
 #[repr(i32)]
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
@@ -116,7 +116,7 @@ impl ::std::error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::NoError => "No Error",
-            Error::NoDevice  => "No Device",
+            Error::NoDevice => "No Device",
             Error::NotInitialized => "PortAudio not initialized",
             Error::UnanticipatedHostError => "Unanticipated error from the host",
             Error::InvalidChannelCount => "Invalid number of channels",
@@ -133,20 +133,27 @@ impl ::std::error::Error for Error {
             Error::TimedOut => "Time out",
             Error::InternalError => "Portaudio internal error",
             Error::DeviceUnavailable => "Device unavailable",
-            Error::IncompatibleHostApiSpecificStreamInfo => "Stream info not compatible with the host",
+            Error::IncompatibleHostApiSpecificStreamInfo => {
+                "Stream info not compatible with the host"
+            }
             Error::StreamIsStopped => "The stream is stopped",
             Error::StreamIsNotStopped => "The stream is not stopped",
             Error::InputOverflowed => "The input stream has overflowed",
             Error::OutputUnderflowed => "The output stream has underflowed",
             Error::HostApiNotFound => "The host api is not found by Portaudio",
             Error::InvalidHostApi => "The host API is invalid",
-            Error::CanNotReadFromACallbackStream => "Portaudio cannot read from the callback stream",
+            Error::CanNotReadFromACallbackStream => {
+                "Portaudio cannot read from the callback stream"
+            }
             Error::CanNotWriteToACallbackStream => "Portaudio cannot write to the callback stream",
-            Error::CanNotReadFromAnOutputOnlyStream => "Portaudio cannot read from an output only stream",
-            Error::CanNotWriteToAnInputOnlyStream => "Portaudio cannot write to an input only stream",
+            Error::CanNotReadFromAnOutputOnlyStream => {
+                "Portaudio cannot read from an output only stream"
+            }
+            Error::CanNotWriteToAnInputOnlyStream => {
+                "Portaudio cannot write to an input only stream"
+            }
             Error::IncompatibleStreamHostApi => "The stream is not compatible with the host API",
             Error::BadBufferPtr => "Invalid buffer",
         }
     }
 }
-
