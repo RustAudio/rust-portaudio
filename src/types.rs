@@ -29,7 +29,6 @@ use std::os::raw;
 
 pub use self::sample_format_flags::SampleFormatFlags;
 
-
 /// The type used to refer to audio devices.
 ///
 /// Values of this type usually range from 0 to (PortAudio::device_count-1).
@@ -47,7 +46,6 @@ pub enum DeviceKind {
     /// structure.
     UseHostApiSpecificDeviceSpecification,
 }
-
 
 impl From<DeviceIndex> for ffi::PaDeviceIndex {
     fn from(idx: DeviceIndex) -> ffi::PaDeviceIndex {
@@ -70,7 +68,6 @@ impl From<DeviceKind> for ffi::PaDeviceIndex {
         }
     }
 }
-
 
 /// The special value may be used to request that the stream callback will receive an optimal (and
 /// possibly varying) number of frames based on host requirements and the requested latency
@@ -128,7 +125,6 @@ pub enum SampleFormat {
 }
 
 impl SampleFormat {
-
     /// Inspects the given **SampleFormatFlags** for the format.
     ///
     /// Returns `Some(SampleFormat)` if a matching format is found.
@@ -180,7 +176,6 @@ impl SampleFormat {
             SampleFormat::Custom | SampleFormat::Unknown => 0,
         }
     }
-
 }
 
 pub mod sample_format_flags {
@@ -224,30 +219,32 @@ pub mod sample_format_flags {
 
     impl From<ffi::SampleFormat> for SampleFormatFlags {
         fn from(format: ffi::SampleFormat) -> Self {
-            SampleFormatFlags::from_bits(format)
-                .unwrap_or_else(|| SampleFormatFlags::empty())
+            SampleFormatFlags::from_bits(format).unwrap_or_else(|| SampleFormatFlags::empty())
         }
     }
 
     impl ::std::fmt::Display for SampleFormatFlags {
         fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-            write!(f, "{:?}", match self.bits() {
-                ffi::PA_FLOAT_32 => "FLOAT_32",
-                ffi::PA_INT_32 => "INT_32",
-                //ffi::PA_INT_24 => "INT_24",
-                ffi::PA_INT_16 => "INT_16",
-                ffi::PA_INT_8 => "INT_8",
-                ffi::PA_UINT_8 => "UINT_8",
-                ffi::PA_CUSTOM_FORMAT => "CUSTOM_FORMAT",
-                ffi::PA_NON_INTERLEAVED => "NON_INTERLEAVED",
-                _   => "<Unknown SampleFormatFlags>",
-            })
+            write!(
+                f,
+                "{:?}",
+                match self.bits() {
+                    ffi::PA_FLOAT_32 => "FLOAT_32",
+                    ffi::PA_INT_32 => "INT_32",
+                    //ffi::PA_INT_24 => "INT_24",
+                    ffi::PA_INT_16 => "INT_16",
+                    ffi::PA_INT_8 => "INT_8",
+                    ffi::PA_UINT_8 => "UINT_8",
+                    ffi::PA_CUSTOM_FORMAT => "CUSTOM_FORMAT",
+                    ffi::PA_NON_INTERLEAVED => "NON_INTERLEAVED",
+                    _ => "<Unknown SampleFormatFlags>",
+                }
+            )
         }
     }
 }
 
-
-enum_from_primitive!{
+enum_from_primitive! {
 /// Unchanging unique identifiers for each supported host API
 #[repr(u32)]
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug)]
@@ -301,7 +298,6 @@ pub struct HostApiInfo<'a> {
 }
 
 impl<'a> HostApiInfo<'a> {
-
     /// Construct the HostApiInfo from the equivalent C struct.
     ///
     /// Returns `None` if:
@@ -330,25 +326,23 @@ impl<'a> HostApiInfo<'a> {
         Some(HostApiInfo {
             struct_version: c_info.structVersion,
             host_type: host_type,
-            name: ffi::c_str_to_str(c_info.name)
-                .unwrap_or("<Failed to convert str from CStr>"),
+            name: ffi::c_str_to_str(c_info.name).unwrap_or("<Failed to convert str from CStr>"),
             device_count: device_count,
             default_input_device: default_input_device,
             default_output_device: default_output_device,
         })
     }
-
 }
 
 impl<'a> From<HostApiInfo<'a>> for ffi::PaHostApiInfo {
     fn from(info: HostApiInfo<'a>) -> Self {
         let default_input_device = match info.default_input_device {
             Some(i) => i.into(),
-            None    => ffi::PA_NO_DEVICE,
+            None => ffi::PA_NO_DEVICE,
         };
         let default_output_device = match info.default_output_device {
             Some(i) => i.into(),
-            None    => ffi::PA_NO_DEVICE,
+            None => ffi::PA_NO_DEVICE,
         };
         ffi::PaHostApiInfo {
             structVersion: info.struct_version as raw::c_int,
@@ -389,7 +383,7 @@ impl<'a> From<HostErrorInfo<'a>> for ffi::PaHostErrorInfo {
         ffi::PaHostErrorInfo {
             hostApiType: FromPrimitive::from_i32(error.host_api_type as i32).unwrap(),
             errorCode: error.code as raw::c_long,
-            errorText: ffi::str_to_c_str(error.text)
+            errorText: ffi::str_to_c_str(error.text),
         }
     }
 }
@@ -418,17 +412,15 @@ pub struct DeviceInfo<'a> {
     /// The default high latency for output with this device
     pub default_high_output_latency: Time,
     /// The default sample rate for this device
-    pub default_sample_rate: f64
+    pub default_sample_rate: f64,
 }
 
 impl<'a> DeviceInfo<'a> {
-
     /// Construct a **DeviceInfo** from the equivalent C struct.
     pub fn from_c_info(c_info: ffi::PaDeviceInfo) -> DeviceInfo<'a> {
         DeviceInfo {
             struct_version: c_info.structVersion,
-            name: ffi::c_str_to_str(c_info.name)
-                .unwrap_or("<Failed to convert str from CStr>"),
+            name: ffi::c_str_to_str(c_info.name).unwrap_or("<Failed to convert str from CStr>"),
             host_api: c_info.hostApi,
             max_input_channels: c_info.maxInputChannels,
             max_output_channels: c_info.maxOutputChannels,
@@ -436,10 +428,9 @@ impl<'a> DeviceInfo<'a> {
             default_low_output_latency: c_info.defaultLowOutputLatency,
             default_high_input_latency: c_info.defaultHighInputLatency,
             default_high_output_latency: c_info.defaultHighOutputLatency,
-            default_sample_rate: c_info.defaultSampleRate
+            default_sample_rate: c_info.defaultSampleRate,
         }
     }
-
 }
 
 impl<'a> From<DeviceInfo<'a>> for ffi::PaDeviceInfo {
@@ -454,7 +445,7 @@ impl<'a> From<DeviceInfo<'a>> for ffi::PaDeviceInfo {
             defaultLowOutputLatency: info.default_low_output_latency,
             defaultHighInputLatency: info.default_high_input_latency,
             defaultHighOutputLatency: info.default_high_output_latency,
-            defaultSampleRate: info.default_sample_rate
+            defaultSampleRate: info.default_sample_rate,
         }
     }
 }
