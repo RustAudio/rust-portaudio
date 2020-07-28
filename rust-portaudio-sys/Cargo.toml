@@ -17,3 +17,4 @@ crate-type = ["rlib"]
 
 [build-dependencies]
 pkg-config = "0.3.6"
+force_remove = "0.1.1"
