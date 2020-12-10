@@ -1,5 +1,11 @@
-rust-portaudio [![Build Status](https://travis-ci.org/RustAudio/rust-portaudio.svg?branch=master)](https://travis-ci.org/RustAudio/rust-portaudio) [![Crates.io](https://img.shields.io/crates/v/portaudio.svg)](https://crates.io/crates/portaudio) [![Crates.io](https://img.shields.io/crates/l/portaudio.svg)](https://github.com/RustAudio/rust-portaudio/blob/master/LICENSE)
+rust-portaudio
 ==============
+
+[![Crates.io](https://img.shields.io/crates/v/portaudio.svg)](https://crates.io/crates/portaudio)
+[![docs.rs](https://docs.rs/portaudio/badge.svg)](https://docs.rs/portaudio)
+
+[![License](https://img.shields.io/crates/l/portaudio.svg)](https://github.com/RustAudio/rust-portaudio/blob/master/LICENSE)
+[![Build Status](https://travis-ci.org/RustAudio/rust-portaudio.svg?branch=master)](https://travis-ci.org/RustAudio/rust-portaudio)
 
 [**PortAudio**](http://www.portaudio.com/) bindings and wrappers for Rust.
 
