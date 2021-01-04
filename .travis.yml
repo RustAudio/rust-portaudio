@@ -10,6 +10,9 @@ notifications:
   email:
     - letang.jeremy@gmail.com
     - mitchell.nordine@gmail.com
+before_script:
+    - rustup component add rustfmt
 script:
     - cargo build --verbose
     - cargo test --verbose
+    - cargo fmt -- --check
