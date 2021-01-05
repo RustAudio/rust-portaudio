@@ -16,4 +16,4 @@ name = "portaudio_sys"
 crate-type = ["rlib"]
 
 [build-dependencies]
-pkg-config = "0.3.6"
+cc = "1"
