@@ -31,3 +31,14 @@ On Mac OS X, you may need to install manually `portaudio` and `pkg-config` (usin
 
 You can build the tests and examples with `cargo test`, and the documentation with `cargo doc`.
 
+# Installation on windows-msvc
+
+On the windows-msvc, **rust-portaudio-sys** uses the Visual Studio solution file to build portaudio.
+So, the following programs must be put through the system `PATH`.
+
+- **Git**: getting the source code from repository
+- **devenv**: updating the solution file in the repository of portaudio
+- **MSBuild**: building PortAudio statically
+
+It is remark that cargo does not read the user-wise path, so you must add these programs to the system path.
+
