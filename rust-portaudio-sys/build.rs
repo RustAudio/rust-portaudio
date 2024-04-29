@@ -33,6 +33,7 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 
     println!("cargo:rerun-if-env-changed=PORTAUDIO_ONLY_STATIC");
+    println!("cargo:rerun-if-env-changed=PORTAUDIO_CONFIGURE_EXTRA_ARGS");
     if env::var("PORTAUDIO_ONLY_STATIC").is_err() {
         // If pkg-config finds a library on the system, we are done
         if pkg_config::Config::new().atleast_version("19").find("portaudio-2.0").is_ok() {
@@ -99,10 +100,15 @@ mod unix_platform {
         err_to_panic(env::set_current_dir(PORTAUDIO_FOLDER));
 
         // run portaudio autoconf
-        run(Command::new("./configure")
+        let mut cmd = Command::new("./configure");
+        cmd
             .args(&["--disable-shared", "--enable-static"]) // Only build static lib
             .args(&["--prefix", out_dir.to_str().unwrap()]) // Install on the outdir
-            .arg("--with-pic")); // Build position-independent code (required by Rust)
+            .arg("--with-pic"); // Build position-independent code (required by Rust)
+        if let Ok(extra_args) = env::var("PORTAUDIO_CONFIGURE_EXTRA_ARGS") {
+            cmd.args(extra_args.split(" "));
+        }
+        run(&mut cmd);
 
         // then make
         run(&mut Command::new("make"));
