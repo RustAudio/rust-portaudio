@@ -9,6 +9,9 @@
 mod c_library {
     #[link(name = "portaudio")]
     extern {}
+
+    #[link(name = "jack")]
+    extern{}
 }
 
 mod portaudio;
