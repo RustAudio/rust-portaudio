@@ -1,5 +1,4 @@
 [package]
-
 name = "portaudio"
 version = "0.7.1"
 authors = ["Jeremy Letang <letang.jeremy@gmail.com>",
@@ -13,4 +12,4 @@ repository = "https://github.com/RustAudio/rust-portaudio.git"
 bitflags = "0.8.2"
 libc = "0.2.51"
 num = { version = "0.2.0", default-features = false }
-portaudio_sys = { path = "./rust-portaudio-sys", version = "0.1.1" }
+portaudio_sys = { path = "./rust-portaudio-sys", version = "0.1.0" }
