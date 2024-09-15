@@ -1,6 +1,6 @@
 [package]
-name = "portaudio_sys"
-version = "0.1.2"
+name = "portaudio-sys2"
+version = "0.1.0"
 authors = ["Jeremy Letang <letang.jeremy@gmail.com>",
            "Mitchell Nordine <mitchell.nordine@gmail.com>"]
 description = "PortAudio bindings for Rust."
