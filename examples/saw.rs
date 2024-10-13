@@ -35,7 +35,7 @@ fn run() -> Result<(), pa::Error> {
     let mut settings =
         pa.default_output_stream_settings(CHANNELS, SAMPLE_RATE, FRAMES_PER_BUFFER)?;
     // we won't output out of range samples so don't bother clipping them.
-    settings.flags = pa::stream_flags::CLIP_OFF;
+    settings.flags = pa::StreamFlags::CLIP_OFF;
 
     // This routine will be called by the PortAudio engine when audio is needed. It may called at
     // interrupt level on some machines so don't do anything that could mess up the system like

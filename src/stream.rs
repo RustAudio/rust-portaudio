@@ -10,9 +10,7 @@ use std::os::raw;
 use std::{self, ptr};
 
 use super::error::Error;
-use super::types::{
-    sample_format_flags, DeviceIndex, DeviceKind, SampleFormat, SampleFormatFlags, Time,
-};
+use super::types::{DeviceIndex, DeviceKind, SampleFormat, SampleFormatFlags, Time};
 use super::Sample;
 
 pub use self::callback_flags::CallbackFlags;
@@ -85,7 +83,7 @@ pub trait Writer: Flow {
 }
 
 /// An alias for the boxed Callback function type.
-type CallbackFn = FnMut(
+type CallbackFn = dyn FnMut(
     *const raw::c_void,
     *mut raw::c_void,
     raw::c_ulong,
@@ -699,21 +697,22 @@ pub mod flags {
         ///
         /// See the [bitflags repo](https://github.com/rust-lang/bitflags/blob/master/src/lib.rs)
         /// for examples of composing flags together.
-        pub flags Flags: ::std::os::raw::c_ulong {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        pub struct Flags: ::std::os::raw::c_ulong {
             /// No flags.
-            const NO_FLAG =                                       ffi::PA_NO_FLAG,
+            const NO_FLAG =                                       ffi::PA_NO_FLAG;
             /// Disable default clipping of out of range samples.
-            const CLIP_OFF =                                      ffi::PA_CLIP_OFF,
+            const CLIP_OFF =                                      ffi::PA_CLIP_OFF;
             /// Disable default dithering.
-            const DITHER_OFF =                                    ffi::PA_DITHER_OFF,
+            const DITHER_OFF =                                    ffi::PA_DITHER_OFF;
             /// Flag requests that where possible a full duplex stream will not discard overflowed
             /// input samples without calling the stream callback.
-            const NEVER_DROP_INPUT =                              ffi::PA_NEVER_DROP_INPUT,
+            const NEVER_DROP_INPUT =                              ffi::PA_NEVER_DROP_INPUT;
             /// Call the stream callback to fill initial output buffers, rather than the default
             /// behavior of priming the buffers with zeros (silence)
-            const PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK = ffi::PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK,
+            const PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK = ffi::PA_PRIME_OUTPUT_BUFFERS_USING_STREAM_CALLBACK;
             /// A mask specifying the platform specific bits.
-            const PA_PLATFORM_SPECIFIC_FLAGS =                    ffi::PA_PLATFORM_SPECIFIC_FLAGS,
+            const PA_PLATFORM_SPECIFIC_FLAGS =                    ffi::PA_PLATFORM_SPECIFIC_FLAGS;
         }
     }
 
@@ -755,27 +754,28 @@ pub mod callback_flags {
     use ffi;
     bitflags! {
         /// Flag bit constants for the status flags passed to the stream's callback function.
-        pub flags CallbackFlags:  ::std::os::raw::c_ulong {
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        pub struct CallbackFlags:  ::std::os::raw::c_ulong {
             /// No flags.
-            const NO_FLAG          = ffi::PA_NO_FLAG,
+            const NO_FLAG          = ffi::PA_NO_FLAG;
             /// In a stream opened with paFramesPerBufferUnspecified, indicates that input data is
             /// all silence (zeros) because no real data is available. In a stream opened without
             /// `FramesPerBufferUnspecified`, it indicates that one or more zero samples have been
             /// inserted into the input buffer to compensate for an input underflow.
-            const INPUT_UNDERFLOW  = ffi::INPUT_UNDERFLOW,
+            const INPUT_UNDERFLOW  = ffi::INPUT_UNDERFLOW;
             /// In a stream opened with paFramesPerBufferUnspecified, indicates that data prior to
             /// the first sample of the input buffer was discarded due to an overflow, possibly
             /// because the stream callback is using too much CPU time. Otherwise indicates that
             /// data prior to one or more samples in the input buffer was discarded.
-            const INPUT_OVERFLOW   = ffi::INPUT_OVERFLOW,
+            const INPUT_OVERFLOW   = ffi::INPUT_OVERFLOW;
             /// Indicates that output data (or a gap) was inserted, possibly because the stream
             /// callback is using too much CPU time.
-            const OUTPUT_UNDERFLOW = ffi::OUTPUT_UNDERFLOW,
+            const OUTPUT_UNDERFLOW = ffi::OUTPUT_UNDERFLOW;
             /// Indicates that output data will be discarded because no room is available.
-            const OUTPUT_OVERFLOW  = ffi::OUTPUT_OVERFLOW,
+            const OUTPUT_OVERFLOW  = ffi::OUTPUT_OVERFLOW;
             /// Some of all of the output data will be used to prime the stream, input data may be
             /// zero.
-            const PRIMING_OUTPUT   = ffi::PRIMING_OUTPUT,
+            const PRIMING_OUTPUT   = ffi::PRIMING_OUTPUT;
         }
     }
 
@@ -850,7 +850,7 @@ impl<S: Sample> Parameters<S> {
     /// `UseHostApiSpecificDeviceSpecification` flag.
     pub fn from_c_params(c_params: ffi::PaStreamParameters) -> Option<Self> {
         let sample_format_flags: SampleFormatFlags = c_params.sampleFormat.into();
-        let is_interleaved = !sample_format_flags.contains(sample_format_flags::NON_INTERLEAVED);
+        let is_interleaved = !sample_format_flags.contains(SampleFormatFlags::NON_INTERLEAVED);
         let c_sample_format = SampleFormat::from_flags(c_params.sampleFormat.into());
         if S::sample_format() != c_sample_format {
             return None;
@@ -883,7 +883,7 @@ impl<S: Sample> From<Parameters<S>> for ffi::PaStreamParameters {
         let sample_format = S::sample_format();
         let mut sample_format_flags = sample_format.flags();
         if !is_interleaved {
-            sample_format_flags.insert(sample_format_flags::NON_INTERLEAVED);
+            sample_format_flags.insert(SampleFormatFlags::NON_INTERLEAVED);
         }
         ffi::PaStreamParameters {
             device: device.into(),

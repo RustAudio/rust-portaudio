@@ -131,19 +131,19 @@ impl SampleFormat {
     ///
     /// Returns `None` if no matching format is found.
     pub fn from_flags(flags: SampleFormatFlags) -> Self {
-        if flags.contains(sample_format_flags::FLOAT_32) {
+        if flags.contains(SampleFormatFlags::FLOAT_32) {
             SampleFormat::F32
-        } else if flags.contains(sample_format_flags::INT_32) {
+        } else if flags.contains(SampleFormatFlags::INT_32) {
             SampleFormat::I32
-        } else if flags.contains(sample_format_flags::INT_24) {
+        } else if flags.contains(SampleFormatFlags::INT_24) {
             SampleFormat::I24
-        } else if flags.contains(sample_format_flags::INT_16) {
+        } else if flags.contains(SampleFormatFlags::INT_16) {
             SampleFormat::I16
-        } else if flags.contains(sample_format_flags::INT_8) {
+        } else if flags.contains(SampleFormatFlags::INT_8) {
             SampleFormat::I8
-        } else if flags.contains(sample_format_flags::UINT_8) {
+        } else if flags.contains(SampleFormatFlags::UINT_8) {
             SampleFormat::U8
-        } else if flags.contains(sample_format_flags::CUSTOM_FORMAT) {
+        } else if flags.contains(SampleFormatFlags::CUSTOM_FORMAT) {
             SampleFormat::Custom
         } else {
             SampleFormat::Unknown
@@ -153,13 +153,13 @@ impl SampleFormat {
     /// Converts `self` into the respective **SampleFormatFlags**.
     pub fn flags(self) -> SampleFormatFlags {
         match self {
-            SampleFormat::F32 => sample_format_flags::FLOAT_32,
-            SampleFormat::I32 => sample_format_flags::INT_32,
-            SampleFormat::I24 => sample_format_flags::INT_24,
-            SampleFormat::I16 => sample_format_flags::INT_16,
-            SampleFormat::I8 => sample_format_flags::INT_8,
-            SampleFormat::U8 => sample_format_flags::UINT_8,
-            SampleFormat::Custom => sample_format_flags::CUSTOM_FORMAT,
+            SampleFormat::F32 => SampleFormatFlags::FLOAT_32,
+            SampleFormat::I32 => SampleFormatFlags::INT_32,
+            SampleFormat::I24 => SampleFormatFlags::INT_24,
+            SampleFormat::I16 => SampleFormatFlags::INT_16,
+            SampleFormat::I8 => SampleFormatFlags::INT_8,
+            SampleFormat::U8 => SampleFormatFlags::UINT_8,
+            SampleFormat::Custom => SampleFormatFlags::CUSTOM_FORMAT,
             SampleFormat::Unknown => SampleFormatFlags::empty(),
         }
     }
@@ -197,23 +197,23 @@ pub mod sample_format_flags {
         /// The paNonInterleaved flag indicates that audio data is passed as an array of pointers
         /// to separate buffers, one buffer for each channel. Usually, when this flag is not used,
         /// audio data is passed as a single buffer with all channels interleaved.
-        pub flags SampleFormatFlags: ::std::os::raw::c_ulong {
+        pub struct SampleFormatFlags: ::std::os::raw::c_ulong {
             /// 32 bits float sample format
-            const FLOAT_32 = ffi::PA_FLOAT_32,
+            const FLOAT_32 = ffi::PA_FLOAT_32;
             /// 32 bits int sample format
-            const INT_32 = ffi::PA_INT_32,
+            const INT_32 = ffi::PA_INT_32;
             /// Packed 24 bits int sample format
-            const INT_24 = ffi::PA_INT_24,
+            const INT_24 = ffi::PA_INT_24;
             /// 16 bits int sample format
-            const INT_16 = ffi::PA_INT_16,
+            const INT_16 = ffi::PA_INT_16;
             /// 8 bits int sample format
-            const INT_8 = ffi::PA_INT_8,
+            const INT_8 = ffi::PA_INT_8;
             /// 8 bits unsigned int sample format
-            const UINT_8 = ffi::PA_UINT_8,
+            const UINT_8 = ffi::PA_UINT_8;
             /// Custom sample format
-            const CUSTOM_FORMAT = ffi::PA_CUSTOM_FORMAT,
+            const CUSTOM_FORMAT = ffi::PA_CUSTOM_FORMAT;
             /// Non interleaved sample format
-            const NON_INTERLEAVED = ffi::PA_NON_INTERLEAVED,
+            const NON_INTERLEAVED = ffi::PA_NON_INTERLEAVED;
         }
     }
 
