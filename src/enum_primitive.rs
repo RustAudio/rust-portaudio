@@ -38,7 +38,6 @@ macro_rules! enum_from_primitive_impl_ty {
 }
 
 /// Helper macro for internal use by `enum_from_primitive!`.
-#[macro_use(enum_from_primitive_impl_ty)]
 macro_rules! enum_from_primitive_impl {
     ($name:ident, $( $variant:ident )*) => {
         impl $crate::FromPrimitive for $name {
@@ -50,7 +49,6 @@ macro_rules! enum_from_primitive_impl {
 
 /// Wrap this macro around an `enum` declaration to get an
 /// automatically generated implementation of `num::FromPrimitive`.
-#[macro_use(enum_from_primitive_impl)]
 macro_rules! enum_from_primitive {
     (
         $( #[$enum_attr:meta] )*
